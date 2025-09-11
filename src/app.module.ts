@@ -1,10 +1,11 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { HomeModule } from './app/module/app.module';
+import { QRCodeGatewayModule } from './services/qrcode/modules/qrcode/infrastructure/modules/qrcode.gateway.module';
+import { QRCodeKafkaModule } from './shared/kafka/qrcode.kafka.module';
 
 @Module({
-  imports: [],
-  controllers: [AppController],
-  providers: [AppService],
+  imports: [HomeModule, QRCodeKafkaModule, QRCodeGatewayModule],
+  controllers: [],
+  providers: [],
 })
-export class AppModule {}
+export class AppModule { }
