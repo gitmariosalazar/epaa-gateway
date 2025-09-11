@@ -1,0 +1,16 @@
+services:
+  client-gateway-epaa:
+    image: client-gateway-epaa:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    container_name: client-gateway-epaa
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    volumes:
+      - .:/app
+    networks:
+      - epaa-network
