@@ -2,8 +2,8 @@
 # Base Image: Node.js official image 24 on alpine linux
 FROM node:24-alpine3.22 AS deps
 
-
-
+RUN apk add --no-cache curl
+# Set working directory
 WORKDIR /usr/src/app
 
 COPY package.json ./
@@ -13,6 +13,9 @@ RUN npm install --legacy-peer-deps
 
 # Build Stage - docker build -t client-gateway .
 FROM node:24-alpine3.22 AS builder
+
+RUN apk add --no-cache curl
+# Set working directory
 
 WORKDIR /usr/src/app
 # Copy the dependencies from the deps stage
@@ -27,6 +30,9 @@ RUN npm ci --only --production && npm cache clean --force
 
 # Create the application image (Docker image that will run the application)
 FROM node:24-alpine3.22 AS production
+
+RUN apk add --no-cache curl
+# Set working directory
 
 WORKDIR /usr/src/app
 # Copy the built application from the builder stage
