@@ -25,6 +25,9 @@ interface EnvironmentVariables {
   READINGS_KAFKA_GROUP_ID: string;
   READINGS_KAFKA_CLIENT: string;
   QRCODE_SCANNER_KAFKA_GROUP_ID: string;
+  EPAA_LEGACY_READINGS_KAFKA_CLIENT_ID: string;
+  EPAA_LEGACY_READINGS_KAFKA_GROUP_ID: string;
+  EPAA_LEGACY_READINGS_KAFKA_CLIENT: string;
 }
 
 const envVarsSchema: Joi.ObjectSchema<EnvironmentVariables> = Joi.object({
@@ -53,6 +56,9 @@ const envVarsSchema: Joi.ObjectSchema<EnvironmentVariables> = Joi.object({
   READINGS_KAFKA_GROUP_ID: Joi.string(),
   READINGS_KAFKA_CLIENT: Joi.string(),
   QRCODE_SCANNER_KAFKA_GROUP_ID: Joi.string(),
+  EPAA_LEGACY_READINGS_KAFKA_CLIENT_ID: Joi.string(),
+  EPAA_LEGACY_READINGS_KAFKA_GROUP_ID: Joi.string(),
+  EPAA_LEGACY_READINGS_KAFKA_CLIENT: Joi.string(),
 }).unknown();
 
 const { error, value: envVars } = envVarsSchema.validate(process.env);
@@ -87,4 +93,7 @@ export const environments = {
   READINGS_KAFKA_GROUP_ID: envVars.READINGS_KAFKA_GROUP_ID,
   READINGS_KAFKA_CLIENT: envVars.READINGS_KAFKA_CLIENT,
   QRCODE_SCANNER_KAFKA_GROUP_ID: envVars.QRCODE_SCANNER_KAFKA_GROUP_ID,
+  EPAA_LEGACY_READINGS_KAFKA_CLIENT_ID: envVars.EPAA_LEGACY_READINGS_KAFKA_CLIENT_ID,
+  EPAA_LEGACY_READINGS_KAFKA_GROUP_ID: envVars.EPAA_LEGACY_READINGS_KAFKA_GROUP_ID,
+  EPAA_LEGACY_READINGS_KAFKA_CLIENT: envVars.EPAA_LEGACY_READINGS_KAFKA_CLIENT,
 };  
