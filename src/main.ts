@@ -51,8 +51,8 @@ async function bootstrap() {
   logger.log(`KAFKA BROKER URL: ${environments.KAFKA_BROKER_URL}`)
 
   if (process.env.NODE_ENV === 'production') {
-    app.listen(environments.PORT,'0.0.0.0',()=>{
-        logger.log('API RUNNING: http://0.0.0.0:3005');
+    app.listen(environments.PORT, '0.0.0.0', () => {
+      logger.log('API RUNNING: http://0.0.0.0:3005');
     });
 
     logger.log(
@@ -61,8 +61,8 @@ async function bootstrap() {
   }
 
   if (process.env.NODE_ENV === 'development') {
-    app.listen(environments.PORT,'0.0.0.0',()=>{
-	logger.log('API RUNNING: http://0.0.0.0:3005');	
+    app.listen(environments.PORT, '0.0.0.0', () => {
+      logger.log('API RUNNING on: http://0.0.0.0:3005');
     });
     logger.log(
       `🚀🎉 This API Gateway is running on: http://127.0.0.1:${environments.KAFKA_BROKER_URL} ✅`,

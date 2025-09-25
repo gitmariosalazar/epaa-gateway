@@ -5,6 +5,10 @@ import { environments } from "src/settings/environments/environments";
 import { ApiResponse } from "src/shared/errors/responses/ApiResponse";
 import { sendKafkaRequest } from "src/shared/utils/kafka/send.kafka.request";
 import { UpdateReadingRequest } from "../../domain/schemas/dto/request/update-reading.request";
+import { CreateReadingRequest } from "../../domain/schemas/dto/request/create-reading.request";
+import { CreateReadingLegacyRequest } from "src/services/epaa-legacy/modules/readings/domain/schemas/dto/request/create.reading-legacy.request";
+import { ReadingResponse } from "../../domain/schemas/dto/response/reading.response";
+import { MONTHS } from "src/shared/consts/months";
 
 @Controller('Readings')
 @ApiTags('Readings')
@@ -12,12 +16,15 @@ export class ReadingGatewayController implements OnModuleInit {
   private readonly logger: Logger = new Logger(ReadingGatewayController.name)
   constructor(
     @Inject(environments.READINGS_KAFKA_CLIENT)
-    private readonly readingClient: ClientKafka
+    private readonly readingClient: ClientKafka,
+    @Inject(environments.EPAA_LEGACY_READINGS_KAFKA_CLIENT)
+    private readonly legacyReadingClient: ClientKafka
   ) { }
 
   async onModuleInit() {
     this.readingClient.subscribeToResponseOf('reading.find-basic-reading')
     this.readingClient.subscribeToResponseOf('reading.update-current-reading')
+    this.readingClient.subscribeToResponseOf('reading.create-reading')
     this.logger.log('Response patterns:', this.readingClient['responsePatterns']);
     this.logger.log(
       'ReadingController initialized and connected to Kafka',
@@ -59,6 +66,48 @@ export class ReadingGatewayController implements OnModuleInit {
       )
       return new ApiResponse(
         `Current reading with reading ID ${readingId} updated successfully!`, response, request.url
+      )
+    } catch (error) {
+      throw new RpcException(error)
+    }
+  }
+
+  @Post('create-reading')
+  @ApiOperation({
+    summary: 'Method POST - Create a new Reading',
+    description: 'The endpoint allows you to create a new Reading'
+  })
+  async createReading(@Body() readingRequest: CreateReadingRequest, @Req() request: Request): Promise<ApiResponse> {
+    try {
+      const response = await sendKafkaRequest<ReadingResponse>(
+        this.readingClient.send(
+          'reading.create-reading', readingRequest
+        )
+      )
+
+      const reading: CreateReadingLegacyRequest = new CreateReadingLegacyRequest();
+      reading.previousReading = parseFloat(response.previousReading!.toString());
+      reading.currentReading = parseFloat(response.currentReading!.toString());
+      reading.cadastralKey = response.cadastralKey!;
+      reading.novelty = response.novelty!;
+      reading.cadastralKey = response.connectionId!;
+      reading.account = parseInt(response.account!.toString());
+      reading.sector = parseInt(response.sector!.toString());
+      reading.rentalIncomeCode = response.rentalIncomeCode!;
+      reading.readingDate = response.readingDate!;
+      reading.readingTime = response.readingTime!;
+      reading.year = response.readingDate ? new Date(response.readingDate).getFullYear() : new Date().getFullYear();
+      reading.month = response.readingDate ? MONTHS[new Date(response.readingDate).getMonth() + 1] : MONTHS[new Date().getMonth() + 1];
+      reading.readingValue = parseFloat(response.readingValue!.toString());
+
+      this.logger.log(`Sending createReadingLegacy request: ${JSON.stringify(reading)}`);
+
+      await this.legacyReadingClient.emit(
+        'epaa-legacy.reading.create-reading-legacy', reading
+      );
+
+      return new ApiResponse(
+        `Reading created successfully!`, response, request.url
       )
     } catch (error) {
       throw new RpcException(error)
