@@ -67,4 +67,10 @@ export class CreateReadingRequest {
     required: false
   })
   novelty: string | null
+  @ApiProperty({
+    example: 95,
+    description: 'Average consumption',
+    required: true
+  })
+  averageConsumption: number
 }
