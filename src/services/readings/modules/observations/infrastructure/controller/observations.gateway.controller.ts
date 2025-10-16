@@ -18,6 +18,7 @@ export class ObservationsGatewayController implements OnModuleInit {
     this.observationsClient.subscribeToResponseOf('observation-reading.create-observation-reading');
     this.observationsClient.subscribeToResponseOf('observation-reading.get-observations-by-reading-id');
     this.observationsClient.subscribeToResponseOf('observation-reading.get-observation-details-by-cadastral-key');
+    this.observationsClient.subscribeToResponseOf('observation-reading.get-observations');
     this.logger.log('Response patterns:', this.observationsClient['responsePatterns']);
     this.logger.log(
       'ObservationsGatewayController initialized and connected to Kafka',
@@ -38,6 +39,22 @@ export class ObservationsGatewayController implements OnModuleInit {
       );
     } catch (error) {
       this.logger.error('Error fetching observation details by cadastral key', error);
+      throw new RpcException(error);
+    }
+  }
+  @Get('get-observations')
+  async getObservations(@Req() request: Request): Promise<ApiResponse> {
+    try {
+      const response = await sendKafkaRequest(
+        this.observationsClient.send(
+          'observation-reading.get-observations', {}
+        )
+      );
+      return new ApiResponse(
+        `Observations retrieved successfully!`, response, request.url
+      );
+    } catch (error) {
+      this.logger.error('Error fetching observations', error);
       throw new RpcException(error);
     }
   }
