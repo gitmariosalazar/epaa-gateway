@@ -5,9 +5,10 @@ import { QRCodeKafkaModule } from './shared/kafka/qrcode.kafka.module';
 import { ReadingGatewayModule } from './services/readings/modules/reading/infrastructure/modules/reading.gateway.module';
 import { ReadingLegacyModule } from './services/epaa-legacy/modules/readings/infrastructure/modules/reading.gateway.module';
 import { ObservationsGatewayModule } from './services/readings/modules/observations/infrastructure/modules/observations.gateway.module';
+import { PhotoReadingGatewayModule } from './services/readings/modules/images-readings/infrastructure/modules/photo-reading.gateway.module';
 
 @Module({
-  imports: [HomeModule, QRCodeKafkaModule, QRCodeGatewayModule, ReadingGatewayModule, ReadingLegacyModule, ObservationsGatewayModule],
+  imports: [HomeModule, QRCodeKafkaModule, QRCodeGatewayModule, ReadingGatewayModule, ReadingLegacyModule, ObservationsGatewayModule, PhotoReadingGatewayModule],
   controllers: [],
   providers: [],
 })
