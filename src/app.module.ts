@@ -6,9 +6,10 @@ import { ReadingGatewayModule } from './services/readings/modules/reading/infras
 import { ReadingLegacyModule } from './services/epaa-legacy/modules/readings/infrastructure/modules/reading.gateway.module';
 import { ObservationsGatewayModule } from './services/readings/modules/observations/infrastructure/modules/observations.gateway.module';
 import { PhotoReadingGatewayModule } from './services/readings/modules/images-readings/infrastructure/modules/photo-reading.gateway.module';
+import { LocationGatewayModule } from './services/readings/modules/location/infrastructure/modules/location.gateway.module';
 
 @Module({
-  imports: [HomeModule, QRCodeKafkaModule, QRCodeGatewayModule, ReadingGatewayModule, ReadingLegacyModule, ObservationsGatewayModule, PhotoReadingGatewayModule],
+  imports: [HomeModule, QRCodeKafkaModule, QRCodeGatewayModule, ReadingGatewayModule, ReadingLegacyModule, ObservationsGatewayModule, PhotoReadingGatewayModule, LocationGatewayModule],
   controllers: [],
   providers: [],
 })
