@@ -34,6 +34,9 @@ interface EnvironmentVariables {
   PHOTO_READING_KAFKA_GROUP_ID: string;
   PHOTO_READING_KAFKA_CLIENT: string;
   PHOTO_READING_KAFKA_CLIENT_ID: string;
+  LOCATION_CONNECTION_KAFKA_CLIENT_ID: string;
+  LOCATION_CONNECTION_KAFKA_GROUP_ID: string;
+  LOCATION_CONNECTION_KAFKA_CLIENT: string;
 }
 
 const envVarsSchema: Joi.ObjectSchema<EnvironmentVariables> = Joi.object({
@@ -71,6 +74,9 @@ const envVarsSchema: Joi.ObjectSchema<EnvironmentVariables> = Joi.object({
   PHOTO_READING_KAFKA_GROUP_ID: Joi.string(),
   PHOTO_READING_KAFKA_CLIENT: Joi.string(),
   PHOTO_READING_KAFKA_CLIENT_ID: Joi.string(),
+  LOCATION_CONNECTION_KAFKA_CLIENT_ID: Joi.string(),
+  LOCATION_CONNECTION_KAFKA_GROUP_ID: Joi.string(),
+  LOCATION_CONNECTION_KAFKA_CLIENT: Joi.string(),
 }).unknown();
 
 const { error, value: envVars } = envVarsSchema.validate(process.env);
@@ -114,4 +120,7 @@ export const environments = {
   PHOTO_READING_KAFKA_GROUP_ID: envVars.PHOTO_READING_KAFKA_GROUP_ID,
   PHOTO_READING_KAFKA_CLIENT: envVars.PHOTO_READING_KAFKA_CLIENT,
   PHOTO_READING_KAFKA_CLIENT_ID: envVars.PHOTO_READING_KAFKA_CLIENT_ID,
+  LOCATION_KAFKA_CLIENT_ID: envVars.LOCATION_CONNECTION_KAFKA_CLIENT_ID,
+  LOCATION_KAFKA_GROUP_ID: envVars.LOCATION_CONNECTION_KAFKA_GROUP_ID,
+  LOCATION_KAFKA_CLIENT: envVars.LOCATION_CONNECTION_KAFKA_CLIENT,
 };  
