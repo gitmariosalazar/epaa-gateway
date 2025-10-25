@@ -6,7 +6,7 @@ export class AppService {
     message: string;
   } {
     return {
-      message: 'Hello World! Welcome to the API Gateway Microservices',
+      message: 'Hello World! Welcome to the API Gateway Microservices - Development Environment 🚀',
     };
   }
 
