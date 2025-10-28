@@ -2,9 +2,9 @@ import { Body, Controller, Get, Inject, Logger, OnModuleInit, Param, ParseIntPip
 import { ClientKafka, RpcException } from "@nestjs/microservices";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 import { CreateLocationRequest } from "../../domain/schemas/dto/request/create.location.request";
-import { ApiResponse } from "src/shared/errors/responses/ApiResponse";
-import { sendKafkaRequest } from "src/shared/utils/kafka/send.kafka.request";
-import { environments } from "src/settings/environments/environments";
+import { environments } from "../../../../../../settings/environments/environments";
+import { ApiResponse } from "../../../../../../shared/errors/responses/ApiResponse";
+import { sendKafkaRequest } from "../../../../../../shared/utils/kafka/send.kafka.request";
 
 @Controller('location')
 @ApiTags('Location Gateway')

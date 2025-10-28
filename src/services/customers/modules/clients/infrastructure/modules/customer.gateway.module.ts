@@ -1,7 +1,7 @@
 import { Module } from "@nestjs/common";
 import { CustomerGatewayController } from "../controllers/customer.gateway.controller";
-import { environments } from "src/settings/environments/environments";
 import { ClientsModule, Transport } from "@nestjs/microservices";
+import { environments } from "../../../../../../settings/environments/environments";
 
 @Module({
   imports: [

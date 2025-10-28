@@ -1,7 +1,7 @@
 import { Module } from "@nestjs/common";
 import { ClientsModule, Transport } from "@nestjs/microservices";
-import { environments } from "src/settings/environments/environments";
 import { ReadingLegacyGatewayController } from "../controller/reading-legacy.gateway.controller";
+import { environments } from "../../../../../../settings/environments/environments";
 
 @Module({
   imports: [

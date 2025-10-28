@@ -1,14 +1,14 @@
 import { Body, Controller, Get, Inject, Logger, OnModuleInit, Param, Post, Put, Req } from "@nestjs/common";
 import { ClientKafka, RpcException } from "@nestjs/microservices";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
-import { environments } from "src/settings/environments/environments";
-import { ApiResponse } from "src/shared/errors/responses/ApiResponse";
-import { sendKafkaRequest } from "src/shared/utils/kafka/send.kafka.request";
 import { UpdateReadingRequest } from "../../domain/schemas/dto/request/update-reading.request";
 import { CreateReadingRequest } from "../../domain/schemas/dto/request/create-reading.request";
-import { CreateReadingLegacyRequest } from "src/services/epaa-legacy/modules/readings/domain/schemas/dto/request/create.reading-legacy.request";
 import { ReadingResponse } from "../../domain/schemas/dto/response/reading.response";
-import { MONTHS } from "src/shared/consts/months";
+import { environments } from "../../../../../../settings/environments/environments";
+import { ApiResponse } from "../../../../../../shared/errors/responses/ApiResponse";
+import { sendKafkaRequest } from "../../../../../../shared/utils/kafka/send.kafka.request";
+import { CreateReadingLegacyRequest } from "../../../../../epaa-legacy/modules/readings/domain/schemas/dto/request/create.reading-legacy.request";
+import { MONTHS } from "../../../../../../shared/consts/months";
 
 @Controller('Readings')
 @ApiTags('Readings')

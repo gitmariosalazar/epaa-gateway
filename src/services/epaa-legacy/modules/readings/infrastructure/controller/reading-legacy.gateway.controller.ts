@@ -1,10 +1,10 @@
 import { Body, Controller, Inject, Logger, OnModuleInit, Post, Req } from "@nestjs/common";
 import { ClientKafka, RpcException } from "@nestjs/microservices";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
-import { environments } from "src/settings/environments/environments";
-import { ApiResponse } from "src/shared/errors/responses/ApiResponse";
 import { CreateReadingLegacyRequest } from "../../domain/schemas/dto/request/create.reading-legacy.request";
-import { sendKafkaRequest } from "src/shared/utils/kafka/send.kafka.request";
+import { environments } from "../../../../../../settings/environments/environments";
+import { sendKafkaRequest } from "../../../../../../shared/utils/kafka/send.kafka.request";
+import { ApiResponse } from "../../../../../../shared/errors/responses/ApiResponse";
 
 @Controller('readings')
 @ApiTags('Readings - Legacy')

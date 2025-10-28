@@ -7,7 +7,7 @@ import {
 import { Observable } from 'rxjs';
 import { RpcException } from '@nestjs/microservices';
 import { ApiResponse } from '../responses/ApiResponse';
-import { statusCode } from 'src/settings/environments/status-code';
+import { statusCode } from '../../../settings/environments/status-code';
 
 @Catch() // Captura todos los errores, no solo RpcException
 export class RpcCustomExceptionFilter implements RpcExceptionFilter {

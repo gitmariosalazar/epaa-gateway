@@ -1,7 +1,7 @@
 import { Controller, Get, Req } from '@nestjs/common';
 import { AppService } from '../service/app.service';
-import { ApiResponse } from 'src/shared/errors/responses/ApiResponse';
 import { RpcException } from '@nestjs/microservices';
+import { ApiResponse } from '../../shared/errors/responses/ApiResponse';
 
 @Controller()
 export class AppController {

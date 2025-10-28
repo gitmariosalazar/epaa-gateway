@@ -1,9 +1,9 @@
 import { Module } from "@nestjs/common";
 import { ClientsModule, Transport } from "@nestjs/microservices";
 import { MulterModule } from "@nestjs/platform-express";
-import { environments } from "src/settings/environments/environments";
 import { PhotoReadingGatewayController } from "../controllers/photo-reading.gateway.controller";
 import { ServeStaticModule } from "@nestjs/serve-static";
+import { environments } from "../../../../../../settings/environments/environments";
 
 @Module({
   imports: [

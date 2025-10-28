@@ -1,6 +1,6 @@
 import { firstValueFrom, timeout, TimeoutError } from 'rxjs';
 import { RpcException } from '@nestjs/microservices';
-import { statusCode } from 'src/settings/environments/status-code';
+import { statusCode } from '../../../settings/environments/status-code';
 
 export async function sendKafkaRequest<T>(
   observable$,

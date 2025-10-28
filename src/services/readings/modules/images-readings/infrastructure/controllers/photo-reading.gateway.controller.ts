@@ -1,14 +1,14 @@
 import { Body, Controller, Inject, Logger, OnModuleInit, Post, Req, UploadedFiles, UseInterceptors } from "@nestjs/common";
 import { ClientKafka, RpcException } from "@nestjs/microservices";
 import { ApiTags, ApiConsumes, ApiBody } from "@nestjs/swagger";
-import { environments } from "src/settings/environments/environments";
 import { CreatePhotoReadingRequest } from "../../domain/schemas/dto/request/create.photo-reading.request";
-import { ApiResponse } from "src/shared/errors/responses/ApiResponse";
-import { sendKafkaRequest } from "src/shared/utils/kafka/send.kafka.request";
 import { FilesInterceptor } from "@nestjs/platform-express";
 import { diskStorage } from "multer";
 import { extname, join } from "path";
 import { renameSync } from "fs";
+import { environments } from "../../../../../../settings/environments/environments";
+import { ApiResponse } from "../../../../../../shared/errors/responses/ApiResponse";
+import { sendKafkaRequest } from "../../../../../../shared/utils/kafka/send.kafka.request";
 
 @Controller('photo-reading')
 @ApiTags('Photo Reading')

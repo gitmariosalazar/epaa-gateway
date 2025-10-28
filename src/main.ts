@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import * as morgan from 'morgan';
-import * as cookieParser from 'cookie-parser';
+import morgan from 'morgan';
+import cookieParser from 'cookie-parser';
 import { Logger } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { environments } from './settings/environments/environments';

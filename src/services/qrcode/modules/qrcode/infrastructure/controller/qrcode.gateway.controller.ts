@@ -1,10 +1,10 @@
 import { Body, Controller, Get, Inject, Logger, OnModuleInit, Param, Post, Req } from '@nestjs/common';
 import { ClientKafka, RpcException } from '@nestjs/microservices';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import { environments } from 'src/settings/environments/environments';
 import { CreateQRCodeRequest } from '../../domain/schemas/dto/request/create.qrcode.request';
-import { ApiResponse } from 'src/shared/errors/responses/ApiResponse';
-import { sendKafkaRequest } from 'src/shared/utils/kafka/send.kafka.request';
+import { environments } from '../../../../../../settings/environments/environments';
+import { ApiResponse } from '../../../../../../shared/errors/responses/ApiResponse';
+import { sendKafkaRequest } from '../../../../../../shared/utils/kafka/send.kafka.request';
 
 @Controller('QRCode')
 @ApiTags('QRCode')

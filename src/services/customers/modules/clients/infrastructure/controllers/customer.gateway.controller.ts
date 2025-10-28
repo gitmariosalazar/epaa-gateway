@@ -1,13 +1,13 @@
 import { Body, Controller, Delete, Get, Inject, Logger, OnModuleInit, Param, Post, Put, Query, Req } from "@nestjs/common";
 import { ClientKafka } from "@nestjs/microservices/client/client-kafka";
 import { ApiTags } from "@nestjs/swagger/dist/decorators/api-use-tags.decorator";
-import { environments } from "src/settings/environments/environments";
 import { CreateCustomerRequest } from "../../domain/schemas/dto/request/create.customer.request";
-import { ApiResponse } from "src/shared/errors/responses/ApiResponse";
 import { RpcException } from "@nestjs/microservices";
-import { sendKafkaRequest } from "src/shared/utils/kafka/send.kafka.request";
 import { ApiOperation } from "@nestjs/swagger";
 import { UpdateCustomerRequest } from "../../domain/schemas/dto/request/update.customer.request";
+import { sendKafkaRequest } from "../../../../../../shared/utils/kafka/send.kafka.request";
+import { ApiResponse } from "../../../../../../shared/errors/responses/ApiResponse";
+import { environments } from "../../../../../../settings/environments/environments";
 
 @Controller('Customers')
 @ApiTags('Customers')
