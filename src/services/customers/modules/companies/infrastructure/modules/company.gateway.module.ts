@@ -1,20 +1,20 @@
 import { Module } from "@nestjs/common";
-import { CustomerGatewayController } from "../controllers/customer.gateway.controller";
 import { ClientsModule, Transport } from "@nestjs/microservices";
 import { environments } from "../../../../../../settings/environments/environments";
+import { CompanyGatewayController } from "../controllers/company.gateway.controller";
 
 @Module({
   imports: [
     ClientsModule.register([
       {
-        name: environments.CLIENTS_KAFKA_CLIENT!,
+        name: environments.COMPANIES_KAFKA_CLIENT!,
         transport: Transport.KAFKA,
         options: {
           client: {
             brokers: [`${environments.KAFKA_BROKER_URL}`],
           },
           consumer: {
-            groupId: environments.CLIENTS_KAFKA_GROUP_ID,
+            groupId: environments.COMPANIES_KAFKA_GROUP_ID,
             sessionTimeout: 30000,
             heartbeatInterval: 10000,
             rebalanceTimeout: 60000,
@@ -26,8 +26,8 @@ import { environments } from "../../../../../../settings/environments/environmen
       },
     ]),
   ],
-  controllers: [CustomerGatewayController],
+  controllers: [CompanyGatewayController],
   providers: [],
-  exports: [ClientsModule],
+  exports: [ClientsModule]
 })
-export class CustomerGatewayModule { }
+export class CompanyGatewayModule { }

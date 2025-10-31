@@ -8,9 +8,12 @@ import { ObservationsGatewayModule } from './services/readings/modules/observati
 import { PhotoReadingGatewayModule } from './services/readings/modules/images-readings/infrastructure/modules/photo-reading.gateway.module';
 import { LocationGatewayModule } from './services/readings/modules/location/infrastructure/modules/location.gateway.module';
 import { CustomerGatewayModule } from './services/customers/modules/clients/infrastructure/modules/customer.gateway.module';
+import { CompanyGatewayModule } from './services/customers/modules/companies/infrastructure/modules/company.gateway.module';
+import { ConnectionGatewayModule } from './services/connections/modules/connection/infrastructure/modules/connection.gateway.module';
+import { PropertyGatewayModule } from './services/properties/modules/property/infrastructure/modules/property.gateway.module';
 
 @Module({
-  imports: [HomeModule, QRCodeKafkaModule, QRCodeGatewayModule, ReadingGatewayModule, ReadingLegacyModule, ObservationsGatewayModule, PhotoReadingGatewayModule, LocationGatewayModule, CustomerGatewayModule],
+  imports: [HomeModule, QRCodeKafkaModule, QRCodeGatewayModule, ReadingGatewayModule, ReadingLegacyModule, ObservationsGatewayModule, PhotoReadingGatewayModule, LocationGatewayModule, CustomerGatewayModule, CompanyGatewayModule, ConnectionGatewayModule, PropertyGatewayModule],
   controllers: [],
   providers: [],
 })

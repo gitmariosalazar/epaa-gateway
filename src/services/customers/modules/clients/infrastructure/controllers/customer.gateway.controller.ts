@@ -15,7 +15,7 @@ export class CustomerGatewayController implements OnModuleInit {
   private readonly logger: Logger = new Logger(CustomerGatewayController.name);
   constructor(
     // Inject any required services here
-    @Inject(environments.CUSTOMERS_KAFKA_CLIENT)
+    @Inject(environments.CLIENTS_KAFKA_CLIENT)
     private readonly customerClient: ClientKafka,
   ) { }
 
@@ -131,8 +131,8 @@ export class CustomerGatewayController implements OnModuleInit {
   })
   async getAllCustomers(
     @Req() request: Request,
-    @Query('limit') limit = 100,
-    @Query('offset') offset = 0,
+    @Query('limit') limit?: number,
+    @Query('offset') offset?: number,
   ): Promise<ApiResponse> {
     try {
       const response = await sendKafkaRequest(
