@@ -54,6 +54,9 @@ export class ConnectionGatewayController implements OnModuleInit {
     this.connectionKafkaClient.subscribeToResponseOf(
       'connections.find-connection-by-property-cadastral-key',
     );
+    this.connectionKafkaClient.subscribeToResponseOf(
+      'connections.find-connection-with-property-by-cadastral-key',
+    );
     this.logger.log(
       'Response patterns:',
       this.connectionKafkaClient['responsePatterns'],
@@ -282,6 +285,39 @@ export class ConnectionGatewayController implements OnModuleInit {
       );
       return new ApiResponse(
         `Connection and property retrieved successfully!`,
+        response,
+        request.url,
+      );
+    } catch (error) {
+      throw new RpcException(error);
+    }
+  }
+
+  @Get('find-connection-with-property-by-cadastral-key/:cadastralKey')
+  @ApiOperation({
+    summary: 'Method GET - Find connection with property by cadastral key',
+    description:
+      'The endpoint allows you to find a connection along with its associated property using the cadastral key',
+  })
+  async getConnectionWithPropertyByCadastralKey(
+    @Req() request: Request,
+    @Param('cadastralKey') cadastralKey: string,
+  ): Promise<ApiResponse> {
+    try {
+      this.logger.log(
+        `Received request to find connection with property by cadastral key: ${cadastralKey}`,
+      );
+      const response = await sendKafkaRequest(
+        this.connectionKafkaClient.send(
+          'connections.find-connection-with-property-by-cadastral-key',
+          cadastralKey,
+        ),
+      );
+      this.logger.log(
+        `Connection with property retrieved successfully: ${JSON.stringify(response)}`,
+      );
+      return new ApiResponse(
+        `Connection with property retrieved successfully!`,
         response,
         request.url,
       );
