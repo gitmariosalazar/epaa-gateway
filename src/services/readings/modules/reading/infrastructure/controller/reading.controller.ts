@@ -25,6 +25,7 @@ export class ReadingGatewayController implements OnModuleInit {
     this.readingClient.subscribeToResponseOf('reading.find-basic-reading')
     this.readingClient.subscribeToResponseOf('reading.update-current-reading')
     this.readingClient.subscribeToResponseOf('reading.create-reading')
+    this.readingClient.subscribeToResponseOf('reading.find-reading-info')
     this.logger.log('Response patterns:', this.readingClient['responsePatterns']);
     this.logger.log(
       'ReadingController initialized and connected to Kafka',
@@ -46,6 +47,26 @@ export class ReadingGatewayController implements OnModuleInit {
       )
       return new ApiResponse(
         `QR Code with acometida ID ${catastralCode} found successfully!`, response, request.url
+      )
+    } catch (error) {
+      throw new RpcException(error)
+    }
+  }
+
+  @Get('find-reading-info/:cadastralKey')
+  @ApiOperation({
+    summary: 'Method GET - Find Reading Info by cadastral key',
+    description: 'The endpoint allows you to search Reading Info by cadastral key'
+  })
+  async findReadingInfoByCadastralKey(@Param('cadastralKey') cadastralKey: string, @Req() request: Request): Promise<ApiResponse> {
+    try {
+      const response = await sendKafkaRequest(
+        this.readingClient.send(
+          'reading.find-reading-info', cadastralKey
+        )
+      )
+      return new ApiResponse(
+        `Reading info with cadastral key ${cadastralKey} found successfully!`, response, request.url
       )
     } catch (error) {
       throw new RpcException(error)
