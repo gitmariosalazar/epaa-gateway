@@ -101,6 +101,11 @@ export class CreateConnectionRequest {
   )
   propertyCadastralKey: string;
 
+  @ApiProperty(
+    { example: 2, description: 'Zone ID of the connection', type: Number, required: false }
+  )
+  zoneId: number;
+
   constructor(
     connectionId: string,
     clientId: string,
@@ -123,6 +128,7 @@ export class CreateConnectionRequest {
     connectionGeolocationDate: Date,
     connectionGeometricZone: string,
     propertyCadastralKey: string,
+    zoneId: number,
   ) {
     this.connectionId = connectionId;
     this.clientId = clientId;
@@ -145,5 +151,6 @@ export class CreateConnectionRequest {
     this.connectionGeolocationDate = connectionGeolocationDate;
     this.connectionGeometricZone = connectionGeometricZone;
     this.propertyCadastralKey = propertyCadastralKey;
+    this.zoneId = zoneId;
   }
 }
