@@ -1,9 +1,8 @@
-import { Module } from "@nestjs/common";
-import { ClientsModule, Transport } from "@nestjs/microservices";
-import { MulterModule } from "@nestjs/platform-express";
-import { PhotoConnectionGatewayController } from "../controllers/photo-connection.gateway.controller";
-import { ServeStaticModule } from "@nestjs/serve-static";
-import { environments } from "../../../../../../settings/environments/environments";
+import { Module } from '@nestjs/common';
+import { ClientsModule, Transport } from '@nestjs/microservices';
+import { PhotoConnectionGatewayController } from '../controllers/photo-connection.gateway.controller';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { environments } from '../../../../../../settings/environments/environments';
 
 @Module({
   imports: [
@@ -21,34 +20,30 @@ import { environments } from "../../../../../../settings/environments/environmen
             heartbeatInterval: 10000,
             rebalanceTimeout: 60000,
             subscribe: {
-              fromBeginning: true
-            }
+              fromBeginning: true,
+            },
           },
         },
       },
     ]),
-    MulterModule.register({ dest: '/home/sigepaa/sigepaa/images/connections' }),
-    ServeStaticModule.forRoot({
-      rootPath: '/home/sigepaa/sigepaa/images/connections',
-      serveRoot: '/images/connections',
-      serveStaticOptions: {
-        index: false,
-        redirect: false,
-      },
-    }),
-    ServeStaticModule.forRoot({
-      rootPath: '/home/sigepaa/sigepaa/images/qrcodes',
-      serveRoot: '/images/qrcodes',
-      serveStaticOptions: {
-        index: false,
-        redirect: false,
-      },
-    }),
+
+    ServeStaticModule.forRoot(
+      ...[
+        {
+          rootPath: '/home/sigepaa/sigepaa/images/connections',
+          serveRoot: '/images/connections',
+          serveStaticOptions: { index: false, redirect: false },
+        },
+        {
+          rootPath: '/home/sigepaa/sigepaa/images/qrcodes',
+          serveRoot: '/images/qrcodes',
+          serveStaticOptions: { index: false, redirect: false },
+        },
+      ],
+    ),
   ],
-  controllers: [
-    PhotoConnectionGatewayController
-  ],
+  controllers: [PhotoConnectionGatewayController],
   providers: [],
-  exports: [MulterModule, ClientsModule, ServeStaticModule],
+  exports: [ ClientsModule, ServeStaticModule],
 })
-export class PhotoConnectionGatewayModule { }
+export class PhotoConnectionGatewayModule {}
