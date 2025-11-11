@@ -73,4 +73,12 @@ export class CreateReadingRequest {
     required: true
   })
   averageConsumption: number
+
+  @ApiProperty({
+    example: '2025-06',
+    description: 'Previous month reading in YYYY-MM format',
+    required: true,
+    type: String
+  })
+  previousMonthReading: string;
 }
