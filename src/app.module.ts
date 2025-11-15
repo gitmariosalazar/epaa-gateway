@@ -14,6 +14,7 @@ import { PropertyGatewayModule } from './services/properties/modules/property/in
 import { ObservationConnectionGatewayModule } from './services/connections/modules/observations/infrastructure/modules/observation-connection.gateway.module';
 import { PhotoConnectionGatewayModule } from './services/connections/modules/images-connections/infrastructure/modules/photo-connection.gateway.module';
 import { WorkOrderTypeGatewayModule } from './services/work-orders/modules/work-order-type/infrastructure/modules/work-order-type.gateway.module';
+import { WorkOrderGatewayModule } from './services/work-orders/modules/work-order/infrastructure/modules/work-order.gateway.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { WorkOrderTypeGatewayModule } from './services/work-orders/modules/work-
     ObservationConnectionGatewayModule,
     PhotoConnectionGatewayModule,
     WorkOrderTypeGatewayModule,
+    WorkOrderGatewayModule,
   ],
   controllers: [],
   providers: [],
