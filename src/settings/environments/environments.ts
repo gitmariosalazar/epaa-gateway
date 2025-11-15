@@ -61,6 +61,9 @@ interface EnvironmentVariables {
   WORK_ORDER_KAFKA_CLIENT_ID: string;
   WORK_ORDER_KAFKA_GROUP_ID: string;
   WORK_ORDER_KAFKA_CLIENT: string;
+  WORK_HISTORY_KAFKA_CLIENT_ID: string;
+  WORK_HISTORY_KAFKA_GROUP_ID: string;
+  WORK_HISTORY_KAFKA_CLIENT: string;
 }
 
 const envVarsSchema: Joi.ObjectSchema<EnvironmentVariables> = Joi.object({
@@ -125,6 +128,9 @@ const envVarsSchema: Joi.ObjectSchema<EnvironmentVariables> = Joi.object({
   WORK_ORDER_KAFKA_CLIENT_ID: Joi.string().required(),
   WORK_ORDER_KAFKA_GROUP_ID: Joi.string().required(),
   WORK_ORDER_KAFKA_CLIENT: Joi.string().required(),
+  WORK_HISTORY_KAFKA_CLIENT_ID: Joi.string().required(),
+  WORK_HISTORY_KAFKA_GROUP_ID: Joi.string().required(),
+  WORK_HISTORY_KAFKA_CLIENT: Joi.string().required(),
 }).unknown();
 
 const { error, value: envVars } = envVarsSchema.validate(process.env);
@@ -195,4 +201,7 @@ export const environments = {
   WORK_ORDER_KAFKA_CLIENT_ID: envVars.WORK_ORDER_KAFKA_CLIENT_ID,
   WORK_ORDER_KAFKA_GROUP_ID: envVars.WORK_ORDER_KAFKA_GROUP_ID,
   WORK_ORDER_KAFKA_CLIENT: envVars.WORK_ORDER_KAFKA_CLIENT,
+  WORK_HISTORY_KAFKA_CLIENT_ID: envVars.WORK_HISTORY_KAFKA_CLIENT_ID,
+  WORK_HISTORY_KAFKA_GROUP_ID: envVars.WORK_HISTORY_KAFKA_GROUP_ID,
+  WORK_HISTORY_KAFKA_CLIENT: envVars.WORK_HISTORY_KAFKA_CLIENT,
 };  

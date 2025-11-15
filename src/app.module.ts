@@ -15,6 +15,7 @@ import { ObservationConnectionGatewayModule } from './services/connections/modul
 import { PhotoConnectionGatewayModule } from './services/connections/modules/images-connections/infrastructure/modules/photo-connection.gateway.module';
 import { WorkOrderTypeGatewayModule } from './services/work-orders/modules/work-order-type/infrastructure/modules/work-order-type.gateway.module';
 import { WorkOrderGatewayModule } from './services/work-orders/modules/work-order/infrastructure/modules/work-order.gateway.module';
+import { WorkOrderHistoryGatewayModule } from './services/work-orders/modules/work-order-history/infrastructure/modules/work-order-history.gateway.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { WorkOrderGatewayModule } from './services/work-orders/modules/work-orde
     PhotoConnectionGatewayModule,
     WorkOrderTypeGatewayModule,
     WorkOrderGatewayModule,
+    WorkOrderHistoryGatewayModule,
   ],
   controllers: [],
   providers: [],
