@@ -18,6 +18,8 @@ import { environments } from '../../../../../../settings/environments/environmen
 import { ClientKafka, RpcException } from '@nestjs/microservices';
 import { ApiResponse } from '../../../../../../shared/errors/responses/ApiResponse';
 import { sendKafkaRequest } from '../../../../../../shared/utils/kafka/send.kafka.request';
+import { CreateWorkOrderObservationRequest } from '../../domain/schemas/dto/request/create.work-order-observation.request';
+import { UpdateWorkOrderObservationRequest } from '../../domain/schemas/dto/request/update.work-order-observation.request';
 
 @Controller('work-order-observations')
 @ApiTags('Work Order Observations')
@@ -59,7 +61,7 @@ export class WorkOrderObservationGatewayController implements OnModuleInit {
     description: 'Creates a new work order observation record in the system.',
   })
   async createWorkOrderObservation(
-    @Body() workOrderObservation: any,
+    @Body() workOrderObservation: CreateWorkOrderObservationRequest,
     @Req() request: Request,
   ) {
     try {
@@ -86,7 +88,7 @@ export class WorkOrderObservationGatewayController implements OnModuleInit {
       'Updates an existing work order observation record in the system.',
   })
   async updateWorkOrderObservation(
-    @Body() data: { workOrderObservationId: number; workOrderObservation: any },
+    @Body() data: { workOrderObservationId: number; workOrderObservation: UpdateWorkOrderObservationRequest },
     @Req() request: Request,
   ) {
     try {

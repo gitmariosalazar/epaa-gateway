@@ -1,16 +1,32 @@
 import { ApiProperty } from "@nestjs/swagger";
 
 export class UpdateWorkOrderObservationRequest {
-  @ApiProperty({ example: 1, description: 'Identifier of the work order', type: Number, required: false })
-  workOrderId?: number;
-  @ApiProperty({ example: 1, description: 'Identifier of the observation', type: Number, required: false })
-  observationId?: number;
+  @ApiProperty({
+    description: 'ID of the work order',
+    type: Number,
+    example: 1,
+  })
+  workOrderId: number;
+  @ApiProperty({
+    description: 'Title of the observation',
+    type: String,
+    example: 'Initial Inspection',
+  })
+  observationTitle: string;
+  @ApiProperty({
+    description: 'Details of the observation',
+    type: String,
+    example: 'The initial inspection revealed no issues.',
+  })
+  observationDetails: string;
 
   constructor(
-    workOrderId?: number,
-    observationId?: number,
+    workOrderId: number,
+    observationTitle: string,
+    observationDetails: string,
   ) {
     this.workOrderId = workOrderId;
-    this.observationId = observationId;
+    this.observationTitle = observationTitle;
+    this.observationDetails = observationDetails;
   }
 }

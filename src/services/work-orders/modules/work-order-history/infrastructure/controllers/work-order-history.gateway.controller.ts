@@ -80,18 +80,22 @@ export class WorkOrderHistoryGatewayController implements OnModuleInit {
     @Body() workOrderHistory: UpdateWorkOrderHistoryRequest,
     @Req() request: Request,
   ): Promise<ApiResponse> {
-    const response = await sendKafkaRequest(
-      this.workHistoryKafkaClient.send(
-        'work-orders-histories.update-work-order-history',
-        { workOrderHistoryId, workOrderHistory },
-      ),
-    );
+    try {
+      const response = await sendKafkaRequest(
+        this.workHistoryKafkaClient.send(
+          'work-orders-histories.update-work-order-history',
+          { workOrderHistoryId, workOrderHistory },
+        ),
+      );
 
-    return new ApiResponse(
-      `Work order history updated successfully.`,
-      response,
-      request.url,
-    );
+      return new ApiResponse(
+        `Work order history updated successfully.`,
+        response,
+        request.url,
+      );
+    } catch (error) {
+      throw new RpcException(error);
+    }
   }
 
   @Get('get-work-order-history-by-id/:workOrderHistoryId')
@@ -100,18 +104,22 @@ export class WorkOrderHistoryGatewayController implements OnModuleInit {
     @Param('workOrderHistoryId', ParseIntPipe) workOrderHistoryId: number,
     @Req() request: Request,
   ): Promise<ApiResponse> {
-    const response = await sendKafkaRequest(
-      this.workHistoryKafkaClient.send(
-        'work-orders-histories.get-work-order-history-by-id',
-        workOrderHistoryId,
-      ),
-    );
+    try {
+      const response = await sendKafkaRequest(
+        this.workHistoryKafkaClient.send(
+          'work-orders-histories.get-work-order-history-by-id',
+          workOrderHistoryId,
+        ),
+      );
 
-    return new ApiResponse(
-      `Work order history retrieved successfully.`,
-      response,
-      request.url,
-    );
+      return new ApiResponse(
+        `Work order history retrieved successfully.`,
+        response,
+        request.url,
+      );
+    } catch (error) {
+      throw new RpcException(error);
+    }
   }
 
   @Get('get-work-order-histories-by-work-order-id/:workOrderId')
@@ -120,18 +128,22 @@ export class WorkOrderHistoryGatewayController implements OnModuleInit {
     @Param('workOrderId', ParseIntPipe) workOrderId: number,
     @Req() request: Request,
   ): Promise<ApiResponse> {
-    const response = await sendKafkaRequest(
-      this.workHistoryKafkaClient.send(
-        'work-orders-histories.get-work-order-histories-by-work-order-id',
-        workOrderId,
-      ),
-    );
+    try {
+      const response = await sendKafkaRequest(
+        this.workHistoryKafkaClient.send(
+          'work-orders-histories.get-work-order-histories-by-work-order-id',
+          workOrderId,
+        ),
+      );
 
-    return new ApiResponse(
-      `Work order histories retrieved successfully.`,
-      response,
-      request.url,
-    );
+      return new ApiResponse(
+        `Work order histories retrieved successfully.`,
+        response,
+        request.url,
+      );
+    } catch (error) {
+      throw new RpcException(error);
+    }
   }
 
   @Get('get-all-work-order-histories')
@@ -139,17 +151,21 @@ export class WorkOrderHistoryGatewayController implements OnModuleInit {
   async getAllWorkOrderHistories(
     @Req() request: Request,
   ): Promise<ApiResponse> {
-    const response = await sendKafkaRequest(
-      this.workHistoryKafkaClient.send(
-        'work-orders-histories.get-all-work-order-histories',
-        {},
-      ),
-    );
+    try {
+      const response = await sendKafkaRequest(
+        this.workHistoryKafkaClient.send(
+          'work-orders-histories.get-all-work-order-histories',
+          {},
+        ),
+      );
 
-    return new ApiResponse(
-      `All work order histories retrieved successfully.`,
-      response,
-      request.url,
-    );
+      return new ApiResponse(
+        `All work order histories retrieved successfully.`,
+        response,
+        request.url,
+      );
+    } catch (error) {
+      throw new RpcException(error);
+    }
   }
 }
