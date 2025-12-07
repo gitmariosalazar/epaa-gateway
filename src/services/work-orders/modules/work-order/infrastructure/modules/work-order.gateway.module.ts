@@ -1,33 +1,10 @@
-import { Module } from "@nestjs/common";
-import { ClientsModule, Transport } from "@nestjs/microservices";
-import { environments } from "../../../../../../settings/environments/environments";
-import { WorkOrderGatewayController } from "../controller/work-order.gateway.controller";
+import { Module } from '@nestjs/common';
+import { WorkOrderGatewayController } from '../controller/work-order.gateway.controller';
+import { KafkaWorkOrdersModule } from '../../../../kafka/kafka-work_orders.module';
 @Module({
-  imports: [
-    ClientsModule.register([
-      {
-        name: environments.WORK_ORDER_KAFKA_CLIENT,
-        transport: Transport.KAFKA,
-        options: {
-          client: {
-            brokers: [environments.KAFKA_BROKER_URL],
-            clientId: environments.WORK_ORDER_KAFKA_CLIENT_ID
-          },
-          consumer: {
-            groupId: environments.WORK_ORDER_KAFKA_GROUP_ID,
-            sessionTimeout: 30000,
-            heartbeatInterval: 10000,
-            rebalanceTimeout: 60000,
-            subscribe: {
-              fromBeginning: true
-            }
-          }
-        }
-      }
-    ]),
-  ],
+  imports: [KafkaWorkOrdersModule],
   controllers: [WorkOrderGatewayController],
   providers: [],
-  exports: [ClientsModule],
+  exports: [],
 })
-export class WorkOrderGatewayModule { }
+export class WorkOrderGatewayModule {}

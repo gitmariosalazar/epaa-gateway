@@ -10,7 +10,6 @@ import {
   ParseIntPipe,
   Post,
   Put,
-  Query,
   Req,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
@@ -26,9 +25,9 @@ export class WorkOrderGatewayController implements OnModuleInit {
   private readonly logger = new Logger(WorkOrderGatewayController.name);
 
   constructor(
-    @Inject(environments.WORK_ORDER_KAFKA_CLIENT)
+    @Inject(environments.GATEWAY_WORK_ORDER_KAFKA_CLIENT)
     private readonly workOrderKafkaClient: ClientKafka,
-  ) { }
+  ) {}
 
   async onModuleInit() {
     this.workOrderKafkaClient.subscribeToResponseOf(
@@ -84,10 +83,10 @@ export class WorkOrderGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const response = await sendKafkaRequest(
-        this.workOrderKafkaClient.send(
-          'work-orders.update-work-order',
-          { workOrderId, workOrder },
-        ),
+        this.workOrderKafkaClient.send('work-orders.update-work-order', {
+          workOrderId,
+          workOrder,
+        }),
       );
       return new ApiResponse(
         `Work order updated successfully`,

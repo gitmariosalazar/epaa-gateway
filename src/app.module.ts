@@ -17,6 +17,7 @@ import { WorkOrderTypeGatewayModule } from './services/work-orders/modules/work-
 import { WorkOrderGatewayModule } from './services/work-orders/modules/work-order/infrastructure/modules/work-order.gateway.module';
 import { WorkOrderHistoryGatewayModule } from './services/work-orders/modules/work-order-history/infrastructure/modules/work-order-history.gateway.module';
 import { WorkOrderObservationGatewayModule } from './services/work-orders/modules/work-order-observation/infrastructure/modules/work-order-observation.gateway.module';
+import { InventoryGatewayModule } from './services/sigame-legacy/modules/inventory/modules/inventory.gateway.module';
 
 @Module({
   imports: [
@@ -36,10 +37,11 @@ import { WorkOrderObservationGatewayModule } from './services/work-orders/module
     PhotoConnectionGatewayModule,
     WorkOrderTypeGatewayModule,
     WorkOrderGatewayModule,
-    WorkOrderHistoryGatewayModule,
     WorkOrderObservationGatewayModule,
+    WorkOrderHistoryGatewayModule,
+    InventoryGatewayModule,
   ],
   controllers: [],
   providers: [],
 })
-export class AppModule { }
+export class AppModule {}

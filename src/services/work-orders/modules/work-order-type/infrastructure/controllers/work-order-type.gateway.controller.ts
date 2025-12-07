@@ -26,9 +26,9 @@ import { UpdateWorkOrderTypeRequest } from '../../domain/schemas/dto/request/upd
 export class WorkOrderTypeGatewayController implements OnModuleInit {
   private readonly logger = new Logger(WorkOrderTypeGatewayController.name);
   constructor(
-    @Inject(environments.WORK_ORDER_TYPE_KAFKA_CLIENT)
+    @Inject(environments.GATEWAY_WORK_ORDER_TYPE_KAFKA_CLIENT)
     private readonly workOrderTypeKafkaClient: ClientKafka,
-  ) { }
+  ) {}
 
   onModuleInit() {
     this.logger.log('WorkOrderTypeGatewayController initialized');

@@ -12,12 +12,12 @@ async function bootstrap() {
   const logger: Logger = new Logger('Main');
   const app = await NestFactory.create(AppModule);
 
-  app.use(cookieParser()); // ✅ Habilita cookie-parser
+  app.use(cookieParser());
   app.use(morgan('dev'));
 
   app.enableCors({
-    origin: true, // ✅ tu frontend
-    credentials: true, // ✅ necesario para cookies
+    origin: true,
+    credentials: true,
   });
 
   const config = new DocumentBuilder()
@@ -46,10 +46,13 @@ async function bootstrap() {
 
   app.useGlobalFilters(new RpcCustomExceptionFilter());
 
-  app.getHttpAdapter().getInstance().get('/favicon.ico', (_, res) => res.status(204).end());
+  app
+    .getHttpAdapter()
+    .getInstance()
+    .get('/favicon.ico', (_, res) => res.status(204).end());
   await app.startAllMicroservices();
 
-  logger.log(`KAFKA BROKER URL: ${environments.KAFKA_BROKER_URL}`)
+  logger.log(`KAFKA BROKER URL: ${environments.KAFKA_BROKER_URL}`);
 
   if (process.env.NODE_ENV === 'production') {
     app.listen(environments.PORT, '0.0.0.0', () => {

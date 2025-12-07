@@ -27,9 +27,9 @@ export class WorkOrderHistoryGatewayController implements OnModuleInit {
   private readonly logger = new Logger(WorkOrderHistoryGatewayController.name);
 
   constructor(
-    @Inject(environments.WORK_HISTORY_KAFKA_CLIENT)
+    @Inject(environments.GATEWAY_WORK_ORDER_HISTORY_KAFKA_CLIENT)
     private readonly workHistoryKafkaClient: ClientKafka,
-  ) { }
+  ) {}
 
   async onModuleInit() {
     this.workHistoryKafkaClient.subscribeToResponseOf(
@@ -54,7 +54,10 @@ export class WorkOrderHistoryGatewayController implements OnModuleInit {
   }
 
   @Post('create-work-order-history')
-  @ApiOperation({ summary: 'Create a new work order history', description: 'Creates a new work order history record in the system.' })
+  @ApiOperation({
+    summary: 'Create a new work order history',
+    description: 'Creates a new work order history record in the system.',
+  })
   async createWorkOrderHistory(
     @Body() workOrderHistory: CreateWorkHistoryRequest,
     @Req() request: Request,
@@ -74,7 +77,11 @@ export class WorkOrderHistoryGatewayController implements OnModuleInit {
   }
 
   @Put('update-work-order-history/:workOrderHistoryId')
-  @ApiOperation({ summary: 'Update an existing work order history', description: 'Updates an existing work order history record identified by its ID.' })
+  @ApiOperation({
+    summary: 'Update an existing work order history',
+    description:
+      'Updates an existing work order history record identified by its ID.',
+  })
   async updateWorkOrderHistory(
     @Param('workOrderHistoryId', ParseIntPipe) workOrderHistoryId: number,
     @Body() workOrderHistory: UpdateWorkOrderHistoryRequest,
@@ -99,7 +106,10 @@ export class WorkOrderHistoryGatewayController implements OnModuleInit {
   }
 
   @Get('get-work-order-history-by-id/:workOrderHistoryId')
-  @ApiOperation({ summary: 'Get a work order history by its ID', description: 'Retrieves a work order history record by its unique ID.' })
+  @ApiOperation({
+    summary: 'Get a work order history by its ID',
+    description: 'Retrieves a work order history record by its unique ID.',
+  })
   async getWorkOrderHistoryById(
     @Param('workOrderHistoryId', ParseIntPipe) workOrderHistoryId: number,
     @Req() request: Request,
@@ -123,7 +133,11 @@ export class WorkOrderHistoryGatewayController implements OnModuleInit {
   }
 
   @Get('get-work-order-histories-by-work-order-id/:workOrderId')
-  @ApiOperation({ summary: 'Get work order histories by work order ID', description: 'Retrieves all work order history records associated with a specific work order ID.' })
+  @ApiOperation({
+    summary: 'Get work order histories by work order ID',
+    description:
+      'Retrieves all work order history records associated with a specific work order ID.',
+  })
   async getWorkOrderHistoriesByWorkOrderId(
     @Param('workOrderId', ParseIntPipe) workOrderId: number,
     @Req() request: Request,
@@ -147,7 +161,10 @@ export class WorkOrderHistoryGatewayController implements OnModuleInit {
   }
 
   @Get('get-all-work-order-histories')
-  @ApiOperation({ summary: 'Get all work order histories', description: 'Retrieves all work order history records in the system.' })
+  @ApiOperation({
+    summary: 'Get all work order histories',
+    description: 'Retrieves all work order history records in the system.',
+  })
   async getAllWorkOrderHistories(
     @Req() request: Request,
   ): Promise<ApiResponse> {

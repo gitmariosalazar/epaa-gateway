@@ -29,9 +29,9 @@ export class WorkOrderObservationGatewayController implements OnModuleInit {
   );
 
   constructor(
-    @Inject(environments.WORK_ORDER_OBSERVATION_KAFKA_CLIENT)
+    @Inject(environments.GATEWAY_WORK_ORDER_OBSERVATION_KAFKA_CLIENT)
     private readonly workOrderObservationKafkaClient: ClientKafka,
-  ) { }
+  ) {}
 
   async onModuleInit() {
     this.workOrderObservationKafkaClient.subscribeToResponseOf(
@@ -88,7 +88,11 @@ export class WorkOrderObservationGatewayController implements OnModuleInit {
       'Updates an existing work order observation record in the system.',
   })
   async updateWorkOrderObservation(
-    @Body() data: { workOrderObservationId: number; workOrderObservation: UpdateWorkOrderObservationRequest },
+    @Body()
+    data: {
+      workOrderObservationId: number;
+      workOrderObservation: UpdateWorkOrderObservationRequest;
+    },
     @Req() request: Request,
   ) {
     try {
