@@ -18,6 +18,7 @@ import { WorkOrderGatewayModule } from './services/work-orders/modules/work-orde
 import { WorkOrderHistoryGatewayModule } from './services/work-orders/modules/work-order-history/infrastructure/modules/work-order-history.gateway.module';
 import { WorkOrderObservationGatewayModule } from './services/work-orders/modules/work-order-observation/infrastructure/modules/work-order-observation.gateway.module';
 import { InventoryGatewayModule } from './services/sigame-legacy/modules/inventory/modules/inventory.gateway.module';
+import { WorkerGatewayModule } from './services/workers/modules/workers/infrastructure/modules/worker.gateway.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { InventoryGatewayModule } from './services/sigame-legacy/modules/invento
     WorkOrderObservationGatewayModule,
     WorkOrderHistoryGatewayModule,
     InventoryGatewayModule,
+    WorkerGatewayModule,
   ],
   controllers: [],
   providers: [],

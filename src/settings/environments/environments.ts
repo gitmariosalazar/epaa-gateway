@@ -67,6 +67,9 @@ interface EnvironmentVariables {
   GATEWAY_WORK_ORDER_TYPE_KAFKA_CLIENT: string;
   GATEWAY_WORK_ORDER_TYPE_KAFKA_CLIENT_ID: string;
   GATEWAY_WORK_ORDER_TYPE_KAFKA_GROUP_ID: string;
+  GATEWAY_WORKERS_KAFKA_GROUP_ID: string;
+  GATEWAY_WORKERS_KAFKA_CLIENT: string;
+  GATEWAY_WORKERS_KAFKA_CLIENT_ID: string;
   INVENTORY_KAFKA_CLIENT_ID: string;
   INVENTORY_KAFKA_GROUP_ID: string;
   INVENTORY_KAFKA_CLIENT: string;
@@ -132,15 +135,23 @@ const envVarsSchema: Joi.ObjectSchema<EnvironmentVariables> = Joi.object({
   GATEWAY_WORK_ORDER_KAFKA_CLIENT: Joi.string().required(),
   GATEWAY_WORK_ORDER_KAFKA_CLIENT_ID: Joi.string().required(),
   GATEWAY_WORK_ORDER_KAFKA_GROUP_ID: Joi.string().required(),
+  // history kafka client
   GATEWAY_WORK_ORDER_HISTORY_KAFKA_CLIENT: Joi.string().required(),
   GATEWAY_WORK_ORDER_HISTORY_KAFKA_CLIENT_ID: Joi.string().required(),
   GATEWAY_WORK_ORDER_HISTORY_KAFKA_GROUP_ID: Joi.string().required(),
+  // observation kafka client
   GATEWAY_WORK_ORDER_OBSERVATION_KAFKA_CLIENT: Joi.string().required(),
   GATEWAY_WORK_ORDER_OBSERVATION_KAFKA_CLIENT_ID: Joi.string().required(),
   GATEWAY_WORK_ORDER_OBSERVATION_KAFKA_GROUP_ID: Joi.string().required(),
+  // type kafka client
   GATEWAY_WORK_ORDER_TYPE_KAFKA_CLIENT: Joi.string().required(),
   GATEWAY_WORK_ORDER_TYPE_KAFKA_CLIENT_ID: Joi.string().required(),
   GATEWAY_WORK_ORDER_TYPE_KAFKA_GROUP_ID: Joi.string().required(),
+  // workers kafka client
+  GATEWAY_WORKERS_KAFKA_GROUP_ID: Joi.string().required(),
+  GATEWAY_WORKERS_KAFKA_CLIENT: Joi.string().required(),
+  GATEWAY_WORKERS_KAFKA_CLIENT_ID: Joi.string().required(),
+  // inventory kafka client
   INVENTORY_KAFKA_CLIENT_ID: Joi.string().required(),
   INVENTORY_KAFKA_GROUP_ID: Joi.string().required(),
   INVENTORY_KAFKA_CLIENT: Joi.string().required(),
@@ -235,6 +246,9 @@ export const environments = {
     envVars.GATEWAY_WORK_ORDER_TYPE_KAFKA_CLIENT_ID,
   GATEWAY_WORK_ORDER_TYPE_KAFKA_GROUP_ID:
     envVars.GATEWAY_WORK_ORDER_TYPE_KAFKA_GROUP_ID,
+  GATEWAY_WORKERS_KAFKA_GROUP_ID: envVars.GATEWAY_WORKERS_KAFKA_GROUP_ID,
+  GATEWAY_WORKERS_KAFKA_CLIENT: envVars.GATEWAY_WORKERS_KAFKA_CLIENT,
+  GATEWAY_WORKERS_KAFKA_CLIENT_ID: envVars.GATEWAY_WORKERS_KAFKA_CLIENT_ID,
   INVENTORY_KAFKA_CLIENT_ID: envVars.INVENTORY_KAFKA_CLIENT_ID,
   INVENTORY_KAFKA_GROUP_ID: envVars.INVENTORY_KAFKA_GROUP_ID,
   INVENTORY_KAFKA_CLIENT: envVars.INVENTORY_KAFKA_CLIENT,
