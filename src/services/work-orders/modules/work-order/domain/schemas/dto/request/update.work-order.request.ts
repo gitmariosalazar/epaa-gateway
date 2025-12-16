@@ -1,130 +1,171 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty } from '@nestjs/swagger';
 
 export class UpdateWorkOrderRequest {
   @ApiProperty({
-    description: 'A brief description of the work order',
-    example: 'Fix leaking pipe in apartment 3B',
+    example: 'WO-12345',
+    description: 'Unique code for the work order',
+    type: String,
+    required: true,
   })
-  description: string;
+  orderCode: string;
   @ApiProperty({
-    required: false,
-    description: 'The date when the work order was created',
-    example: '2023-10-01T10:00:00Z',
-  })
-  creationDate?: Date;
-  @ApiProperty({
-    required: false,
-    description: 'The date when the work order was assigned',
-    example: '2023-10-02T10:00:00Z',
-  })
-  asignationDate?: Date;
-  @ApiProperty({
-    required: false,
-    description: 'The date when the work order was started',
-    example: '2023-10-03T10:00:00Z',
-  })
-  startDate?: Date;
-  @ApiProperty({
-    required: false,
-    description: 'The date when the work order was completed',
-    example: '2023-10-04T10:00:00Z',
-  })
-  completionDate?: Date;
-  @ApiProperty({
-    required: false,
-    description: 'The date when the work order was canceled',
-    example: '2023-10-05T10:00:00Z',
-  })
-  cancelationDate?: Date;
-  @ApiProperty({
-    description: 'The type identifier of the work order',
     example: 2,
+    description: 'ID of the work order type',
+    type: Number,
+    required: true,
   })
-  workOrderTypeId: number;
+  workTypeId: number;
   @ApiProperty({
-    description: 'The priority identifier of the work order',
-    example: 1,
+    example: 3,
+    description: 'ID of the priority level',
+    type: Number,
+    required: true,
   })
   priorityId: number;
   @ApiProperty({
-    description: 'The status identifier of the work order',
-    example: 3,
-  })
-  workOrderStatusId: number;
-  @ApiProperty({
-    description: 'The connection identifier related to the work order',
-    example: 'conn-12345',
-  })
-  connectionId: string;
-  @ApiProperty({
+    example: 'client-789',
+    description: 'ID of the client associated with the work order',
+    type: String,
     required: false,
-    description: 'The client identifier associated with the work order',
-    example: 'client-67890',
   })
   clientId?: string;
   @ApiProperty({
-    description: 'The user identifier who created the work order',
-    example: 'user-abcde',
-  })
-  createdUserId: string;
-  @ApiProperty({
+    example: '2024-01-15T10:00:00Z',
+    description: 'Date when the work order was created',
+    type: Date,
     required: false,
-    description: 'The user identifier who was assigned the work order',
-    example: 'user-fghij',
   })
-  assignedUserId?: string;
+  creationDate?: Date;
   @ApiProperty({
+    example: '2024-01-16T10:00:00Z',
+    description: 'Date when the work order was assigned',
+    type: Date,
     required: false,
-    description: 'The estimated cost of the work order',
-    example: 150.75,
   })
-  estimateCost?: number;
+  assignationDate?: Date;
   @ApiProperty({
+    example: '2024-01-20T10:00:00Z',
+    description: 'Date when the work order was completed',
+    type: Date,
     required: false,
-    description: 'The real cost of the work order',
-    example: 145.50,
   })
-  realCost?: number;
+  completionDate?: Date;
   @ApiProperty({
+    example: 1,
+    description: 'Status of the work order',
+    type: Number,
     required: false,
-    description: 'Additional observations related to the work order',
-    example: 'The pipe was replaced successfully',
   })
-  observations?: string;
+  status?: number;
+  @ApiProperty({
+    example: 'Fix the leaking pipe in the basement.',
+    description: 'Detailed description of the work order',
+    type: String,
+    required: true,
+  })
+  description: string;
+  @ApiProperty({
+    example: '123 Main St, Springfield',
+    description: 'Location where the work order is to be performed',
+    type: String,
+    required: true,
+  })
+  location: string;
+  @ApiProperty({
+    example: 1,
+    description: 'ID of the user who created the work order',
+    type: Number,
+    required: true,
+  })
+  createdUserId: number;
+  @ApiProperty({
+    example: 1,
+    description: 'ID of the user assigned to the work order',
+    type: Number,
+    required: false,
+  })
+  assignedUserId?: number;
+  @ApiProperty({
+    example: 1,
+    description: 'ID of the user who completed the work order',
+    type: Number,
+    required: false,
+  })
+  completedUserId?: number;
+  @ApiProperty({
+    example: '40.7128° N, 74.0060° W',
+    description: 'Geographical coordinates for the work order location',
+    type: String,
+    required: false,
+  })
+  coordinates?: string;
+  @ApiProperty({
+    example: '{"key":"value"}',
+    description: 'Additional metadata for the work order in JSON format',
+    type: String,
+    required: false,
+  })
+  metadata?: string;
+  @ApiProperty({
+    example: 'ABC123XYZ',
+    description: 'Cadastral key associated with the work order location',
+    type: String,
+    required: false,
+  })
+  cadastralKey?: string;
   constructor(
-    description: string,
-    workOrderTypeId: number,
+    orderCode: string,
+    workTypeId: number,
     priorityId: number,
-    workOrderStatusId: number,
-    connectionId: string,
-    createdUserId: string,
-    creationDate?: Date,
-    asignationDate?: Date,
-    startDate?: Date,
-    completionDate?: Date,
-    cancelationDate?: Date,
+    description: string,
+    location: string,
+    createdUserId: number,
     clientId?: string,
-    assignedUserId?: string,
-    estimateCost?: number,
-    realCost?: number,
-    observations?: string,
+    creationDate?: Date,
+    assignationDate?: Date,
+    completionDate?: Date,
+    status?: number,
+    assignedUserId?: number,
+    completedUserId?: number,
+    coordinates?: string,
+    metadata?: string,
+    cadastralKey?: string,
   ) {
-    this.description = description;
-    this.workOrderTypeId = workOrderTypeId;
+    this.orderCode = orderCode;
+    this.workTypeId = workTypeId;
     this.priorityId = priorityId;
-    this.workOrderStatusId = workOrderStatusId;
-    this.connectionId = connectionId;
+    this.description = description;
+    this.location = location;
     this.createdUserId = createdUserId;
-    if (creationDate) this.creationDate = creationDate;
-    if (asignationDate) this.asignationDate = asignationDate;
-    if (startDate) this.startDate
-    this.startDate = startDate;;
-    if (completionDate) this.completionDate = completionDate;
-    if (cancelationDate) this.cancelationDate = cancelationDate;
-    if (clientId) this.clientId = clientId;
-    if (assignedUserId) this.assignedUserId = assignedUserId;
-    if (estimateCost) this.estimateCost = estimateCost;
-    if (realCost) this.realCost = realCost;
-    if (observations) this.observations = observations;
+    if (clientId !== undefined) {
+      this.clientId = clientId;
+    }
+    if (creationDate !== undefined) {
+      this.creationDate = creationDate;
+    }
+    if (assignationDate !== undefined) {
+      this.assignationDate = assignationDate;
+    }
+    if (completionDate !== undefined) {
+      this.completionDate = completionDate;
+    }
+    if (status !== undefined) {
+      this.status = status;
+    }
+    if (assignedUserId !== undefined) {
+      this.assignedUserId = assignedUserId;
+    }
+    if (completedUserId !== undefined) {
+      this.completedUserId = completedUserId;
+    }
+    if (coordinates !== undefined) {
+      this.coordinates = coordinates;
+    }
+    if (metadata !== undefined) {
+      this.metadata = metadata;
+    }
+    if (cadastralKey !== undefined) {
+      this.cadastralKey = cadastralKey;
+    }
   }
 }

@@ -47,6 +47,12 @@ export class WorkOrderHistoryGatewayController implements OnModuleInit {
     this.workHistoryKafkaClient.subscribeToResponseOf(
       'work-orders-histories.get-all-work-order-histories',
     );
+    this.workHistoryKafkaClient.subscribeToResponseOf(
+      'work-orders-histories.find-all-view-histories-work-orders',
+    );
+    this.workHistoryKafkaClient.subscribeToResponseOf(
+      'work-orders-histories.find-all-view-histories-work-orders-by-order-code',
+    );
     this.logger.log(
       'WorkOrderHistoryController initialized and subscribed to Kafka topics.',
     );
@@ -139,7 +145,7 @@ export class WorkOrderHistoryGatewayController implements OnModuleInit {
       'Retrieves all work order history records associated with a specific work order ID.',
   })
   async getWorkOrderHistoriesByWorkOrderId(
-    @Param('workOrderId', ParseIntPipe) workOrderId: number,
+    @Param('workOrderId') workOrderId: string,
     @Req() request: Request,
   ): Promise<ApiResponse> {
     try {
@@ -175,9 +181,69 @@ export class WorkOrderHistoryGatewayController implements OnModuleInit {
           {},
         ),
       );
-
       return new ApiResponse(
         `All work order histories retrieved successfully.`,
+        response,
+        request.url,
+      );
+    } catch (error) {
+      throw new RpcException(error);
+    }
+  }
+
+  @Get('find-all-view-histories-work-orders')
+  @ApiOperation({
+    summary: 'Find all view histories of work orders',
+    description:
+      'Retrieves a paginated list of view histories for work orders.',
+  })
+  async findAllViewHistoriesWorkOrders(
+    @Req() request: Request,
+    @Query('limit') limit?: number,
+    @Query('offset') offset?: number,
+  ): Promise<ApiResponse> {
+    try {
+      const pagination = { limit, offset };
+      const response = await sendKafkaRequest(
+        this.workHistoryKafkaClient.send(
+          'work-orders-histories.find-all-view-histories-work-orders',
+          pagination,
+        ),
+      );
+      console.log(response);
+      return new ApiResponse(
+        `View histories of work orders retrieved successfully.`,
+        response,
+        request.url,
+      );
+    } catch (error) {
+      throw new RpcException(error);
+    }
+  }
+
+  @Get('find-all-view-histories-work-orders-by-order-code/:orderCode')
+  @ApiOperation({
+    summary: 'Find all view histories of work orders by order code',
+    description:
+      'Retrieves a paginated list of view histories for work orders filtered by order code.',
+  })
+  async findAllViewHistoriesWorkOrdersByOrderCode(
+    @Param('orderCode') orderCode: string,
+    @Req() request: Request,
+    @Query('limit') limit?: number,
+    @Query('offset') offset?: number,
+  ): Promise<ApiResponse> {
+    try {
+      const pagination = { limit, offset };
+      const response = await sendKafkaRequest(
+        this.workHistoryKafkaClient.send(
+          'work-orders-histories.find-all-view-histories-work-orders-by-order-code',
+          { orderCode, pagination },
+        ),
+      );
+
+      return new ApiResponse(
+        `View histories of work orders by order code retrieved successfully.`,
         response,
         request.url,
       );

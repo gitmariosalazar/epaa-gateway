@@ -20,6 +20,7 @@ import { ApiResponse } from '../../../../../../shared/errors/responses/ApiRespon
 import { sendKafkaRequest } from '../../../../../../shared/utils/kafka/send.kafka.request';
 import { CreateWorkOrderObservationRequest } from '../../domain/schemas/dto/request/create.work-order-observation.request';
 import { UpdateWorkOrderObservationRequest } from '../../domain/schemas/dto/request/update.work-order-observation.request';
+import { UUID } from 'crypto';
 
 @Controller('work-order-observations')
 @ApiTags('Work Order Observations')
@@ -81,25 +82,23 @@ export class WorkOrderObservationGatewayController implements OnModuleInit {
     }
   }
 
-  @Put('update-work-order-observation')
+  @Put('update-work-order-observation/:workOrderObservationId')
   @ApiOperation({
     summary: 'Update an existing work order observation',
     description:
       'Updates an existing work order observation record in the system.',
   })
   async updateWorkOrderObservation(
-    @Body()
-    data: {
-      workOrderObservationId: number;
-      workOrderObservation: UpdateWorkOrderObservationRequest;
-    },
+    @Body() workOrderObservation: UpdateWorkOrderObservationRequest,
+    @Param('workOrderObservationId', ParseIntPipe)
+    workOrderObservationId: number,
     @Req() request: Request,
   ) {
     try {
       const response = await sendKafkaRequest(
         this.workOrderObservationKafkaClient.send(
           'work-orders-observations.update-work-order-observation',
-          data,
+          { workOrderObservationId, workOrderObservation },
         ),
       );
       return new ApiResponse(
@@ -146,7 +145,7 @@ export class WorkOrderObservationGatewayController implements OnModuleInit {
       'Retrieves all work order observation records associated with a specific work order ID.',
   })
   async getWorkOrderObservationsByWorkOrderId(
-    @Param('workOrderId', ParseIntPipe) workOrderId: number,
+    @Param('workOrderId') workOrderId: UUID,
     @Req() request: Request,
   ) {
     try {

@@ -1,32 +1,29 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty } from '@nestjs/swagger';
+import { UUID } from 'crypto';
 
 export class UpdateWorkOrderObservationRequest {
   @ApiProperty({
-    description: 'ID of the work order',
+    example: '550e8400-e29b-41d4-a716-446655440000',
+    description: 'The ID of the work order',
+    type: String,
+  })
+  workOrderId: UUID;
+  @ApiProperty({
+    example: 'Updated observation description.',
+    description: 'The description of the observation',
+    type: String,
+  })
+  description: string;
+  @ApiProperty({
+    example: 10,
+    description: 'The ID of the worker updating the observation',
     type: Number,
-    example: 1,
   })
-  workOrderId: number;
-  @ApiProperty({
-    description: 'Title of the observation',
-    type: String,
-    example: 'Initial Inspection',
-  })
-  observationTitle: string;
-  @ApiProperty({
-    description: 'Details of the observation',
-    type: String,
-    example: 'The initial inspection revealed no issues.',
-  })
-  observationDetails: string;
+  workerId: number;
 
-  constructor(
-    workOrderId: number,
-    observationTitle: string,
-    observationDetails: string,
-  ) {
+  constructor(workOrderId: UUID, description: string, workerId: number) {
     this.workOrderId = workOrderId;
-    this.observationTitle = observationTitle;
-    this.observationDetails = observationDetails;
+    this.description = description;
+    this.workerId = workerId;
   }
 }

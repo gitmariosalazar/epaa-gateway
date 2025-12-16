@@ -37,7 +37,7 @@ export class WorkOrderGatewayController implements OnModuleInit {
       'work-orders.update-work-order',
     );
     this.workOrderKafkaClient.subscribeToResponseOf(
-      'work-orders.get-work-order-by-id',
+      'work-orders.get-work-order-by-order-code',
     );
     this.workOrderKafkaClient.subscribeToResponseOf(
       'work-orders.get-work-orders-by-client-id',
@@ -74,17 +74,17 @@ export class WorkOrderGatewayController implements OnModuleInit {
     }
   }
 
-  @Put('update-work-order/:workOrderId')
+  @Put('update-work-order/:orderCode')
   @ApiOperation({ summary: 'Update an existing work order' })
   async updateWorkOrder(
-    @Param('workOrderId', ParseIntPipe) workOrderId: number,
+    @Param('orderCode') orderCode: string,
     @Body() workOrder: CreateWorkOrderRequest,
     @Req() request: Request,
   ): Promise<ApiResponse> {
     try {
       const response = await sendKafkaRequest(
         this.workOrderKafkaClient.send('work-orders.update-work-order', {
-          workOrderId,
+          orderCode,
           workOrder,
         }),
       );
@@ -98,17 +98,17 @@ export class WorkOrderGatewayController implements OnModuleInit {
     }
   }
 
-  @Get('get-work-order-by-id/:workOrderId')
+  @Get('get-work-order-by-order-code/:orderCode')
   @ApiOperation({ summary: 'Get a work order by its ID' })
   async getWorkOrderById(
-    @Param('workOrderId', ParseIntPipe) workOrderId: number,
+    @Param('orderCode') orderCode: string,
     @Req() request: Request,
   ): Promise<ApiResponse> {
     try {
       const response = await sendKafkaRequest(
         this.workOrderKafkaClient.send(
-          'work-orders.get-work-order-by-id',
-          workOrderId,
+          'work-orders.get-work-order-by-order-code',
+          orderCode,
         ),
       );
       return new ApiResponse(
@@ -151,6 +151,7 @@ export class WorkOrderGatewayController implements OnModuleInit {
       const response = await sendKafkaRequest(
         this.workOrderKafkaClient.send('work-orders.get-all-work-orders', {}),
       );
+      console.log(response);
       return new ApiResponse(
         `All work orders retrieved successfully`,
         response,

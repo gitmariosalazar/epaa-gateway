@@ -13,12 +13,15 @@ import { ConnectionGatewayModule } from './services/connections/modules/connecti
 import { PropertyGatewayModule } from './services/properties/modules/property/infrastructure/modules/property.gateway.module';
 import { ObservationConnectionGatewayModule } from './services/connections/modules/observations/infrastructure/modules/observation-connection.gateway.module';
 import { PhotoConnectionGatewayModule } from './services/connections/modules/images-connections/infrastructure/modules/photo-connection.gateway.module';
-import { WorkOrderTypeGatewayModule } from './services/work-orders/modules/work-order-type/infrastructure/modules/work-order-type.gateway.module';
+import { WorkTypeGatewayModule } from './services/work-orders/modules/work-order-type/infrastructure/modules/work-type.gateway.module';
 import { WorkOrderGatewayModule } from './services/work-orders/modules/work-order/infrastructure/modules/work-order.gateway.module';
 import { WorkOrderHistoryGatewayModule } from './services/work-orders/modules/work-order-history/infrastructure/modules/work-order-history.gateway.module';
 import { WorkOrderObservationGatewayModule } from './services/work-orders/modules/work-order-observation/infrastructure/modules/work-order-observation.gateway.module';
 import { InventoryGatewayModule } from './services/sigame-legacy/modules/inventory/modules/inventory.gateway.module';
 import { WorkerGatewayModule } from './services/workers/modules/workers/infrastructure/modules/worker.gateway.module';
+import { DetailWorkOrderMaterialGatewayModule } from './services/work-orders/modules/product-details/infrastructure/modules/detail-work-order-material.gateway.module';
+import { WorkOrderWorkerAssignmentGatewayModule } from './services/work-orders/modules/worker-assignment/infrastructure/modules/work-order-worker-assignment.gateway.module';
+import { PostgresqlWorkOrderAttachmentsGatewayModule } from './services/work-orders/modules/work-order-attachments/infrastructure/modules/postgresql.work-order-attachments.gateway.module';
 
 @Module({
   imports: [
@@ -36,12 +39,15 @@ import { WorkerGatewayModule } from './services/workers/modules/workers/infrastr
     PropertyGatewayModule,
     ObservationConnectionGatewayModule,
     PhotoConnectionGatewayModule,
-    WorkOrderTypeGatewayModule,
+    WorkTypeGatewayModule,
     WorkOrderGatewayModule,
     WorkOrderObservationGatewayModule,
     WorkOrderHistoryGatewayModule,
     InventoryGatewayModule,
     WorkerGatewayModule,
+    DetailWorkOrderMaterialGatewayModule,
+    WorkOrderWorkerAssignmentGatewayModule,
+    PostgresqlWorkOrderAttachmentsGatewayModule,
   ],
   controllers: [],
   providers: [],

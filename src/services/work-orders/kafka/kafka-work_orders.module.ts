@@ -48,15 +48,15 @@ import { environments } from '../../../settings/environments/environments';
       },
 
       {
-        name: environments.GATEWAY_WORK_ORDER_TYPE_KAFKA_CLIENT,
+        name: environments.GATEWAY_WORK_TYPE_KAFKA_CLIENT,
         transport: Transport.KAFKA,
         options: {
           client: {
             brokers: [environments.KAFKA_BROKER_URL],
-            clientId: environments.GATEWAY_WORK_ORDER_TYPE_KAFKA_CLIENT_ID,
+            clientId: environments.GATEWAY_WORK_TYPE_KAFKA_CLIENT_ID,
           },
           consumer: {
-            groupId: environments.GATEWAY_WORK_ORDER_TYPE_KAFKA_GROUP_ID,
+            groupId: environments.GATEWAY_WORK_TYPE_KAFKA_GROUP_ID,
             sessionTimeout: 30000,
             heartbeatInterval: 10000,
             rebalanceTimeout: 60000,
@@ -77,6 +77,68 @@ import { environments } from '../../../settings/environments/environments';
           },
           consumer: {
             groupId: environments.GATEWAY_WORK_ORDER_HISTORY_KAFKA_GROUP_ID,
+            sessionTimeout: 30000,
+            heartbeatInterval: 10000,
+            rebalanceTimeout: 60000,
+            subscribe: {
+              fromBeginning: true,
+            },
+          },
+        },
+      },
+      {
+        name: environments.GATEWAY_DETAIL_WORK_ORDER_MATERIAL_KAFKA_CLIENT,
+        transport: Transport.KAFKA,
+        options: {
+          client: {
+            brokers: [environments.KAFKA_BROKER_URL],
+            clientId:
+              environments.GATEWAY_DETAIL_WORK_ORDER_MATERIAL_KAFKA_CLIENT_ID,
+          },
+          consumer: {
+            groupId:
+              environments.GATEWAY_DETAIL_WORK_ORDER_MATERIAL_KAFKA_GROUP_ID,
+            sessionTimeout: 30000,
+            heartbeatInterval: 10000,
+            rebalanceTimeout: 60000,
+            subscribe: {
+              fromBeginning: true,
+            },
+          },
+        },
+      },
+      {
+        name: environments.GATEWAY_WORK_ORDER_WORKER_ASSIGNMENT_KAFKA_CLIENT,
+        transport: Transport.KAFKA,
+        options: {
+          client: {
+            brokers: [environments.KAFKA_BROKER_URL],
+            clientId:
+              environments.GATEWAY_WORK_ORDER_WORKER_ASSIGNMENT_KAFKA_CLIENT_ID,
+          },
+          consumer: {
+            groupId:
+              environments.GATEWAY_WORK_ORDER_WORKER_ASSIGNMENT_KAFKA_GROUP_ID,
+            sessionTimeout: 30000,
+            heartbeatInterval: 10000,
+            rebalanceTimeout: 60000,
+            subscribe: {
+              fromBeginning: true,
+            },
+          },
+        },
+      },
+      {
+        name: environments.GATEWAY_WORK_ORDER_ATTACHMENTS_KAFKA_CLIENT,
+        transport: Transport.KAFKA,
+        options: {
+          client: {
+            brokers: [environments.KAFKA_BROKER_URL],
+            clientId:
+              environments.GATEWAY_WORK_ORDER_ATTACHMENTS_KAFKA_CLIENT_ID,
+          },
+          consumer: {
+            groupId: environments.GATEWAY_WORK_ORDER_ATTACHMENTS_KAFKA_GROUP_ID,
             sessionTimeout: 30000,
             heartbeatInterval: 10000,
             rebalanceTimeout: 60000,
