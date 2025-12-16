@@ -54,7 +54,7 @@ export class WorkOrderAttachmentsGatewayController implements OnModuleInit {
 
   @Post('add-work-order-attachment')
   @UseInterceptors(
-    FilesInterceptor('Pictures', 10, {
+    FilesInterceptor('images', 10, {
       // Puedes mantener 'Pictures' o cambiar a 'files' si prefieres
       storage: diskStorage({
         destination: environments.FILE_STORAGE_PATH,
