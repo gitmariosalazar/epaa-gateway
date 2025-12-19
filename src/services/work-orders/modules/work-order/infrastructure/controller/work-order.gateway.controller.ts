@@ -10,6 +10,7 @@ import {
   ParseIntPipe,
   Post,
   Put,
+  Query,
   Req,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
@@ -30,24 +31,25 @@ export class WorkOrderGatewayController implements OnModuleInit {
   ) {}
 
   async onModuleInit() {
-    this.workOrderKafkaClient.subscribeToResponseOf(
+    const requestPatterns = [
       'work-orders.create-work-order',
-    );
-    this.workOrderKafkaClient.subscribeToResponseOf(
       'work-orders.update-work-order',
-    );
-    this.workOrderKafkaClient.subscribeToResponseOf(
       'work-orders.get-work-order-by-order-code',
-    );
-    this.workOrderKafkaClient.subscribeToResponseOf(
       'work-orders.get-work-orders-by-client-id',
-    );
-    this.workOrderKafkaClient.subscribeToResponseOf(
       'work-orders.get-all-work-orders',
-    );
-    this.logger.log(
-      'WorkOrderController initialized and subscribed to Kafka topics.',
-    );
+      'work-orders.get-all-work-orders-full-details',
+      'work-orders.get-work-order-statistics',
+      'work-orders.get-work-order-assignments',
+      'work-orders.get-work-order-materials',
+      'work-orders.get-work-order-observations',
+      'work-orders.get-work-order-attachments',
+      'work-orders.get-work-orders-by-client',
+      'work-orders.find-work-orders-full-details-by-order-code',
+    ];
+
+    requestPatterns.forEach((pattern) => {
+      this.workOrderKafkaClient.subscribeToResponseOf(pattern);
+    });
     await this.workOrderKafkaClient.connect();
   }
 
@@ -154,6 +156,229 @@ export class WorkOrderGatewayController implements OnModuleInit {
       console.log(response);
       return new ApiResponse(
         `All work orders retrieved successfully`,
+        response,
+        request.url,
+      );
+    } catch (error) {
+      throw new RpcException(error);
+    }
+  }
+
+  @Get('get-all-work-orders-full-details')
+  @ApiOperation({
+    summary: 'Get all work orders with full details',
+    description:
+      'Retrieve all work orders along with their full details, including assignments, materials, observations, and attachments.',
+  })
+  async getAllWorkOrdersFullDetails(
+    @Req() request: Request,
+    @Query('limit') limit?: number,
+    @Query('offset') offset?: number,
+  ): Promise<ApiResponse> {
+    try {
+      const response = await sendKafkaRequest(
+        this.workOrderKafkaClient.send(
+          'work-orders.get-all-work-orders-full-details',
+          { limit, offset },
+        ),
+      );
+      return new ApiResponse(
+        `All work orders with full details retrieved successfully`,
+        response,
+        request.url,
+      );
+    } catch (error) {
+      throw new RpcException(error);
+    }
+  }
+
+  @Get('get-work-order-statistics')
+  @ApiOperation({
+    summary: 'Get work order statistics',
+    description:
+      'Retrieve statistical data related to work orders, such as counts and averages.',
+  })
+  async getWorkOrderStatistics(
+    @Req() request: Request,
+    @Query('limit') limit?: number,
+    @Query('offset') offset?: number,
+  ): Promise<ApiResponse> {
+    try {
+      const response = await sendKafkaRequest(
+        this.workOrderKafkaClient.send(
+          'work-orders.get-work-order-statistics',
+          { limit, offset },
+        ),
+      );
+      return new ApiResponse(
+        `Work order statistics retrieved successfully`,
+        response,
+        request.url,
+      );
+    } catch (error) {
+      throw new RpcException(error);
+    }
+  }
+
+  @Get('get-work-order-assignments')
+  @ApiOperation({
+    summary: 'Get work order assignments',
+    description:
+      'Retrieve assignments related to work orders, including assigned personnel and roles.',
+  })
+  async getWorkOrderAssignments(
+    @Req() request: Request,
+    @Query('limit') limit?: number,
+    @Query('offset') offset?: number,
+  ): Promise<ApiResponse> {
+    try {
+      const response = await sendKafkaRequest(
+        this.workOrderKafkaClient.send(
+          'work-orders.get-work-order-assignments',
+          { limit, offset },
+        ),
+      );
+      return new ApiResponse(
+        `Work order assignments retrieved successfully`,
+        response,
+        request.url,
+      );
+    } catch (error) {
+      throw new RpcException(error);
+    }
+  }
+
+  @Get('get-work-order-materials')
+  @ApiOperation({
+    summary: 'Get work order materials',
+    description:
+      'Retrieve materials associated with work orders, including quantities and specifications.',
+  })
+  async getWorkOrderMaterials(
+    @Req() request: Request,
+    @Query('limit') limit?: number,
+    @Query('offset') offset?: number,
+  ): Promise<ApiResponse> {
+    try {
+      const response = await sendKafkaRequest(
+        this.workOrderKafkaClient.send('work-orders.get-work-order-materials', {
+          limit,
+          offset,
+        }),
+      );
+      return new ApiResponse(
+        `Work order materials retrieved successfully`,
+        response,
+        request.url,
+      );
+    } catch (error) {
+      throw new RpcException(error);
+    }
+  }
+
+  @Get('get-work-order-observations')
+  @ApiOperation({
+    summary: 'Get work order observations',
+    description:
+      'Retrieve observations and notes related to work orders, including timestamps and authors.',
+  })
+  async getWorkOrderObservations(
+    @Req() request: Request,
+    @Query('limit') limit?: number,
+    @Query('offset') offset?: number,
+  ): Promise<ApiResponse> {
+    try {
+      const response = await sendKafkaRequest(
+        this.workOrderKafkaClient.send(
+          'work-orders.get-work-order-observations',
+          { limit, offset },
+        ),
+      );
+      return new ApiResponse(
+        `Work order observations retrieved successfully`,
+        response,
+        request.url,
+      );
+    } catch (error) {
+      throw new RpcException(error);
+    }
+  }
+
+  @Get('get-work-order-attachments')
+  @ApiOperation({
+    summary: 'Get work order attachments',
+    description:
+      'Retrieve attachments related to work orders, including file names and types.',
+  })
+  async getWorkOrderAttachments(
+    @Req() request: Request,
+    @Query('limit') limit?: number,
+    @Query('offset') offset?: number,
+  ): Promise<ApiResponse> {
+    try {
+      const response = await sendKafkaRequest(
+        this.workOrderKafkaClient.send(
+          'work-orders.get-work-order-attachments',
+          { limit, offset },
+        ),
+      );
+      return new ApiResponse(
+        `Work order attachments retrieved successfully`,
+        response,
+        request.url,
+      );
+    } catch (error) {
+      throw new RpcException(error);
+    }
+  }
+
+  @Get('get-work-orders-by-client')
+  @ApiOperation({
+    summary: 'Get work orders by client',
+    description:
+      'Retrieve work orders associated with specific clients, including client details.',
+  })
+  async getWorkOrdersByClient(
+    @Req() request: Request,
+    @Query('limit') limit?: number,
+    @Query('offset') offset?: number,
+  ): Promise<ApiResponse> {
+    try {
+      const response = await sendKafkaRequest(
+        this.workOrderKafkaClient.send(
+          'work-orders.get-work-orders-by-client',
+          { limit, offset },
+        ),
+      );
+      return new ApiResponse(
+        `Work orders by client retrieved successfully`,
+        response,
+        request.url,
+      );
+    } catch (error) {
+      throw new RpcException(error);
+    }
+  }
+
+  @Get('find-work-orders-full-details-by-order-code/:orderCode')
+  @ApiOperation({
+    summary: 'Find work orders full details by order code',
+    description:
+      'Retrieve full details of a work order using its order code, including assignments, materials, observations, and attachments.',
+  })
+  async findWorkOrdersFullDetailsByOrderCode(
+    @Req() request: Request,
+    @Param('orderCode') orderCode: string,
+  ): Promise<ApiResponse> {
+    try {
+      const response = await sendKafkaRequest(
+        this.workOrderKafkaClient.send(
+          'work-orders.find-work-orders-full-details-by-order-code',
+          orderCode,
+        ),
+      );
+      return new ApiResponse(
+        `Work order full details retrieved successfully`,
         response,
         request.url,
       );
