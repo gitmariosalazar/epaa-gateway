@@ -7,6 +7,7 @@ import {
   OnModuleInit,
   Param,
   Post,
+  Query,
   Req,
 } from '@nestjs/common';
 import { ClientKafka, RpcException } from '@nestjs/microservices';
@@ -49,6 +50,9 @@ export class InventoryGatewayController implements OnModuleInit {
     );
     this.inventoryClient.subscribeToResponseOf(
       'inventory.get-inventories-like-item-code',
+    );
+    this.inventoryClient.subscribeToResponseOf(
+      'inventory.find-all-inventories-paginated',
     );
     this.logger.log(
       'InventoryGatewayController initialized and connected to Kafka',
@@ -399,5 +403,42 @@ export class InventoryGatewayController implements OnModuleInit {
       { status: 'healthy' },
       request.url,
     );
+  }
+
+  @Get('find-all-inventories-paginated')
+  @ApiOperation({
+    summary: 'Method GET - Find All Inventories Paginated (Legacy)',
+    description:
+      'The endpoint allows you to find all Inventories with pagination (Legacy)',
+  })
+  async findAllInventoriesPaginated(
+    @Req() request: Request,
+    @Query('limit') limit: number,
+    @Query('offset') offset: number,
+    @Query('query') query?: string,
+  ): Promise<ApiResponse> {
+    try {
+      this.logger.log(
+        `Sending findAllInventoriesPaginated request: limit=${limit}, offset=${offset}, query=${query}`,
+      );
+      const response = await sendKafkaRequest(
+        this.inventoryClient.send('inventory.find-all-inventories-paginated', {
+          limit,
+          offset,
+          query,
+        }),
+      );
+      return new ApiResponse(
+        `Paginated inventories retrieved successfully!`,
+        response,
+        request.url,
+      );
+    } catch (error) {
+      this.logger.error(
+        `Error in findAllInventoriesPaginated: ${error.message}`,
+        error.stack,
+      );
+      throw new RpcException(error);
+    }
   }
 }

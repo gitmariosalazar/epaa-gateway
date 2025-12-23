@@ -101,7 +101,7 @@ export class WorkOrderAttachmentsGatewayController implements OnModuleInit {
     schema: {
       type: 'object',
       properties: {
-        Pictures: {
+        images: {
           type: 'array',
           items: { type: 'string', format: 'binary' },
           description: 'Archivos adjuntos: imágenes o PDFs (máx 10)',
@@ -112,7 +112,7 @@ export class WorkOrderAttachmentsGatewayController implements OnModuleInit {
           example: 'Foto del daño o informe en PDF',
         },
       },
-      required: ['workOrderId', 'Pictures'],
+      required: ['workOrderId', 'images'],
     },
   })
   async addWorkOrderAttachment(

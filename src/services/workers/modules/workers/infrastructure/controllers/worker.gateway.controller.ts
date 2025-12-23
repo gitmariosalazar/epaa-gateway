@@ -1,4 +1,11 @@
-import { Controller, Get, Inject, OnModuleInit, Req } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Inject,
+  OnModuleInit,
+  Query,
+  Req,
+} from '@nestjs/common';
 import { ClientKafka } from '@nestjs/microservices';
 import { ApiTags } from '@nestjs/swagger';
 import { environments } from '../../../../../../settings/environments/environments';
@@ -16,6 +23,9 @@ export class WorkerGatewayController implements OnModuleInit {
 
   async onModuleInit() {
     this.workerKafkaClient.subscribeToResponseOf('workers.find-all-workers');
+    this.workerKafkaClient.subscribeToResponseOf(
+      'workers.find-all-workers-paginated',
+    );
     await this.workerKafkaClient.connect();
   }
 
@@ -27,6 +37,28 @@ export class WorkerGatewayController implements OnModuleInit {
     );
     return new ApiResponse(
       'Workers retrieved successfully',
+      response,
+      request.url,
+    );
+  }
+
+  @Get('find-all-workers-paginated')
+  async findAllWorkersPaginated(
+    @Req() request: Request,
+    @Query('limit') limit: number,
+    @Query('offset') offset: number,
+    @Query('query') query?: string,
+  ): Promise<ApiResponse> {
+    // Example method to demonstrate Kafka client usage
+    const response = await sendKafkaRequest(
+      this.workerKafkaClient.send('workers.find-all-workers-paginated', {
+        limit,
+        offset,
+        query,
+      }),
+    );
+    return new ApiResponse(
+      'Paginated workers retrieved successfully',
       response,
       request.url,
     );

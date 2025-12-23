@@ -29,7 +29,7 @@ export class ConnectionGatewayController implements OnModuleInit {
   constructor(
     @Inject(environments.CONNECTION_KAFKA_CLIENT)
     private readonly connectionKafkaClient: ClientKafka,
-  ) { }
+  ) {}
 
   onModuleInit() {
     this.logger.log('ConnectionGatewayController initialized');
@@ -57,6 +57,15 @@ export class ConnectionGatewayController implements OnModuleInit {
     this.connectionKafkaClient.subscribeToResponseOf(
       'connections.find-connection-with-property-by-cadastral-key',
     );
+
+    this.connectionKafkaClient.subscribeToResponseOf(
+      'connections.get-all-connections-with-property',
+    );
+
+    this.connectionKafkaClient.subscribeToResponseOf(
+      'connections.get-connections-paginated',
+    );
+
     this.logger.log(
       'Response patterns:',
       this.connectionKafkaClient['responsePatterns'],
@@ -83,9 +92,6 @@ export class ConnectionGatewayController implements OnModuleInit {
           'connections.create-connection',
           connection,
         ),
-      );
-      this.logger.log(
-        `Connection created successfully: ${JSON.stringify(response)}`,
       );
       return new ApiResponse(
         `Connection created successfully!`,
@@ -118,9 +124,6 @@ export class ConnectionGatewayController implements OnModuleInit {
           connection,
         }),
       );
-      this.logger.log(
-        `Connection updated successfully: ${JSON.stringify(response)}`,
-      );
       return new ApiResponse(
         `Connection updated successfully!`,
         response,
@@ -149,9 +152,6 @@ export class ConnectionGatewayController implements OnModuleInit {
           'connections.get-connection-by-id',
           connectionId,
         ),
-      );
-      this.logger.log(
-        `Connection retrieved successfully: ${JSON.stringify(response)}`,
       );
       return new ApiResponse(
         `Connection retrieved successfully!`,
@@ -183,9 +183,6 @@ export class ConnectionGatewayController implements OnModuleInit {
           limit,
           offset,
         }),
-      );
-      this.logger.log(
-        `Connections retrieved successfully: ${JSON.stringify(response)}`,
       );
       return new ApiResponse(
         `Connections retrieved successfully!`,
@@ -318,6 +315,78 @@ export class ConnectionGatewayController implements OnModuleInit {
       );
       return new ApiResponse(
         `Connection with property retrieved successfully!`,
+        response,
+        request.url,
+      );
+    } catch (error) {
+      throw new RpcException(error);
+    }
+  }
+
+  @Get('get-all-connections-with-property')
+  @ApiOperation({
+    summary: 'Method GET - Get all connections with property',
+    description:
+      'The endpoint allows you to retrieve all connections along with their associated properties with pagination',
+  })
+  async getAllConnectionsWithProperty(
+    @Req() request: Request,
+    @Query('limit') limit: number,
+    @Query('offset') offset: number,
+    @Query('query') query?: string,
+  ): Promise<ApiResponse> {
+    try {
+      this.logger.log(
+        `Received request to get all connections with property with limit=${limit} and offset=${offset} and query=${query}`,
+      );
+      const response = await sendKafkaRequest(
+        this.connectionKafkaClient.send(
+          'connections.get-all-connections-with-property',
+          {
+            limit,
+            offset,
+            query,
+          },
+        ),
+      );
+      return new ApiResponse(
+        `Connections with property retrieved successfully!`,
+        response,
+        request.url,
+      );
+    } catch (error) {
+      throw new RpcException(error);
+    }
+  }
+
+  @Get('get-connections-paginated')
+  @ApiOperation({
+    summary: 'Method GET - Get connections paginated with optional query',
+    description:
+      'The endpoint allows you to retrieve connections with pagination and an optional search query',
+  })
+  async getConnectionsPaginated(
+    @Req() request: Request,
+    @Query('limit') limit?: number,
+    @Query('offset') offset?: number,
+    @Query('query') query?: string,
+  ): Promise<ApiResponse> {
+    try {
+      this.logger.log(
+        `Received request to get connections paginated with limit=${limit}, offset=${offset}, query=${query}`,
+      );
+      const response = await sendKafkaRequest(
+        this.connectionKafkaClient.send(
+          'connections.get-connections-paginated',
+          {
+            limit,
+            offset,
+            query,
+          },
+        ),
+      );
+      return new ApiResponse(
+        `Connections retrieved successfully!`,
         response,
         request.url,
       );

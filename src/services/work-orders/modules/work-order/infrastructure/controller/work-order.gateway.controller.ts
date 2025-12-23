@@ -153,7 +153,6 @@ export class WorkOrderGatewayController implements OnModuleInit {
       const response = await sendKafkaRequest(
         this.workOrderKafkaClient.send('work-orders.get-all-work-orders', {}),
       );
-      console.log(response);
       return new ApiResponse(
         `All work orders retrieved successfully`,
         response,
