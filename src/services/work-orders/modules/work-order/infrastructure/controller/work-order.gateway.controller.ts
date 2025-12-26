@@ -45,6 +45,9 @@ export class WorkOrderGatewayController implements OnModuleInit {
       'work-orders.get-work-order-attachments',
       'work-orders.get-work-orders-by-client',
       'work-orders.find-work-orders-full-details-by-order-code',
+      'work-orders.get-work-order-priority-statistics',
+      'work-orders.get-work-order-status-statistics',
+      'work-orders.get-work-order-type-statistics',
     ];
 
     requestPatterns.forEach((pattern) => {
@@ -378,6 +381,81 @@ export class WorkOrderGatewayController implements OnModuleInit {
       );
       return new ApiResponse(
         `Work order full details retrieved successfully`,
+        response,
+        request.url,
+      );
+    } catch (error) {
+      throw new RpcException(error);
+    }
+  }
+
+  @Get('get-work-order-priority-statistics')
+  @ApiOperation({
+    summary: 'Get work order priority statistics',
+    description: 'Retrieve statistical data related to work order priorities.',
+  })
+  async getWorkOrderPriorityStatistics(
+    @Req() request: Request,
+  ): Promise<ApiResponse> {
+    try {
+      const response = await sendKafkaRequest(
+        this.workOrderKafkaClient.send(
+          'work-orders.get-work-order-priority-statistics',
+          {},
+        ),
+      );
+      return new ApiResponse(
+        `Work order priority statistics retrieved successfully`,
+        response,
+        request.url,
+      );
+    } catch (error) {
+      throw new RpcException(error);
+    }
+  }
+
+  @Get('get-work-order-status-statistics')
+  @ApiOperation({
+    summary: 'Get work order status statistics',
+    description: 'Retrieve statistical data related to work order statuses.',
+  })
+  async getWorkOrderStatusStatistics(
+    @Req() request: Request,
+  ): Promise<ApiResponse> {
+    try {
+      const response = await sendKafkaRequest(
+        this.workOrderKafkaClient.send(
+          'work-orders.get-work-order-status-statistics',
+          {},
+        ),
+      );
+      return new ApiResponse(
+        `Work order status statistics retrieved successfully`,
+        response,
+        request.url,
+      );
+    } catch (error) {
+      throw new RpcException(error);
+    }
+  }
+
+  @Get('get-work-order-type-statistics')
+  @ApiOperation({
+    summary: 'Get work order type statistics',
+    description: 'Retrieve statistical data related to work order types.',
+  })
+  async getWorkOrderTypeStatistics(
+    @Req() request: Request,
+  ): Promise<ApiResponse> {
+    try {
+      const response = await sendKafkaRequest(
+        this.workOrderKafkaClient.send(
+          'work-orders.get-work-order-type-statistics',
+          {},
+        ),
+      );
+      return new ApiResponse(
+        `Work order type statistics retrieved successfully`,
         response,
         request.url,
       );
