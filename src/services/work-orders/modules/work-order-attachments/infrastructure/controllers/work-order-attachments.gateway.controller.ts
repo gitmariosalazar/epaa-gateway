@@ -128,7 +128,7 @@ export class WorkOrderAttachmentsGatewayController implements OnModuleInit {
       const results: any[] = [];
 
       // URL base pública (ajusta según tu entorno)
-      const baseUrl = 'http://localhost:4005'; // Recomendado usar variable de entorno
+      const baseUrl = 'https://dev.sigepaa-aa.com:8443'; // Recomendado usar variable de entorno
 
       for (const file of files) {
         const attachmentRequest = new CreateWorkOrderAttachmentsRequest(
