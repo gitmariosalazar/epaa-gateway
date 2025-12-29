@@ -48,6 +48,7 @@ export class WorkOrderGatewayController implements OnModuleInit {
       'work-orders.get-work-order-priority-statistics',
       'work-orders.get-work-order-status-statistics',
       'work-orders.get-work-order-type-statistics',
+      'work-orders.get-work-orders-statistics-key',
     ];
 
     requestPatterns.forEach((pattern) => {
@@ -456,6 +457,31 @@ export class WorkOrderGatewayController implements OnModuleInit {
       );
       return new ApiResponse(
         `Work order type statistics retrieved successfully`,
+        response,
+        request.url,
+      );
+    } catch (error) {
+      throw new RpcException(error);
+    }
+  }
+
+  @Get('get-work-orders-statistics-key')
+  @ApiOperation({
+    summary: 'Get work orders statistics key',
+    description: 'Retrieve key statistical data related to work orders.',
+  })
+  async getWorkOrdersStatisticsKey(
+    @Req() request: Request,
+  ): Promise<ApiResponse> {
+    try {
+      const response = await sendKafkaRequest(
+        this.workOrderKafkaClient.send(
+          'work-orders.get-work-orders-statistics-key',
+          {},
+        ),
+      );
+      return new ApiResponse(
+        `Work orders statistics key retrieved successfully`,
         response,
         request.url,
       );
