@@ -152,10 +152,16 @@ export class WorkOrderGatewayController implements OnModuleInit {
 
   @Get('get-all-work-orders')
   @ApiOperation({ summary: 'Get all work orders' })
-  async getAllWorkOrders(@Req() request: Request): Promise<ApiResponse> {
+  async getAllWorkOrders(@Req() request: Request,
+    @Query('limit') limit?: number,
+    @Query('offset') offset?: number,
+  ): Promise<ApiResponse> {
     try {
       const response = await sendKafkaRequest(
-        this.workOrderKafkaClient.send('work-orders.get-all-work-orders', {}),
+        this.workOrderKafkaClient.send('work-orders.get-all-work-orders', {
+          limit,
+          offset,
+        }),
       );
       return new ApiResponse(
         `All work orders retrieved successfully`,
