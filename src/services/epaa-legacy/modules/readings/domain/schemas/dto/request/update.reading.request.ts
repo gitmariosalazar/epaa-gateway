@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-export class UpdateReadingRequest {
+export class UpdateReadingLegacyRequest {
   @ApiProperty({
     description: 'Sector number',
     example: 21,

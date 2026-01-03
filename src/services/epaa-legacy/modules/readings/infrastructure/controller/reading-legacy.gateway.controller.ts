@@ -18,7 +18,7 @@ import { environments } from '../../../../../../settings/environments/environmen
 import { sendKafkaRequest } from '../../../../../../shared/utils/kafka/send.kafka.request';
 import { ApiResponse } from '../../../../../../shared/errors/responses/ApiResponse';
 import { FindCurrentReadingParams } from '../../domain/schemas/dto/request/find-current-reading-params';
-import { UpdateReadingRequest } from '../../domain/schemas/dto/request/update.reading.request';
+import { UpdateReadingLegacyRequest } from '../../domain/schemas/dto/request/update.reading.request';
 
 @Controller('readings')
 @ApiTags('Readings - Legacy')
@@ -125,7 +125,7 @@ export class ReadingLegacyGatewayController implements OnModuleInit {
     @Req() request: Request,
     @Query() params: FindCurrentReadingParams,
     @Body()
-    readingRequest: UpdateReadingRequest,
+    readingRequest: UpdateReadingLegacyRequest,
   ): Promise<ApiResponse> {
     try {
       this.logger.log(
