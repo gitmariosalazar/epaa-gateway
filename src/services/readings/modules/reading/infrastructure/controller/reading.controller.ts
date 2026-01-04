@@ -164,7 +164,6 @@ export class ReadingGatewayController implements OnModuleInit {
         new FindCurrentReadingParams();
       findCurrentReadingParams.sector = response.sector!;
       findCurrentReadingParams.account = response.account!;
-      findCurrentReadingParams.incomeCode = response.rentalIncomeCode!;
       findCurrentReadingParams.year = updatedReadingLegacyRequest.year!;
       findCurrentReadingParams.month = updatedReadingLegacyRequest.month!;
       findCurrentReadingParams.previousReading =

@@ -18,14 +18,6 @@ export class FindCurrentReadingParams {
   account: number;
 
   @ApiProperty({
-    description: 'Income code',
-    example: 2423687,
-    type: 'number',
-    required: true,
-  })
-  incomeCode: number;
-
-  @ApiProperty({
     description: 'Year of the reading',
     example: 2026,
     type: 'number',
