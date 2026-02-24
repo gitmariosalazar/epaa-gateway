@@ -12,17 +12,21 @@ import {
   Put,
   Query,
   Req,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { environments } from '../../../../../../settings/environments/environments';
 import { ClientKafka, RpcException } from '@nestjs/microservices';
 import { ApiResponse } from '../../../../../../shared/errors/responses/ApiResponse';
 import { sendKafkaRequest } from '../../../../../../shared/utils/kafka/send.kafka.request';
 import { CreateWorkHistoryRequest } from '../../domain/schemas/dto/request/creeate.work-order-history.request';
 import { UpdateWorkOrderHistoryRequest } from '../../domain/schemas/dto/request/update.work-order-history.request';
+import { AuthGuard } from '../../../../../../auth/guard/auth.guard';
 
 @Controller('work-order-histories')
 @ApiTags('Work Order Histories')
+@ApiBearerAuth()
+@UseGuards(AuthGuard)
 export class WorkOrderHistoryGatewayController implements OnModuleInit {
   private readonly logger = new Logger(WorkOrderHistoryGatewayController.name);
 

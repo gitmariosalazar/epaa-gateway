@@ -1,7 +1,8 @@
-import { Module } from "@nestjs/common";
-import { ClientsModule, Transport } from "@nestjs/microservices";
-import { ReadingGatewayController } from "../controller/reading.controller";
-import { environments } from "../../../../../../settings/environments/environments";
+import { Module } from '@nestjs/common';
+import { ClientsModule, Transport } from '@nestjs/microservices';
+import { ReadingGatewayController } from '../controller/reading.gateway.controller';
+import { environments } from '../../../../../../settings/environments/environments';
+import { ReadingReportDashboardGatewayController } from '../controller/reading.report-dashboard.gateway.controller';
 
 @Module({
   imports: [
@@ -15,12 +16,12 @@ import { environments } from "../../../../../../settings/environments/environmen
           },
           consumer: {
             groupId: environments.READINGS_KAFKA_GROUP_ID,
-            sessionTimeout: 30000,
-            heartbeatInterval: 10000,
-            rebalanceTimeout: 60000,
+            sessionTimeout: 60000, // Increased to 60s
+            heartbeatInterval: 5000, // More frequent heartbeats
+            rebalanceTimeout: 120000, // Allow more time for rebalance
             subscribe: {
-              fromBeginning: true
-            }
+              fromBeginning: true,
+            },
           },
         },
       },
@@ -35,19 +36,22 @@ import { environments } from "../../../../../../settings/environments/environmen
           },
           consumer: {
             groupId: environments.EPAA_LEGACY_READINGS_KAFKA_GROUP_ID,
-            sessionTimeout: 30000,
-            heartbeatInterval: 10000,
-            rebalanceTimeout: 60000,
+            sessionTimeout: 60000, // Increased to 60s
+            heartbeatInterval: 5000, // More frequent heartbeats
+            rebalanceTimeout: 120000, // Allow more time for rebalance
             subscribe: {
-              fromBeginning: true
-            }
+              fromBeginning: true,
+            },
           },
         },
       },
     ]),
   ],
-  controllers: [ReadingGatewayController],
+  controllers: [
+    ReadingGatewayController,
+    ReadingReportDashboardGatewayController,
+  ],
   providers: [],
   exports: [ClientsModule],
 })
-export class ReadingGatewayModule { }
+export class ReadingGatewayModule {}

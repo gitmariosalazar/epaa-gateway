@@ -9,15 +9,19 @@ import {
   Post,
   Query,
   Req,
+  UseGuards,
 } from '@nestjs/common';
 import { ClientKafka, RpcException } from '@nestjs/microservices';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { environments } from '../../../../../../settings/environments/environments';
 import { sendKafkaRequest } from '../../../../../../shared/utils/kafka/send.kafka.request';
 import { ApiResponse } from '../../../../../../shared/errors/responses/ApiResponse';
+import { AuthGuard } from '../../../../../../auth/guard/auth.guard';
 
 @Controller('inventory')
 @ApiTags('Inventory - Legacy')
+@ApiBearerAuth()
+@UseGuards(AuthGuard)
 export class InventoryGatewayController implements OnModuleInit {
   private readonly logger = new Logger(InventoryGatewayController.name);
   constructor(

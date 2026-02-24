@@ -12,8 +12,9 @@ import {
   Put,
   Query,
   Req,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { environments } from '../../../../../../settings/environments/environments';
 import { ClientKafka, RpcException } from '@nestjs/microservices';
 import { ApiResponse } from '../../../../../../shared/errors/responses/ApiResponse';
@@ -21,9 +22,12 @@ import { sendKafkaRequest } from '../../../../../../shared/utils/kafka/send.kafk
 import { CreateWorkOrderObservationRequest } from '../../domain/schemas/dto/request/create.work-order-observation.request';
 import { UpdateWorkOrderObservationRequest } from '../../domain/schemas/dto/request/update.work-order-observation.request';
 import { UUID } from 'crypto';
+import { AuthGuard } from '../../../../../../auth/guard/auth.guard';
 
 @Controller('work-order-observations')
 @ApiTags('Work Order Observations')
+@ApiBearerAuth()
+@UseGuards(AuthGuard)
 export class WorkOrderObservationGatewayController implements OnModuleInit {
   private readonly logger = new Logger(
     WorkOrderObservationGatewayController.name,

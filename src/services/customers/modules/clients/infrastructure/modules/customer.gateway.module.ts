@@ -1,33 +1,12 @@
-import { Module } from "@nestjs/common";
-import { CustomerGatewayController } from "../controllers/customer.gateway.controller";
-import { ClientsModule, Transport } from "@nestjs/microservices";
-import { environments } from "../../../../../../settings/environments/environments";
+import { Module } from '@nestjs/common';
+import { CustomerGatewayController } from '../controllers/customer.gateway.controller';
+import { ClientsModule } from '@nestjs/microservices';
+import { KafkaCustomersModule } from '../../../../kafka/kafka-customers.module';
 
 @Module({
-  imports: [
-    ClientsModule.register([
-      {
-        name: environments.CLIENTS_KAFKA_CLIENT!,
-        transport: Transport.KAFKA,
-        options: {
-          client: {
-            brokers: [`${environments.KAFKA_BROKER_URL}`],
-          },
-          consumer: {
-            groupId: environments.CLIENTS_KAFKA_GROUP_ID,
-            sessionTimeout: 30000,
-            heartbeatInterval: 10000,
-            rebalanceTimeout: 60000,
-            subscribe: {
-              fromBeginning: true
-            }
-          },
-        },
-      },
-    ]),
-  ],
+  imports: [KafkaCustomersModule],
   controllers: [CustomerGatewayController],
   providers: [],
-  exports: [ClientsModule],
+  exports: [],
 })
-export class CustomerGatewayModule { }
+export class CustomerGatewayModule {}

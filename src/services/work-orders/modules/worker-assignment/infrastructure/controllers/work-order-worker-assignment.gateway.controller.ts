@@ -7,19 +7,21 @@ import {
   Param,
   Post,
   Req,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { environments } from '../../../../../../settings/environments/environments';
 import { ClientKafka, RpcException } from '@nestjs/microservices';
 import { ApiResponse } from '../../../../../../shared/errors/responses/ApiResponse';
 import { CreateWorkOrderWorkerAssignmentRequest } from '../../domain/schemas/dto/request/create-work-order-worker-assignment.request';
 import { sendKafkaRequest } from '../../../../../../shared/utils/kafka/send.kafka.request';
+import { AuthGuard } from '../../../../../../auth/guard/auth.guard';
 
 @Controller('work-order-worker-assignment')
 @ApiTags('work-order-worker-assignment')
-export class WorkOrderWorkerAssignmentGatewayController
-  implements OnModuleInit
-{
+@ApiBearerAuth()
+@UseGuards(AuthGuard)
+export class WorkOrderWorkerAssignmentGatewayController implements OnModuleInit {
   constructor(
     @Inject(environments.GATEWAY_WORK_ORDER_WORKER_ASSIGNMENT_KAFKA_CLIENT)
     private readonly workOrderWorkerAssignmentKafkaClient: ClientKafka,

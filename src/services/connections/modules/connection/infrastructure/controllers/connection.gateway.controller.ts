@@ -11,16 +11,24 @@ import {
   Put,
   Query,
   Req,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { environments } from '../../../../../../settings/environments/environments';
 import { ClientKafka, RpcException } from '@nestjs/microservices';
 import { ApiResponse } from '../../../../../../shared/errors/responses/ApiResponse';
 import { sendKafkaRequest } from '../../../../../../shared/utils/kafka/send.kafka.request';
 import { CreateConnectionRequest } from '../../domain/schemas/dto/request/create.connection.request';
+import { AuthGuard } from '../../../../../../auth/guard/auth.guard';
+import {
+  ConnectionAndPropertyResponse,
+  ConnectionResponse,
+} from '../../domain/schemas/dto/response/connection.response';
 
 @Controller('connections')
 @ApiTags('Connections Gateway')
+//@ApiBearerAuth()
+//@UseGuards(AuthGuard)
 export class ConnectionGatewayController implements OnModuleInit {
   private readonly logger: Logger = new Logger(
     ConnectionGatewayController.name,
@@ -87,7 +95,7 @@ export class ConnectionGatewayController implements OnModuleInit {
       this.logger.log(
         `Received request to create connection: ${JSON.stringify(connection)}`,
       );
-      const response = await sendKafkaRequest(
+      const response: ConnectionResponse = await sendKafkaRequest(
         this.connectionKafkaClient.send(
           'connections.create-connection',
           connection,
@@ -118,7 +126,7 @@ export class ConnectionGatewayController implements OnModuleInit {
       this.logger.log(
         `Received request to update connection ${connectionId}: ${JSON.stringify(connection)}`,
       );
-      const response = await sendKafkaRequest(
+      const response: ConnectionResponse = await sendKafkaRequest(
         this.connectionKafkaClient.send('connections.update-connection', {
           connectionId,
           connection,
@@ -147,7 +155,7 @@ export class ConnectionGatewayController implements OnModuleInit {
       this.logger.log(
         `Received request to get connection by ID: ${connectionId}`,
       );
-      const response = await sendKafkaRequest(
+      const response: ConnectionResponse = await sendKafkaRequest(
         this.connectionKafkaClient.send(
           'connections.get-connection-by-id',
           connectionId,
@@ -178,7 +186,7 @@ export class ConnectionGatewayController implements OnModuleInit {
       this.logger.log(
         `Received request to get all connections with limit=${limit} and offset=${offset}`,
       );
-      const response = await sendKafkaRequest(
+      const response: ConnectionResponse[] = await sendKafkaRequest(
         this.connectionKafkaClient.send('connections.get-all-connections', {
           limit,
           offset,
@@ -205,7 +213,7 @@ export class ConnectionGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       this.logger.log(`Received request to delete connection: ${connectionId}`);
-      const response = await sendKafkaRequest(
+      const response: boolean = await sendKafkaRequest(
         this.connectionKafkaClient.send(
           'connections.delete-connection',
           connectionId,
@@ -238,7 +246,7 @@ export class ConnectionGatewayController implements OnModuleInit {
       this.logger.log(
         `Received request to verify if connection exists: ${connectionId}`,
       );
-      const response = await sendKafkaRequest(
+      const response: boolean = await sendKafkaRequest(
         this.connectionKafkaClient.send(
           'connections.verify-connection-exists',
           connectionId,
@@ -271,7 +279,7 @@ export class ConnectionGatewayController implements OnModuleInit {
       this.logger.log(
         `Received request to find connection and property by cadastral key: ${propertyCadastralKey}`,
       );
-      const response = await sendKafkaRequest(
+      const response: ConnectionAndPropertyResponse = await sendKafkaRequest(
         this.connectionKafkaClient.send(
           'connections.find-connection-by-property-cadastral-key',
           propertyCadastralKey,
@@ -304,7 +312,7 @@ export class ConnectionGatewayController implements OnModuleInit {
       this.logger.log(
         `Received request to find connection with property by cadastral key: ${cadastralKey}`,
       );
-      const response = await sendKafkaRequest(
+      const response: ConnectionAndPropertyResponse = await sendKafkaRequest(
         this.connectionKafkaClient.send(
           'connections.find-connection-with-property-by-cadastral-key',
           cadastralKey,
@@ -339,7 +347,7 @@ export class ConnectionGatewayController implements OnModuleInit {
       this.logger.log(
         `Received request to get all connections with property with limit=${limit} and offset=${offset} and query=${query}`,
       );
-      const response = await sendKafkaRequest(
+      const response: ConnectionAndPropertyResponse[] = await sendKafkaRequest(
         this.connectionKafkaClient.send(
           'connections.get-all-connections-with-property',
           {
@@ -375,7 +383,7 @@ export class ConnectionGatewayController implements OnModuleInit {
       this.logger.log(
         `Received request to get connections paginated with limit=${limit}, offset=${offset}, query=${query}`,
       );
-      const response = await sendKafkaRequest(
+      const response: ConnectionResponse[] = await sendKafkaRequest(
         this.connectionKafkaClient.send(
           'connections.get-connections-paginated',
           {

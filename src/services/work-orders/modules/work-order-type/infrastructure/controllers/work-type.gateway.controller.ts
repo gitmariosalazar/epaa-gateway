@@ -12,17 +12,21 @@ import {
   Put,
   Query,
   Req,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { environments } from '../../../../../../settings/environments/environments';
 import { ClientKafka, RpcException } from '@nestjs/microservices';
 import { ApiResponse } from '../../../../../../shared/errors/responses/ApiResponse';
 import { sendKafkaRequest } from '../../../../../../shared/utils/kafka/send.kafka.request';
 import { CreateWorkTypeRequest } from '../../domain/schemas/dto/request/create.work-type.request';
 import { UpdateWorkTypeRequest } from '../../domain/schemas/dto/request/update.work-type.request';
+import { AuthGuard } from '../../../../../../auth/guard/auth.guard';
 
 @Controller('work-types')
 @ApiTags('Work Types Gateway')
+@ApiBearerAuth()
+@UseGuards(AuthGuard)
 export class WorkTypeGatewayController implements OnModuleInit {
   private readonly logger = new Logger(WorkTypeGatewayController.name);
   constructor(

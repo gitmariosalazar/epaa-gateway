@@ -5,15 +5,19 @@ import {
   OnModuleInit,
   Query,
   Req,
+  UseGuards,
 } from '@nestjs/common';
 import { ClientKafka } from '@nestjs/microservices';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { environments } from '../../../../../../settings/environments/environments';
 import { ApiResponse } from '../../../../../../shared/errors/responses/ApiResponse';
 import { sendKafkaRequest } from '../../../../../../shared/utils/kafka/send.kafka.request';
+import { AuthGuard } from '../../../../../../auth/guard/auth.guard';
 
 @Controller('worker-gateway')
 @ApiTags('Worker Gateway Controller')
+@ApiBearerAuth()
+@UseGuards(AuthGuard)
 export class WorkerGatewayController implements OnModuleInit {
   // Define your endpoints and methods here
   constructor(

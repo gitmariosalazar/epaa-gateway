@@ -16,9 +16,16 @@ import {
   Req,
   UploadedFile,
   UploadedFiles,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiConsumes, ApiBody } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiConsumes,
+  ApiBody,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { ApiResponse } from '../../../../../../shared/errors/responses/ApiResponse';
 import { sendKafkaRequest } from '../../../../../../shared/utils/kafka/send.kafka.request';
 import { CreateWorkOrderAttachmentsRequest } from '../../domain/schemas/dto/request/create.work-order-attachments.request';
@@ -26,9 +33,12 @@ import { FileInterceptor } from '@nestjs/platform-express/multer/interceptors/fi
 import { extname } from 'path/win32';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
+import { AuthGuard } from '../../../../../../auth/guard/auth.guard';
 
 @Controller('work-order-attachments')
 @ApiTags('Work Order Attachments')
+@ApiBearerAuth()
+@UseGuards(AuthGuard)
 export class WorkOrderAttachmentsGatewayController implements OnModuleInit {
   constructor(
     @Inject(environments.GATEWAY_WORK_ORDER_ATTACHMENTS_KAFKA_CLIENT)

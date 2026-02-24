@@ -12,16 +12,20 @@ import {
   Put,
   Query,
   Req,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { environments } from '../../../../../../settings/environments/environments';
 import { ClientKafka, RpcException } from '@nestjs/microservices';
 import { ApiResponse } from '../../../../../../shared/errors/responses/ApiResponse';
 import { sendKafkaRequest } from '../../../../../../shared/utils/kafka/send.kafka.request';
 import { CreateWorkOrderRequest } from '../../domain/schemas/dto/request/create.work-order.request';
+import { AuthGuard } from '../../../../../../auth/guard/auth.guard';
 
 @Controller('work-orders')
 @ApiTags('Work Orders')
+@ApiBearerAuth()
+@UseGuards(AuthGuard)
 export class WorkOrderGatewayController implements OnModuleInit {
   private readonly logger = new Logger(WorkOrderGatewayController.name);
 
@@ -152,7 +156,8 @@ export class WorkOrderGatewayController implements OnModuleInit {
 
   @Get('get-all-work-orders')
   @ApiOperation({ summary: 'Get all work orders' })
-  async getAllWorkOrders(@Req() request: Request,
+  async getAllWorkOrders(
+    @Req() request: Request,
     @Query('limit') limit?: number,
     @Query('offset') offset?: number,
   ): Promise<ApiResponse> {

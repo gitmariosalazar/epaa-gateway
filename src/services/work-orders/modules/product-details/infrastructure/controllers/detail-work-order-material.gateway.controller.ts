@@ -8,16 +8,20 @@ import {
   Param,
   Post,
   Req,
+  UseGuards,
 } from '@nestjs/common';
 import { ClientKafka, RpcException } from '@nestjs/microservices';
-import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { environments } from '../../../../../../settings/environments/environments';
 import { CreateDetailWorkOrderMaterialRequest } from '../../domain/schemas/dto/request/create-detail-work-order-material.request';
 import { ApiResponse } from '../../../../../../shared/errors/responses/ApiResponse';
 import { sendKafkaRequest } from '../../../../../../shared/utils/kafka/send.kafka.request';
+import { AuthGuard } from '../../../../../../auth/guard/auth.guard';
 
 @Controller('detail-work-order-materials')
 @ApiTags('Detail Work Order Material Gateway')
+@ApiBearerAuth()
+@UseGuards(AuthGuard)
 export class DetailWorkOrderMaterialGatewayController implements OnModuleInit {
   constructor(
     @Inject(environments.GATEWAY_DETAIL_WORK_ORDER_MATERIAL_KAFKA_CLIENT)

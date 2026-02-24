@@ -18,6 +18,11 @@ async function bootstrap() {
   app.enableCors({
     origin: true,
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    exposedHeaders: ['Set-Cookie'],
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
   });
 
   const config = new DocumentBuilder()
@@ -29,6 +34,9 @@ async function bootstrap() {
       type: 'http',
       scheme: 'bearer',
       bearerFormat: 'JWT',
+      name: 'Authorization',
+      in: 'header',
+      description: 'Enter JWT token in the format **Bearer &lt;token>**',
     })
     .addCookieAuth('auth_token', {
       type: 'apiKey',

@@ -22,12 +22,22 @@ import { WorkerGatewayModule } from './services/workers/modules/workers/infrastr
 import { DetailWorkOrderMaterialGatewayModule } from './services/work-orders/modules/product-details/infrastructure/modules/detail-work-order-material.gateway.module';
 import { WorkOrderWorkerAssignmentGatewayModule } from './services/work-orders/modules/worker-assignment/infrastructure/modules/work-order-worker-assignment.gateway.module';
 import { PostgresqlWorkOrderAttachmentsGatewayModule } from './services/work-orders/modules/work-order-attachments/infrastructure/modules/postgresql.work-order-attachments.gateway.module';
+import { RolGatewayModule } from './services/security/modules/roles/infrastructure/modules/rol.gateway.module';
+import { CategoriesModule } from './services/security/modules/categories/infrastructure/modules/category.gateway.module';
+import { PermissionGatewayModule } from './services/security/modules/permissions/infrastructure/modules/permission.gateway.module';
+import { RolPermissionGatewayModule } from './services/security/modules/rol-permission/infrastructure/modules/rol-permission.gateway.module';
+import { UserGatewayModule } from './services/security/modules/users/infrastructure/modules/user.gateway.module';
+import { UserEmployeeGatewayModule } from './services/security/modules/user-employee/infrastructure/modules/user-employee.gateway.module';
+import { AuthGatewayModule } from './services/security/modules/auth/infrastructure/modules/auth.gateway.module';
+import { JwtModule } from '@nestjs/jwt';
+import { AuthGuard } from './auth/guard/auth.guard';
+import { LocationGlobalGatewayModule } from './services/location/modules/location/infrastructure/modules/location-global.gateway.module';
 
 @Module({
   imports: [
     HomeModule,
-    QRCodeKafkaModule,
-    QRCodeGatewayModule,
+    //QRCodeKafkaModule,
+    //QRCodeGatewayModule,
     ReadingGatewayModule,
     ReadingLegacyModule,
     ObservationsGatewayModule,
@@ -36,20 +46,34 @@ import { PostgresqlWorkOrderAttachmentsGatewayModule } from './services/work-ord
     CustomerGatewayModule,
     CompanyGatewayModule,
     ConnectionGatewayModule,
-    PropertyGatewayModule,
+    //PropertyGatewayModule,
     ObservationConnectionGatewayModule,
     PhotoConnectionGatewayModule,
-    WorkTypeGatewayModule,
-    WorkOrderGatewayModule,
-    WorkOrderObservationGatewayModule,
-    WorkOrderHistoryGatewayModule,
-    InventoryGatewayModule,
-    WorkerGatewayModule,
-    DetailWorkOrderMaterialGatewayModule,
-    WorkOrderWorkerAssignmentGatewayModule,
-    PostgresqlWorkOrderAttachmentsGatewayModule,
+    //WorkTypeGatewayModule,
+    //WorkOrderGatewayModule,
+    //WorkOrderObservationGatewayModule,
+    //WorkOrderHistoryGatewayModule,
+    //InventoryGatewayModule,
+    //WorkerGatewayModule,
+    //DetailWorkOrderMaterialGatewayModule,
+    //WorkOrderWorkerAssignmentGatewayModule,
+    //PostgresqlWorkOrderAttachmentsGatewayModule,
+    RolGatewayModule,
+    CategoriesModule,
+    PermissionGatewayModule,
+    RolPermissionGatewayModule,
+    UserGatewayModule,
+    UserEmployeeGatewayModule,
+    AuthGatewayModule,
+    LocationGlobalGatewayModule,
+    JwtModule.register({
+      global: true,
+      secret: process.env.JWT_SECRET,
+      signOptions: { expiresIn: '15m', algorithm: 'HS256' },
+    }),
   ],
   controllers: [],
-  providers: [],
+  providers: [AuthGuard],
+  exports: [AuthGuard],
 })
 export class AppModule {}
