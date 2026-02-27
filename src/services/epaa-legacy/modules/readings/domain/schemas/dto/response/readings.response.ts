@@ -43,3 +43,57 @@ export interface PendingReadingResponse {
   incomeStatus: string;
   incomeDate: Date | null;
 }
+
+export interface PaymentReadingResponse {
+  incomeCode: string;
+  cardId: string;
+  name: string;
+  lastName: string;
+  cadastralKey: string;
+  address: string;
+  rate: number;
+  month: string;
+  year: number;
+  currentReading: number;
+  previousReading: number;
+  readingValue: number;
+  paymentUser: string;
+  titleCode: string;
+  consumption: number;
+  readingStatus: string;
+  paymentDate: string;
+  trashRate: number;
+  epaaValue: number;
+  thirdPartyValue: number;
+  surcharge: number;
+  total: number;
+  dueDate: string;
+  incomeStatus: string;
+  incomeDate: string;
+  value: number;
+  orderValue: number;
+  paymentMethod: string;
+  comment: string;
+}
+
+export interface PaymentResponse {
+  incomeCode: string;
+  cardId: string;
+  name: string;
+  incomeDate: string;
+  paymentDate: string;
+  incomeStatus: string;
+  titleCode: string;
+  dueDate: string;
+  titleValue: number;
+  thirdPartyValue: number;
+  surcharge: number;
+  trashRate: number;
+  cadastralKey: string;
+  total: number;
+  paymentUser: string;
+  value?: number;
+  orderValue?: number;
+  paymentMethod: string;
+  comment: string;
+}

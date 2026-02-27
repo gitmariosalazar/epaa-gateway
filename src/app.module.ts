@@ -36,8 +36,8 @@ import { LocationGlobalGatewayModule } from './services/location/modules/locatio
 @Module({
   imports: [
     HomeModule,
-    //QRCodeKafkaModule,
-    //QRCodeGatewayModule,
+    QRCodeKafkaModule,
+    QRCodeGatewayModule,
     ReadingGatewayModule,
     ReadingLegacyModule,
     ObservationsGatewayModule,

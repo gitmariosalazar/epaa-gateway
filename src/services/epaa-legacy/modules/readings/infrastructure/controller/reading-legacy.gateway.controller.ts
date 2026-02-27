@@ -22,10 +22,18 @@ import { FindCurrentReadingParams } from '../../domain/schemas/dto/request/find-
 import { UpdateReadingLegacyRequest } from '../../domain/schemas/dto/request/update.reading.request';
 import { AuthGuard } from '../../../../../../auth/guard/auth.guard';
 import {
+  PaymentReadingResponse,
+  PaymentResponse,
   PendingReadingResponse,
   ReadingResponse,
 } from '../../domain/schemas/dto/response/readings.response';
 import { CalculateReadingValueParams } from '../../domain/schemas/dto/request/calculate-reading-value-params';
+import {
+  DailyCollectorSummary,
+  DailyGroupedReport,
+  DailyPaymentMethodReport,
+  FullBreakdownReport,
+} from '../../domain/schemas/dto/response/entry-data.response';
 
 @Controller('readings')
 @ApiTags('Readings - Legacy')
@@ -61,8 +69,36 @@ export class ReadingLegacyGatewayController implements OnModuleInit {
       'epaa-legacy.reading.find-pending-reading-by-card-id',
     );
 
-      this.readingClient.subscribeToResponseOf(
+    this.readingClient.subscribeToResponseOf(
       'epaa-legacy.reading.find-pending-reading-by-cadastral-key-or-card-id',
+    );
+
+    this.readingClient.subscribeToResponseOf(
+      'epaa-legacy.reading.find-payment-readings-by-payment-date',
+    );
+
+    this.readingClient.subscribeToResponseOf(
+      'epaa-legacy.reading.find-payment-by-payment-date-and-order',
+    );
+
+    this.readingClient.subscribeToResponseOf(
+      'epaa-legacy.reading.find-payment-by-init-date-and-end-date',
+    );
+
+    this.readingClient.subscribeToResponseOf(
+      'epaa-legacy.reading.get-daily-grouped-report',
+    );
+
+    this.readingClient.subscribeToResponseOf(
+      'epaa-legacy.reading.get-daily-collector-summary',
+    );
+
+    this.readingClient.subscribeToResponseOf(
+      'epaa-legacy.reading.get-daily-payment-method-report',
+    );
+
+    this.readingClient.subscribeToResponseOf(
+      'epaa-legacy.reading.get-full-breakdown-report',
     );
 
     this.logger.log(
@@ -106,6 +142,7 @@ export class ReadingLegacyGatewayController implements OnModuleInit {
   @Get('find-current-reading')
   @ApiOperation({
     summary: 'Method GET - Find Current Reading (Legacy)',
+    description: 'The endpoint allows you to find the current reading (Legacy)',
   })
   async findCurrentReading(
     @Req() request: Request,
@@ -176,6 +213,8 @@ export class ReadingLegacyGatewayController implements OnModuleInit {
   @Get('calculate-reading-value/:cadastralKey/:consumptionM3')
   @ApiOperation({
     summary: 'Method GET - Calculate Reading Value (Legacy)',
+    description:
+      'The endpoint allows you to calculate the reading value (Legacy)',
   })
   async calculateReadingValue(
     @Req() request: Request,
@@ -215,6 +254,8 @@ export class ReadingLegacyGatewayController implements OnModuleInit {
   @Get('find-pending-reading-by-cadastral-key/:cadastralKey')
   @ApiOperation({
     summary: 'Method GET - Find Pending Reading by Cadastral Key (Legacy)',
+    description:
+      'The endpoint allows you to find pending readings by cadastral key (Legacy)',
   })
   async findPendingReadingByCadastralKey(
     @Req() request: Request,
@@ -253,6 +294,8 @@ export class ReadingLegacyGatewayController implements OnModuleInit {
   @Get('find-pending-reading-by-card-id/:cardId')
   @ApiOperation({
     summary: 'Method GET - Find Pending Reading by Card ID (Legacy)',
+    description:
+      'The endpoint allows you to find pending readings by card id (Legacy)',
   })
   async findPendingReadingByCardId(
     @Req() request: Request,
@@ -290,7 +333,10 @@ export class ReadingLegacyGatewayController implements OnModuleInit {
 
   @Get('find-pending-reading-by-cadastral-key-or-card-id/:searchValue')
   @ApiOperation({
-    summary: 'Method GET - Find Pending Reading by Cadastral Key or Card ID (Legacy)',
+    summary:
+      'Method GET - Find Pending Reading by Cadastral Key or Card ID (Legacy)',
+    description:
+      'The endpoint allows you to find pending readings by cadastral key or card id (Legacy)',
   })
   async findPendingReadingByCadastralKeyOrCardId(
     @Req() request: Request,
@@ -320,6 +366,300 @@ export class ReadingLegacyGatewayController implements OnModuleInit {
     } catch (error) {
       this.logger.error(
         `Error in findPendingReadingByCadastralKeyOrCardId: ${error.message}`,
+        error.stack,
+      );
+      throw new RpcException(error);
+    }
+  }
+
+  @Get('find-payment-readings-by-payment-date/:paymentDate')
+  @ApiOperation({
+    summary: 'Method GET - Find Payment Readings by Payment Date (Legacy)',
+    description:
+      'The endpoint allows you to find payment readings by payment date (Legacy)',
+  })
+  async findPaymentReadingsByPaymentDate(
+    @Req() request: Request,
+    @Param('paymentDate') paymentDate: string,
+  ): Promise<ApiResponse> {
+    try {
+      this.logger.log(
+        `Sending findPaymentReadingsByPaymentDate request: ${JSON.stringify(paymentDate)}`,
+      );
+
+      const response: PaymentReadingResponse[] = await sendKafkaRequest(
+        this.readingClient.send(
+          'epaa-legacy.reading.find-payment-readings-by-payment-date',
+          paymentDate,
+        ),
+      );
+
+      return new ApiResponse(
+        `Payment readings by payment date found successfully!`,
+        response,
+        request.url,
+      );
+    } catch (error) {
+      this.logger.error(
+        `Error in findPaymentReadingsByPaymentDate: ${error.message}`,
+        error.stack,
+      );
+      throw new RpcException(error);
+    }
+  }
+
+  @Get('find-payment-by-payment-date-and-order/:paymentDate/:orderValue')
+  @ApiOperation({
+    summary:
+      'Method GET - Find Payment by Payment Date and Order Value (Legacy)',
+    description:
+      'The endpoint allows you to find payments by payment date and order value (Legacy)',
+  })
+  async findPaymentByPaymentDateAndOrder(
+    @Req() request: Request,
+    @Param('paymentDate') paymentDate: string,
+    @Param('orderValue') orderValue: number,
+  ): Promise<ApiResponse> {
+    try {
+      this.logger.log(
+        `Sending findPaymentByPaymentDateAndOrder request: ${JSON.stringify({ paymentDate, orderValue })}`,
+      );
+
+      const params = {
+        paymentDate: paymentDate,
+        orderValue: orderValue,
+      };
+
+      const response: PaymentResponse[] = await sendKafkaRequest(
+        this.readingClient.send(
+          'epaa-legacy.reading.find-payment-by-payment-date-and-order',
+          params,
+        ),
+      );
+
+      return new ApiResponse(
+        `Payment by payment date and order value found successfully!`,
+        response,
+        request.url,
+      );
+    } catch (error) {
+      this.logger.error(
+        `Error in findPaymentByPaymentDateAndOrder: ${error.message}`,
+        error.stack,
+      );
+      throw new RpcException(error);
+    }
+  }
+
+  @Get(
+    'find-payment-by-init-date-and-end-date/:initDate/:endDate/:limit/:offset',
+  )
+  @ApiOperation({
+    summary: 'Method GET - Find Payment by Init Date and End Date (Legacy)',
+    description:
+      'The endpoint allows you to find payments by init date and end date (Legacy)',
+  })
+  async findPaymentByInitDateAndEndDate(
+    @Req() request: Request,
+    @Param('initDate') initDate: string,
+    @Param('endDate') endDate: string,
+    @Param('limit') limit: number,
+    @Param('offset') offset: number,
+  ): Promise<ApiResponse> {
+    try {
+      this.logger.log(
+        `Sending findPaymentByInitDateAndEndDate request: ${JSON.stringify({ initDate, endDate, limit, offset })}`,
+      );
+
+      const params = {
+        initDate: initDate,
+        endDate: endDate,
+        limit: limit,
+        offset: offset,
+      };
+
+      const response: PaymentResponse[] = await sendKafkaRequest(
+        this.readingClient.send(
+          'epaa-legacy.reading.find-payment-by-init-date-and-end-date',
+          params,
+        ),
+      );
+
+      return new ApiResponse(
+        `Payment by init date and end date found successfully!`,
+        response,
+        request.url,
+      );
+    } catch (error) {
+      this.logger.error(
+        `Error in findPaymentByInitDateAndEndDate: ${error.message}`,
+        error.stack,
+      );
+      throw new RpcException(error);
+    }
+  }
+
+  @Get('get-daily-grouped-report/:initDate/:endDate')
+  @ApiOperation({
+    summary: 'Method GET - Get Daily Grouped Report (Legacy)',
+    description: 'The endpoint allows you to get daily grouped report (Legacy)',
+  })
+  async getDailyGroupedReport(
+    @Req() request: Request,
+    @Param('initDate') initDate: string,
+    @Param('endDate') endDate: string,
+  ): Promise<ApiResponse> {
+    try {
+      this.logger.log(
+        `Sending getDailyGroupedReport request: ${JSON.stringify({ initDate, endDate })}`,
+      );
+
+      const params = {
+        initDate: initDate,
+        endDate: endDate,
+      };
+
+      const response: DailyGroupedReport[] = await sendKafkaRequest(
+        this.readingClient.send(
+          'epaa-legacy.reading.get-daily-grouped-report',
+          params,
+        ),
+      );
+
+      return new ApiResponse(
+        `Daily grouped report retrieved successfully!`,
+        response,
+        request.url,
+      );
+    } catch (error) {
+      this.logger.error(
+        `Error in getDailyGroupedReport: ${error.message}`,
+        error.stack,
+      );
+      throw new RpcException(error);
+    }
+  }
+
+  @Get('get-daily-collector-summary/:initDate/:endDate')
+  @ApiOperation({
+    summary: 'Method GET - Get Daily Collector Summary (Legacy)',
+    description:
+      'The endpoint allows you to get daily collector summary (Legacy)',
+  })
+  async getDailyCollectorSummary(
+    @Req() request: Request,
+    @Param('initDate') initDate: string,
+    @Param('endDate') endDate: string,
+  ): Promise<ApiResponse> {
+    try {
+      this.logger.log(
+        `Sending getDailyCollectorSummary request: ${JSON.stringify({ initDate, endDate })}`,
+      );
+
+      const params = {
+        initDate: initDate,
+        endDate: endDate,
+      };
+
+      const response: DailyCollectorSummary[] = await sendKafkaRequest(
+        this.readingClient.send(
+          'epaa-legacy.reading.get-daily-collector-summary',
+          params,
+        ),
+      );
+
+      return new ApiResponse(
+        `Daily collector summary retrieved successfully!`,
+        response,
+        request.url,
+      );
+    } catch (error) {
+      this.logger.error(
+        `Error in getDailyCollectorSummary: ${error.message}`,
+        error.stack,
+      );
+      throw new RpcException(error);
+    }
+  }
+
+  @Get('get-daily-payment-method-report/:initDate/:endDate')
+  @ApiOperation({
+    summary: 'Method GET - Get Daily Payment Method Report (Legacy)',
+    description:
+      'The endpoint allows you to get daily payment method report (Legacy)',
+  })
+  async getDailyPaymentMethodReport(
+    @Req() request: Request,
+    @Param('initDate') initDate: string,
+    @Param('endDate') endDate: string,
+  ): Promise<ApiResponse> {
+    try {
+      this.logger.log(
+        `Sending getDailyPaymentMethodReport request: ${JSON.stringify({ initDate, endDate })}`,
+      );
+
+      const params = {
+        initDate: initDate,
+        endDate: endDate,
+      };
+
+      const response: DailyPaymentMethodReport[] = await sendKafkaRequest(
+        this.readingClient.send(
+          'epaa-legacy.reading.get-daily-payment-method-report',
+          params,
+        ),
+      );
+
+      return new ApiResponse(
+        `Daily payment method report retrieved successfully!`,
+        response,
+        request.url,
+      );
+    } catch (error) {
+      this.logger.error(
+        `Error in getDailyPaymentMethodReport: ${error.message}`,
+        error.stack,
+      );
+      throw new RpcException(error);
+    }
+  }
+
+  @Get('get-full-breakdown-report/:initDate/:endDate')
+  @ApiOperation({
+    summary: 'Method GET - Get Full Breakdown Report (Legacy)',
+    description:
+      'The endpoint allows you to get full breakdown report (Legacy)',
+  })
+  async getFullBreakdownReport(
+    @Req() request: Request,
+    @Param('initDate') initDate: string,
+    @Param('endDate') endDate: string,
+  ): Promise<ApiResponse> {
+    try {
+      this.logger.log(
+        `Sending getFullBreakdownReport request: ${JSON.stringify({ initDate, endDate })}`,
+      );
+
+      const params = {
+        initDate: initDate,
+        endDate: endDate,
+      };
+
+      const response: FullBreakdownReport[] = await sendKafkaRequest(
+        this.readingClient.send(
+          'epaa-legacy.reading.get-full-breakdown-report',
+          params,
+        ),
+      );
+
+      return new ApiResponse(
+        `Full breakdown report retrieved successfully!`,
+        response,
+        request.url,
+      );
+    } catch (error) {
+      this.logger.error(
+        `Error in getFullBreakdownReport: ${error.message}`,
         error.stack,
       );
       throw new RpcException(error);
