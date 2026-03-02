@@ -3,6 +3,7 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
 import { ReadingGatewayController } from '../controller/reading.gateway.controller';
 import { environments } from '../../../../../../settings/environments/environments';
 import { ReadingReportDashboardGatewayController } from '../controller/reading.report-dashboard.gateway.controller';
+import { ReadingImagesGatewayController } from '../controller/reading-images.gateway.controller';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { ReadingReportDashboardGatewayController } from '../controller/reading.r
   controllers: [
     ReadingGatewayController,
     ReadingReportDashboardGatewayController,
+    ReadingImagesGatewayController,
   ],
   providers: [],
   exports: [ClientsModule],

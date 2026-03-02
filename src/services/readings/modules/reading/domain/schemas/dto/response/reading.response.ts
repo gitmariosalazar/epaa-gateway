@@ -41,3 +41,36 @@ export interface ReadingImagesResponse {
   consumption: number;
   observation: string;
 }
+
+export interface PendingReadingConnectionResponse {
+  cadastralKey: string;
+  meterNumber: string;
+  address: string;
+  sector: number;
+  account: number;
+  clientName: string;
+  cardId: string;
+  rateName: string;
+  averageConsumption: number;
+}
+
+export interface TakenReadingConnectionResponse {
+  readingId: string;
+  readingDate: Date | null;
+  cadastralKey: string;
+  meterNumber: string;
+  address: string;
+  sector: number;
+  account: number;
+  clientName: string;
+  cardId: string;
+  previousReading: number;
+  currentReading: number;
+  readingValue: number;
+  calculatedConsumption: number;
+  averageConsumption: number;
+  rateName: string;
+  readingTypeId: number;
+  readingTypeName: string;
+  novelty?: string;
+}

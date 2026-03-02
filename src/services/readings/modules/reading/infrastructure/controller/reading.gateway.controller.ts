@@ -13,13 +13,19 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ClientKafka, RpcException } from '@nestjs/microservices';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiParam,
+  ApiTags,
+} from '@nestjs/swagger';
 import { UpdateReadingRequest } from '../../domain/schemas/dto/request/update-reading.request';
 import { CreateReadingRequest } from '../../domain/schemas/dto/request/create-reading.request';
 import {
+  PendingReadingConnectionResponse,
   ReadingHistoryResponse,
-  ReadingImagesResponse,
   ReadingResponse,
+  TakenReadingConnectionResponse,
 } from '../../domain/schemas/dto/response/reading.response';
 import { environments } from '../../../../../../settings/environments/environments';
 import { ApiResponse } from '../../../../../../shared/errors/responses/ApiResponse';
@@ -52,10 +58,6 @@ export class ReadingGatewayController implements OnModuleInit {
     this.readingClient.subscribeToResponseOf('reading.update-current-reading');
     this.readingClient.subscribeToResponseOf('reading.create-reading');
     this.readingClient.subscribeToResponseOf('reading.find-reading-info');
-    this.readingClient.subscribeToResponseOf(
-      'reading.find-readings-image-by-cadastral-key',
-    );
-    this.readingClient.subscribeToResponseOf('reading.find-all-reading-images');
 
     // Subscribe to legacy topic here as well since we call it from createReading
     this.readingClient.subscribeToResponseOf(
@@ -71,6 +73,15 @@ export class ReadingGatewayController implements OnModuleInit {
     this.logger.log(
       'Response patterns:',
       this.readingClient['responsePatterns'],
+    );
+    this.readingClient.subscribeToResponseOf(
+      'reading.get-pending-readings-by-month',
+    );
+    this.readingClient.subscribeToResponseOf(
+      'reading.get-taken-reading-estimates-or-average',
+    );
+    this.readingClient.subscribeToResponseOf(
+      'reading.get-taken-readings-by-month',
     );
     this.logger.log('ReadingController initialized and connected to Kafka');
     await this.readingClient.connect();
@@ -353,25 +364,31 @@ export class ReadingGatewayController implements OnModuleInit {
     }
   }
 
-  @Get('readings-images/:cadastralKey')
+  @Get([
+    'get-pending-readings-by-month/:month',
+    'get-pending-readings-by-month/:month/:sector',
+  ])
   @ApiOperation({
-    summary: 'Method GET - Find Readings Images by cadastral key',
-    description:
-      'The endpoint allows you to search Readings Images by cadastral key',
+    summary: 'Method GET - Get Pending Readings by month',
+    description: 'The endpoint allows you to get Pending Readings by month',
   })
-  async findReadingsImagesByCadastralKey(
-    @Param('cadastralKey') cadastralKey: string,
+  @ApiParam({ name: 'sector', required: false, type: Number })
+  async getPendingReadingsByMonth(
     @Req() request: Request,
+    @Param('month') month: string,
+    // 2. Le dices al Pipe que es opcional, y le pones el ? al tipado de TS
+    @Param('sector', new ParseIntPipe({ optional: true })) sector?: number,
   ): Promise<ApiResponse> {
     try {
-      const response: ReadingImagesResponse[] = await sendKafkaRequest(
-        this.readingClient.send(
-          'reading.find-readings-image-by-cadastral-key',
-          cadastralKey,
-        ),
-      );
+      const response: PendingReadingConnectionResponse[] =
+        await sendKafkaRequest(
+          this.readingClient.send('reading.get-pending-readings-by-month', {
+            month,
+            sector, // Si no viene, pasará como undefined correctamente
+          }),
+        );
       return new ApiResponse(
-        `Readings images with cadastral key ${cadastralKey} found successfully!`,
+        `Pending readings with month ${month} and sector ${sector || 'ALL'} found successfully!`,
         response,
         request.url,
       );
@@ -380,18 +397,61 @@ export class ReadingGatewayController implements OnModuleInit {
     }
   }
 
-  @Get('all-readings-images')
+  @Get([
+    'get-taken-reading-estimates-or-average/:month',
+    'get-taken-reading-estimates-or-average/:month/:sector',
+  ])
   @ApiOperation({
-    summary: 'Method GET - Find All Readings Images',
-    description: 'The endpoint allows you to search All Readings Images',
+    summary: 'Method GET - Get Taken Reading Estimates or Average by month',
+    description:
+      'The endpoint allows you to get Taken Reading Estimates or Average by month',
   })
-  async findAllReadingsImages(@Req() request: Request): Promise<ApiResponse> {
+  @ApiParam({ name: 'sector', required: false, type: Number })
+  async getTakenReadingEstimatesOrAverage(
+    @Param('month') month: string,
+    @Req() request: Request,
+    @Param('sector', new ParseIntPipe({ optional: true })) sector?: number, // <-- 2. Opcional
+  ): Promise<ApiResponse> {
     try {
-      const response: ReadingImagesResponse[] = await sendKafkaRequest(
-        this.readingClient.send('reading.find-all-reading-images', {}),
+      const response: TakenReadingConnectionResponse[] = await sendKafkaRequest(
+        this.readingClient.send(
+          'reading.get-taken-reading-estimates-or-average',
+          { month, sector },
+        ),
       );
       return new ApiResponse(
-        `All readings images found successfully!`,
+        `Taken reading estimates or average with month ${month} and sector ${sector || 'ALL'} found successfully!`,
+        response,
+        request.url,
+      );
+    } catch (error) {
+      throw new RpcException(error);
+    }
+  }
+
+  @Get([
+    'get-taken-readings-by-month/:month',
+    'get-taken-readings-by-month/:month/:sector',
+  ])
+  @ApiOperation({
+    summary: 'Method GET - Get Taken Readings by month',
+    description: 'The endpoint allows you to get Taken Readings by month',
+  })
+  @ApiParam({ name: 'sector', required: false, type: Number })
+  async getTakenReadingsByMonth(
+    @Param('month') month: string,
+    @Req() request: Request,
+    @Param('sector', new ParseIntPipe({ optional: true })) sector?: number, // <-- 2. Opcional
+  ): Promise<ApiResponse> {
+    try {
+      const response: TakenReadingConnectionResponse[] = await sendKafkaRequest(
+        this.readingClient.send('reading.get-taken-readings-by-month', {
+          month,
+          sector,
+        }),
+      );
+      return new ApiResponse(
+        `Taken readings with month ${month} and sector ${sector || 'ALL'} found successfully!`,
         response,
         request.url,
       );
