@@ -46,64 +46,26 @@ export class ReadingLegacyGatewayController implements OnModuleInit {
     private readonly readingClient: ClientKafka,
   ) {}
   async onModuleInit() {
-    this.readingClient.subscribeToResponseOf(
+    const messagePatterns: string[] = [
       'epaa-legacy.reading.create-reading-legacy',
-    );
-    this.readingClient.subscribeToResponseOf(
       'epaa-legacy.reading.find-current-reading',
-    );
-    this.readingClient.subscribeToResponseOf(
       'epaa-legacy.reading.update-current-reading',
-    );
-    this.logger.log(
-      'Response patterns:',
-      this.readingClient['responsePatterns'],
-    );
-    this.readingClient.subscribeToResponseOf(
       'epaa-legacy.reading.calculate-reading-value',
-    );
-    this.readingClient.subscribeToResponseOf(
       'epaa-legacy.reading.find-pending-reading-by-cadastral-key',
-    );
-    this.readingClient.subscribeToResponseOf(
       'epaa-legacy.reading.find-pending-reading-by-card-id',
-    );
-
-    this.readingClient.subscribeToResponseOf(
       'epaa-legacy.reading.find-pending-reading-by-cadastral-key-or-card-id',
-    );
-
-    this.readingClient.subscribeToResponseOf(
       'epaa-legacy.reading.find-payment-readings-by-payment-date',
-    );
-
-    this.readingClient.subscribeToResponseOf(
       'epaa-legacy.reading.find-payment-by-payment-date-and-order',
-    );
-
-    this.readingClient.subscribeToResponseOf(
       'epaa-legacy.reading.find-payment-by-init-date-and-end-date',
-    );
-
-    this.readingClient.subscribeToResponseOf(
       'epaa-legacy.reading.get-daily-grouped-report',
-    );
-
-    this.readingClient.subscribeToResponseOf(
       'epaa-legacy.reading.get-daily-collector-summary',
-    );
-
-    this.readingClient.subscribeToResponseOf(
       'epaa-legacy.reading.get-daily-payment-method-report',
-    );
-
-    this.readingClient.subscribeToResponseOf(
       'epaa-legacy.reading.get-full-breakdown-report',
-    );
+    ];
 
-    this.logger.log(
-      'ReadingLegacyGatewayController initialized and connected to Kafka',
-    );
+    messagePatterns.forEach((pattern) => {
+      this.readingClient.subscribeToResponseOf(pattern);
+    });
     await this.readingClient.connect();
   }
 

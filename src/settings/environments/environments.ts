@@ -130,6 +130,11 @@ interface EnvironmentVariables {
   GATEWAY_LOCATION_KAFKA_CLIENT_ID: string;
   GATEWAY_LOCATION_KAFKA_GROUP_ID: string;
 
+  // Trash Rate Kafka clients
+  TRASH_RATE_KAFKA_CLIENT_ID: string;
+  TRASH_RATE_KAFKA_CLIENT: string;
+  TRASH_RATE_KAFKA_GROUP_ID: string;
+
   // JWT Secret
   JWT_SECRET: string;
   JWT_ACCESS_EXPIRATION: string;
@@ -264,6 +269,12 @@ const envVarsSchema: Joi.ObjectSchema<EnvironmentVariables> = Joi.object({
   GATEWAY_LOCATION_KAFKA_CLIENT: Joi.string().required(),
   GATEWAY_LOCATION_KAFKA_CLIENT_ID: Joi.string().required(),
   GATEWAY_LOCATION_KAFKA_GROUP_ID: Joi.string().required(),
+
+  // Trash Rate Kafka clients
+  TRASH_RATE_KAFKA_CLIENT_ID: Joi.string().required(),
+  TRASH_RATE_KAFKA_CLIENT: Joi.string().required(),
+  TRASH_RATE_KAFKA_GROUP_ID: Joi.string().required(),
+
   // JWT Secret
   JWT_SECRET: Joi.string().required(),
   JWT_ACCESS_EXPIRATION: Joi.string().required(),
@@ -430,6 +441,11 @@ export const environments = {
   GATEWAY_LOCATION_KAFKA_CLIENT: envVars.GATEWAY_LOCATION_KAFKA_CLIENT,
   GATEWAY_LOCATION_KAFKA_CLIENT_ID: envVars.GATEWAY_LOCATION_KAFKA_CLIENT_ID,
   GATEWAY_LOCATION_KAFKA_GROUP_ID: envVars.GATEWAY_LOCATION_KAFKA_GROUP_ID,
+
+  // Trash Rate Kafka clients
+  TRASH_RATE_KAFKA_CLIENT_ID: envVars.TRASH_RATE_KAFKA_CLIENT_ID,
+  TRASH_RATE_KAFKA_CLIENT: envVars.TRASH_RATE_KAFKA_CLIENT,
+  TRASH_RATE_KAFKA_GROUP_ID: envVars.TRASH_RATE_KAFKA_GROUP_ID,
 
   // File storage path
   FILE_STORAGE_PATH: envVars.FILE_STORAGE_PATH,

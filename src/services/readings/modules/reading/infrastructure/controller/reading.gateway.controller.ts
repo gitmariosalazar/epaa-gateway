@@ -54,35 +54,31 @@ export class ReadingGatewayController implements OnModuleInit {
   ) {}
 
   async onModuleInit() {
-    this.readingClient.subscribeToResponseOf('reading.find-basic-reading');
-    this.readingClient.subscribeToResponseOf('reading.update-current-reading');
-    this.readingClient.subscribeToResponseOf('reading.create-reading');
-    this.readingClient.subscribeToResponseOf('reading.find-reading-info');
-
-    // Subscribe to legacy topic here as well since we call it from createReading
-    this.readingClient.subscribeToResponseOf(
-      'epaa-legacy.reading.calculate-reading-value',
-    );
-
-    this.readingClient.subscribeToResponseOf(
-      'epaa-legacy.reading.update-current-reading',
-    );
-
-    this.readingClient.subscribeToResponseOf('reading.find-reading-history');
-
-    this.logger.log(
-      'Response patterns:',
-      this.readingClient['responsePatterns'],
-    );
-    this.readingClient.subscribeToResponseOf(
+    /**
+     * Subscribe only to the reply topics owned by the readings bounded context.
+     * epaa-legacy.* subscriptions are managed exclusively by
+     * ReadingLegacyGatewayController via EPAA_LEGACY_READINGS_KAFKA_CLIENT.
+     * Cross-domain subscriptions on the wrong client instance cause the
+     * "did not subscribe to the corresponding reply topic" error.
+     */
+    const replyTopics: string[] = [
+      'reading.find-basic-reading',
+      'reading.update-current-reading',
+      'reading.create-reading',
+      'reading.find-reading-info',
+      'reading.find-reading-history',
       'reading.get-pending-readings-by-month',
-    );
-    this.readingClient.subscribeToResponseOf(
       'reading.get-taken-reading-estimates-or-average',
-    );
-    this.readingClient.subscribeToResponseOf(
       'reading.get-taken-readings-by-month',
+      // Legacy calculate-reading-value is called from createReading using
+      // legacyReadingClient (EPAA_LEGACY_READINGS_KAFKA_CLIENT), which already
+      // subscribes this topic in ReadingLegacyGatewayController.onModuleInit().
+    ];
+
+    replyTopics.forEach((topic) =>
+      this.readingClient.subscribeToResponseOf(topic),
     );
+
     this.logger.log('ReadingController initialized and connected to Kafka');
     await this.readingClient.connect();
   }
