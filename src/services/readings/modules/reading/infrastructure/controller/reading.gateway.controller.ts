@@ -223,6 +223,7 @@ export class ReadingGatewayController implements OnModuleInit {
         consumptionM3:
           readingRequest.currentReading - readingRequest.previousReading,
       };
+      /*
       const readingValue: number = await sendKafkaRequest(
         this.readingClient.send(
           'epaa-legacy.reading.calculate-reading-value',
@@ -233,6 +234,7 @@ export class ReadingGatewayController implements OnModuleInit {
       readingRequest.readingValue = readingValue;
 
       console.log('readingRequest', readingRequest);
+      */
 
       const response: ReadingResponse = await sendKafkaRequest<ReadingResponse>(
         this.readingClient.send('reading.create-reading', readingRequest),
