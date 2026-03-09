@@ -11,7 +11,12 @@ import {
 import { ClientKafka, RpcException } from '@nestjs/microservices';
 import { environments } from '../../../../../../settings/environments/environments';
 import { TrashRateReportParams } from '../../domain/schemas/dto/request/trash-rate-report.params';
-import { TrashRateAuditRowResponse } from '../../domain/schemas/dto/response/trash-rate-report.response';
+import {
+  CollectorPerformanceKPIResponse,
+  DailyCollectorDetailResponse,
+  TrashRateAuditRowResponse,
+  TrashRateKPIResponse,
+} from '../../domain/schemas/dto/response/trash-rate-report.response';
 import { sendKafkaRequest } from '../../../../../../shared/utils/kafka/send.kafka.request';
 import { ApiResponse } from '../../../../../../shared/errors/responses/ApiResponse';
 
@@ -44,6 +49,9 @@ export class TrashRateReportGatewayController implements OnModuleInit {
       'top-debtors',
       'trash-dashboard-kpi',
       'client-trash-detail',
+      'trash-rate-kpi',
+      'collector-performance-kpi',
+      'daily-collector-detail',
     ];
 
     replyTopics.forEach((topic) =>
@@ -243,6 +251,85 @@ export class TrashRateReportGatewayController implements OnModuleInit {
     } catch (error) {
       this.logger.error(
         `Error in getClientTrashDetail: ${error.message}`,
+        error.stack,
+      );
+      throw new RpcException(error);
+    }
+  }
+
+  @Get('trash-rate-kpi')
+  async getTrashRateKPI(
+    @Query() params: TrashRateReportParams,
+    @Req() request: Request,
+  ): Promise<ApiResponse> {
+    try {
+      this.logger.log(
+        `Sending getTrashRateKPI request: ${JSON.stringify(params)}`,
+      );
+      const response: TrashRateKPIResponse[] = await sendKafkaRequest(
+        this.trashRateClient.send('trash-rate-kpi', params),
+      );
+      return new ApiResponse(
+        `Trash rate KPI retrieved successfully!`,
+        response,
+        request.url,
+      );
+    } catch (error) {
+      this.logger.error(
+        `Error in getTrashRateKPI: ${error.message}`,
+        error.stack,
+      );
+      throw new RpcException(error);
+    }
+  }
+
+  @Get('collector-performance-kpi')
+  async getCollectorPerformanceKPI(
+    @Query() params: TrashRateReportParams,
+    @Req() request: Request,
+  ): Promise<ApiResponse> {
+    try {
+      this.logger.log(
+        `Sending getCollectorPerformanceKPI request: ${JSON.stringify(params)}`,
+      );
+      const response: CollectorPerformanceKPIResponse[] =
+        await sendKafkaRequest(
+          this.trashRateClient.send('collector-performance-kpi', params),
+        );
+      return new ApiResponse(
+        `Collector performance KPI retrieved successfully!`,
+        response,
+        request.url,
+      );
+    } catch (error) {
+      this.logger.error(
+        `Error in getCollectorPerformanceKPI: ${error.message}`,
+        error.stack,
+      );
+      throw new RpcException(error);
+    }
+  }
+
+  @Get('daily-collector-detail')
+  async getDailyCollectorDetail(
+    @Query() params: TrashRateReportParams,
+    @Req() request: Request,
+  ): Promise<ApiResponse> {
+    try {
+      this.logger.log(
+        `Sending getDailyCollectorDetail request: ${JSON.stringify(params)}`,
+      );
+      const response: DailyCollectorDetailResponse[] = await sendKafkaRequest(
+        this.trashRateClient.send('daily-collector-detail', params),
+      );
+      return new ApiResponse(
+        `Daily collector detail retrieved successfully!`,
+        response,
+        request.url,
+      );
+    } catch (error) {
+      this.logger.error(
+        `Error in getDailyCollectorDetail: ${error.message}`,
         error.stack,
       );
       throw new RpcException(error);
