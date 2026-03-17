@@ -47,7 +47,7 @@ import { EpaaLegacyFactoryModule } from './services/epaa-legacy/modules/factory/
     CustomerGatewayModule,
     CompanyGatewayModule,
     ConnectionGatewayModule,
-    //PropertyGatewayModule,
+    PropertyGatewayModule,
     ObservationConnectionGatewayModule,
     PhotoConnectionGatewayModule,
     //WorkTypeGatewayModule,
