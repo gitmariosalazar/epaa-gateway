@@ -33,6 +33,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { AuthGuard } from './auth/guard/auth.guard';
 import { LocationGlobalGatewayModule } from './services/location/modules/location/infrastructure/modules/location-global.gateway.module';
 import { EpaaLegacyFactoryModule } from './services/epaa-legacy/modules/factory/epaa-legacy.factory.module';
+import { ConnectionFactoryModule } from './services/connections/modules/factory/epaa-legacy.factory.module';
 
 @Module({
   imports: [
@@ -68,6 +69,7 @@ import { EpaaLegacyFactoryModule } from './services/epaa-legacy/modules/factory/
     AuthGatewayModule,
     LocationGlobalGatewayModule,
     EpaaLegacyFactoryModule,
+    ConnectionFactoryModule,
     JwtModule.register({
       global: true,
       secret: process.env.JWT_SECRET,

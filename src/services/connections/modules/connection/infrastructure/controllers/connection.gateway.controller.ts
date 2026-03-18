@@ -29,7 +29,7 @@ import {
 @ApiTags('Connections Gateway')
 //@ApiBearerAuth()
 //@UseGuards(AuthGuard)
-export class ConnectionGatewayController implements OnModuleInit {
+export class ConnectionGatewayController {
   private readonly logger: Logger = new Logger(
     ConnectionGatewayController.name,
   );
@@ -38,48 +38,6 @@ export class ConnectionGatewayController implements OnModuleInit {
     @Inject(environments.CONNECTION_KAFKA_CLIENT)
     private readonly connectionKafkaClient: ClientKafka,
   ) {}
-
-  onModuleInit() {
-    this.logger.log('ConnectionGatewayController initialized');
-    this.connectionKafkaClient.subscribeToResponseOf(
-      'connections.create-connection',
-    );
-    this.connectionKafkaClient.subscribeToResponseOf(
-      'connections.update-connection',
-    );
-    this.connectionKafkaClient.subscribeToResponseOf(
-      'connections.get-connection-by-id',
-    );
-    this.connectionKafkaClient.subscribeToResponseOf(
-      'connections.get-all-connections',
-    );
-    this.connectionKafkaClient.subscribeToResponseOf(
-      'connections.delete-connection',
-    );
-    this.connectionKafkaClient.subscribeToResponseOf(
-      'connections.verify-connection-exists',
-    );
-    this.connectionKafkaClient.subscribeToResponseOf(
-      'connections.find-connection-by-property-cadastral-key',
-    );
-    this.connectionKafkaClient.subscribeToResponseOf(
-      'connections.find-connection-with-property-by-cadastral-key',
-    );
-
-    this.connectionKafkaClient.subscribeToResponseOf(
-      'connections.get-all-connections-with-property',
-    );
-
-    this.connectionKafkaClient.subscribeToResponseOf(
-      'connections.get-connections-paginated',
-    );
-
-    this.logger.log(
-      'Response patterns:',
-      this.connectionKafkaClient['responsePatterns'],
-    );
-    this.connectionKafkaClient.connect();
-  }
 
   @Post('create-connection')
   @ApiOperation({

@@ -27,32 +27,15 @@ import { ObservationConnectionResponse } from '../../domain/schemas/dto/response
 @ApiTags('Observation-Connection')
 //@ApiBearerAuth()
 //@UseGuards(AuthGuard)
-export class ObservationConnectionGatewayController implements OnModuleInit {
+export class ObservationConnectionGatewayController {
   private readonly logger = new Logger(
     ObservationConnectionGatewayController.name,
   );
 
   constructor(
-    @Inject(environments.OBSERVATION_CONNECTION_KAFKA_CLIENT)
+    @Inject(environments.CONNECTION_KAFKA_CLIENT)
     private readonly kafkaClient: ClientKafka,
   ) {}
-
-  async onModuleInit() {
-    this.kafkaClient.subscribeToResponseOf(
-      'observation-connection.create-observation-connection',
-    );
-    this.kafkaClient.subscribeToResponseOf(
-      'observation-connection.get-observation-connections-by-observation-id',
-    );
-    this.kafkaClient.subscribeToResponseOf(
-      'observation-connection.get-observation-connections-by-connection-id',
-    );
-    this.kafkaClient.subscribeToResponseOf(
-      'observation-connection.get-all-observation-connections',
-    );
-    await this.kafkaClient.connect();
-  }
-
   @Post('create-observation-connection')
   @ApiOperation({ summary: 'Create a new observation connection' })
   async createObservationConnection(

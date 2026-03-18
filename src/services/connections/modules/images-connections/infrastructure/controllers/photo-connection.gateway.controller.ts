@@ -29,27 +29,12 @@ import { PhotoConnectionResponse } from '../../domain/schemas/dto/response/photo
 @ApiTags('Photo Connection')
 //@ApiBearerAuth()
 //@UseGuards(AuthGuard)
-export class PhotoConnectionGatewayController implements OnModuleInit {
+export class PhotoConnectionGatewayController {
   private readonly logger = new Logger(PhotoConnectionGatewayController.name);
   constructor(
-    @Inject(environments.PHOTO_CONNECTION_KAFKA_CLIENT)
+    @Inject(environments.CONNECTION_KAFKA_CLIENT)
     private readonly photoConnectionClient: ClientKafka,
   ) {}
-
-  async onModuleInit() {
-    this.logger.log('PhotoConnectionGatewayController initialized');
-    this.photoConnectionClient.subscribeToResponseOf(
-      'photo-connection.create-photo-connection',
-    );
-    this.photoConnectionClient.subscribeToResponseOf(
-      'photo-connection.get-photo-connections-by-cadastral-key',
-    );
-    this.logger.log(
-      'Response patterns:',
-      this.photoConnectionClient['responsePatterns'],
-    );
-    await this.photoConnectionClient.connect();
-  }
 
   @Post('create-photo-connection')
   @UseInterceptors(

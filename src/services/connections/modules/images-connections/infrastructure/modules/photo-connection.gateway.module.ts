@@ -3,29 +3,11 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
 import { PhotoConnectionGatewayController } from '../controllers/photo-connection.gateway.controller';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { environments } from '../../../../../../settings/environments/environments';
+import { KafkaConnectionsModule } from '../../../../kafka/kafka-connections.module';
 
 @Module({
   imports: [
-    ClientsModule.register([
-      {
-        name: environments.PHOTO_CONNECTION_KAFKA_CLIENT!,
-        transport: Transport.KAFKA,
-        options: {
-          client: {
-            brokers: [environments.KAFKA_BROKER_URL!],
-          },
-          consumer: {
-            groupId: environments.PHOTO_CONNECTION_KAFKA_GROUP_ID!,
-            sessionTimeout: 30000,
-            heartbeatInterval: 10000,
-            rebalanceTimeout: 60000,
-            subscribe: {
-              fromBeginning: true,
-            },
-          },
-        },
-      },
-    ]),
+    KafkaConnectionsModule,
 
     ServeStaticModule.forRoot(
       ...[
@@ -44,6 +26,6 @@ import { environments } from '../../../../../../settings/environments/environmen
   ],
   controllers: [PhotoConnectionGatewayController],
   providers: [],
-  exports: [ ClientsModule, ServeStaticModule],
+  exports: [ServeStaticModule],
 })
 export class PhotoConnectionGatewayModule {}
