@@ -162,7 +162,7 @@ export class ReadingGatewayController implements OnModuleInit {
         readingRequest.readingMonth.toString().split('-')[0],
       );
       updateReadingLegacyRequest.month =
-        MONTHS[readingRequest.readingMonth.toString().split('-')[1]];
+        MONTHS[parseInt(readingRequest.readingMonth.toString().split('-')[1])];
       updateReadingLegacyRequest.incomeCode = response.rentalIncomeCode;
       updateReadingLegacyRequest.currentReading = response.currentReading ?? 0;
       updateReadingLegacyRequest.previousReading =

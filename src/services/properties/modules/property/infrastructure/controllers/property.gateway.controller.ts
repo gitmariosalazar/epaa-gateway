@@ -54,6 +54,9 @@ export class PropertyGatewayController implements OnModuleInit {
     this.propertyKafkaClient.subscribeToResponseOf(
       'properties.verify-property-exists',
     );
+    this.propertyKafkaClient.subscribeToResponseOf(
+      'properties.get-properties-by-owner',
+    );
     this.logger.log(
       'Response patterns:',
       this.propertyKafkaClient['responsePatterns'],
@@ -249,6 +252,42 @@ export class PropertyGatewayController implements OnModuleInit {
       );
       return new ApiResponse(
         `Property existence verified successfully!`,
+        response,
+        request.url,
+      );
+    } catch (error) {
+      throw new RpcException(error);
+    }
+  }
+
+  @Get('get-properties-by-owner/:clientId')
+  @ApiOperation({
+    summary: 'Method GET - Get properties by owner',
+    description:
+      'The endpoint allows you to retrieve properties by owner with pagination',
+  })
+  async getPropertiesByOwner(
+    @Req() request: Request,
+    @Param('clientId') clientId: string,
+    @Query('limit') limit?: number,
+    @Query('offset') offset?: number,
+  ): Promise<ApiResponse> {
+    try {
+      this.logger.log(
+        `Received request to get properties by owner with clientId=${clientId}, limit=${limit} and offset=${offset}`,
+      );
+      const response = await sendKafkaRequest(
+        this.propertyKafkaClient.send('properties.get-properties-by-owner', {
+          clientId,
+          limit,
+          offset,
+        }),
+      );
+      this.logger.log(
+        `Properties retrieved successfully: ${JSON.stringify(response)}`,
+      );
+      return new ApiResponse(
+        `Properties retrieved successfully!`,
         response,
         request.url,
       );

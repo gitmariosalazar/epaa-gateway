@@ -23,6 +23,8 @@ export class KafkaConnectionReplySubscriberService implements OnModuleInit {
       'connections.find-connection-with-property-by-cadastral-key',
       'connections.get-all-connections-with-property',
       'connections.get-connections-paginated',
+      'connections.find-connections-by-sector',
+      'connections.find-connections-by-client-id',
     ];
     const photoConnectionReplyPatterns: string[] = [
       'photo-connection.create-photo-connection',

@@ -129,6 +129,77 @@ export class ConnectionGatewayController {
     }
   }
 
+  @Get('find-connections-by-sector/:sector')
+  @ApiOperation({
+    summary: 'Method GET - Find connections by sector',
+    description: 'The endpoint allows you to find connections by their sector',
+  })
+  async findConnectionsBySector(
+    @Req() request: Request,
+    @Param('sector') sector: string,
+    @Query('limit') limit?: number,
+    @Query('offset') offset?: number,
+  ): Promise<ApiResponse> {
+    try {
+      this.logger.log(
+        `Received request to find connections by sector: ${sector} with limit=${limit} and offset=${offset}`,
+      );
+      const response: ConnectionResponse[] = await sendKafkaRequest(
+        this.connectionKafkaClient.send(
+          'connections.find-connections-by-sector',
+          {
+            sector,
+            limit,
+            offset,
+          },
+        ),
+      );
+      return new ApiResponse(
+        `Connections found successfully!`,
+        response,
+        request.url,
+      );
+    } catch (error) {
+      throw new RpcException(error);
+    }
+  }
+
+  @Get('find-connections-by-client-id/:clientId')
+  @ApiOperation({
+    summary: 'Method GET - Find connections by client ID',
+    description:
+      'The endpoint allows you to find connections by their client ID',
+  })
+  async findConnectionsByClientId(
+    @Req() request: Request,
+    @Param('clientId') clientId: string,
+    @Query('limit') limit?: number,
+    @Query('offset') offset?: number,
+  ): Promise<ApiResponse> {
+    try {
+      this.logger.log(
+        `Received request to find connections by client ID: ${clientId} with limit=${limit} and offset=${offset}`,
+      );
+      const response: ConnectionResponse[] = await sendKafkaRequest(
+        this.connectionKafkaClient.send(
+          'connections.find-connections-by-client-id',
+          {
+            clientId,
+            limit,
+            offset,
+          },
+        ),
+      );
+      return new ApiResponse(
+        `Connections found successfully!`,
+        response,
+        request.url,
+      );
+    } catch (error) {
+      throw new RpcException(error);
+    }
+  }
+
   @Get('get-all-connections')
   @ApiOperation({
     summary: 'Method GET - Get all connections',
