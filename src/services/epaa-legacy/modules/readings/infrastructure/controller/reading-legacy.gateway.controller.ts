@@ -22,6 +22,7 @@ import { FindCurrentReadingParams } from '../../domain/schemas/dto/request/find-
 import { UpdateReadingLegacyRequest } from '../../domain/schemas/dto/request/update.reading.request';
 import { AuthGuard } from '../../../../../../auth/guard/auth.guard';
 import {
+  OverduePaymentResponse,
   PaymentReadingResponse,
   PaymentResponse,
   PendingReadingResponse,
@@ -61,6 +62,8 @@ export class ReadingLegacyGatewayController implements OnModuleInit {
       'epaa-legacy.reading.get-daily-collector-summary',
       'epaa-legacy.reading.get-daily-payment-method-report',
       'epaa-legacy.reading.get-full-breakdown-report',
+      'epaa-legacy.reading.find-all-overdue-payments',
+      'epaa-legacy.reading.find-pending-reading-by-cadastral-key-or-card-id-all',
     ];
 
     messagePatterns.forEach((pattern) => {
@@ -316,6 +319,47 @@ export class ReadingLegacyGatewayController implements OnModuleInit {
       const response: PendingReadingResponse[] = await sendKafkaRequest(
         this.readingClient.send(
           'epaa-legacy.reading.find-pending-reading-by-cadastral-key-or-card-id',
+          params,
+        ),
+      );
+
+      return new ApiResponse(
+        `Pending reading by cadastral key or card id found successfully!`,
+        response,
+        request.url,
+      );
+    } catch (error) {
+      this.logger.error(
+        `Error in findPendingReadingByCadastralKeyOrCardId: ${error.message}`,
+        error.stack,
+      );
+      throw new RpcException(error);
+    }
+  }
+
+  @Get('find-pending-reading-by-cadastral-key-or-card-id-all/:searchValue')
+  @ApiOperation({
+    summary:
+      'Method GET - Find Pending Reading by Cadastral Key or Card ID (Legacy) - All',
+    description:
+      'The endpoint allows you to find pending readings by cadastral key or card id (Legacy) - All',
+  })
+  async findPendingReadingByCadastralKeyOrCardIdAll(
+    @Req() request: Request,
+    @Param('searchValue') searchValue: string,
+  ): Promise<ApiResponse> {
+    try {
+      this.logger.log(
+        `Sending findPendingReadingByCadastralKeyOrCardIdAll request: ${JSON.stringify(searchValue)}`,
+      );
+
+      const params = {
+        searchValue: searchValue,
+      };
+
+      const response: PendingReadingResponse[] = await sendKafkaRequest(
+        this.readingClient.send(
+          'epaa-legacy.reading.find-pending-reading-by-cadastral-key-or-card-id-all',
           params,
         ),
       );
@@ -622,6 +666,47 @@ export class ReadingLegacyGatewayController implements OnModuleInit {
     } catch (error) {
       this.logger.error(
         `Error in getFullBreakdownReport: ${error.message}`,
+        error.stack,
+      );
+      throw new RpcException(error);
+    }
+  }
+
+  @Get('find-all-overdue-payments/:limit/:offset')
+  @ApiOperation({
+    summary: 'Method GET - Find All Overdue Payments (Legacy)',
+    description:
+      'The endpoint allows you to find all overdue payments (Legacy)',
+  })
+  async findAllOverduePayments(
+    @Req() request: Request,
+    @Param('limit') limit: number,
+    @Param('offset') offset: number,
+  ): Promise<ApiResponse> {
+    try {
+      const params = {
+        limit: limit,
+        offset: offset,
+      };
+      this.logger.log(
+        `Sending findAllOverduePayments request: ${JSON.stringify(params)}`,
+      );
+
+      const response: OverduePaymentResponse[] = await sendKafkaRequest(
+        this.readingClient.send(
+          'epaa-legacy.reading.find-all-overdue-payments',
+          params,
+        ),
+      );
+
+      return new ApiResponse(
+        `All overdue payments retrieved successfully!`,
+        response,
+        request.url,
+      );
+    } catch (error) {
+      this.logger.error(
+        `Error in findAllOverduePayments: ${error.message}`,
         error.stack,
       );
       throw new RpcException(error);
