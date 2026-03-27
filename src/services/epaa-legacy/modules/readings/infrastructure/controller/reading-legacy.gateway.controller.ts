@@ -23,10 +23,12 @@ import { UpdateReadingLegacyRequest } from '../../domain/schemas/dto/request/upd
 import { AuthGuard } from '../../../../../../auth/guard/auth.guard';
 import {
   OverduePaymentResponse,
+  OverdueSummaryResponse,
   PaymentReadingResponse,
   PaymentResponse,
   PendingReadingResponse,
   ReadingResponse,
+  YearlyOverdueSummaryResponse,
 } from '../../domain/schemas/dto/response/readings.response';
 import { CalculateReadingValueParams } from '../../domain/schemas/dto/request/calculate-reading-value-params';
 import {
@@ -64,6 +66,8 @@ export class ReadingLegacyGatewayController implements OnModuleInit {
       'epaa-legacy.reading.get-full-breakdown-report',
       'epaa-legacy.reading.find-all-overdue-payments',
       'epaa-legacy.reading.find-pending-reading-by-cadastral-key-or-card-id-all',
+      'epaa-legacy.reading.find-overdue-summary',
+      'epaa-legacy.reading.find-yearly-overdue-summary',
     ];
 
     messagePatterns.forEach((pattern) => {
@@ -707,6 +711,70 @@ export class ReadingLegacyGatewayController implements OnModuleInit {
     } catch (error) {
       this.logger.error(
         `Error in findAllOverduePayments: ${error.message}`,
+        error.stack,
+      );
+      throw new RpcException(error);
+    }
+  }
+
+  @Get('find-overdue-summary')
+  @ApiOperation({
+    summary: 'Method GET - Find Overdue Summary (Legacy)',
+    description: 'The endpoint allows you to find overdue summary (Legacy)',
+  })
+  async findOverdueSummary(@Req() request: Request): Promise<ApiResponse> {
+    try {
+      this.logger.log(
+        `Sending findOverdueSummary request: ${JSON.stringify({})}`,
+      );
+
+      const response: OverdueSummaryResponse = await sendKafkaRequest(
+        this.readingClient.send('epaa-legacy.reading.find-overdue-summary', {}),
+      );
+
+      return new ApiResponse(
+        `Overdue summary retrieved successfully!`,
+        response,
+        request.url,
+      );
+    } catch (error) {
+      this.logger.error(
+        `Error in findOverdueSummary: ${error.message}`,
+        error.stack,
+      );
+      throw new RpcException(error);
+    }
+  }
+
+  @Get('find-yearly-overdue-summary')
+  @ApiOperation({
+    summary: 'Method GET - Find Yearly Overdue Summary (Legacy)',
+    description:
+      'The endpoint allows you to find yearly overdue summary (Legacy)',
+  })
+  async findYearlyOverdueSummary(
+    @Req() request: Request,
+  ): Promise<ApiResponse> {
+    try {
+      this.logger.log(
+        `Sending findYearlyOverdueSummary request: ${JSON.stringify({})}`,
+      );
+
+      const response: YearlyOverdueSummaryResponse[] = await sendKafkaRequest(
+        this.readingClient.send(
+          'epaa-legacy.reading.find-yearly-overdue-summary',
+          {},
+        ),
+      );
+
+      return new ApiResponse(
+        `Yearly Overdue summary retrieved successfully!`,
+        response,
+        request.url,
+      );
+    } catch (error) {
+      this.logger.error(
+        `Error in findYearlyOverdueSummary: ${error.message}`,
         error.stack,
       );
       throw new RpcException(error);
