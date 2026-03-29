@@ -22,6 +22,7 @@ import { FindCurrentReadingParams } from '../../domain/schemas/dto/request/find-
 import { UpdateReadingLegacyRequest } from '../../domain/schemas/dto/request/update.reading.request';
 import { AuthGuard } from '../../../../../../auth/guard/auth.guard';
 import {
+  MonthlyDebtSummaryResponse,
   OverduePaymentResponse,
   OverdueSummaryResponse,
   PaymentReadingResponse,
@@ -68,6 +69,7 @@ export class ReadingLegacyGatewayController implements OnModuleInit {
       'epaa-legacy.reading.find-pending-reading-by-cadastral-key-or-card-id-all',
       'epaa-legacy.reading.find-overdue-summary',
       'epaa-legacy.reading.find-yearly-overdue-summary',
+      'epaa-legacy.reading.find-monthly-debt-summary',
     ];
 
     messagePatterns.forEach((pattern) => {
@@ -775,6 +777,39 @@ export class ReadingLegacyGatewayController implements OnModuleInit {
     } catch (error) {
       this.logger.error(
         `Error in findYearlyOverdueSummary: ${error.message}`,
+        error.stack,
+      );
+      throw new RpcException(error);
+    }
+  }
+
+  @Get('find-monthly-debt-summary')
+  @ApiOperation({
+    summary: 'Method GET - Find Monthly Debt Summary (Legacy)',
+    description:
+      'The endpoint allows you to find monthly debt summary (Legacy)',
+  })
+  async findMonthlyDebtSummary(@Req() request: Request): Promise<ApiResponse> {
+    try {
+      this.logger.log(
+        `Sending findMonthlyDebtSummary request: ${JSON.stringify({})}`,
+      );
+
+      const response: MonthlyDebtSummaryResponse[] = await sendKafkaRequest(
+        this.readingClient.send(
+          'epaa-legacy.reading.find-monthly-debt-summary',
+          {},
+        ),
+      );
+
+      return new ApiResponse(
+        `Monthly Debt summary retrieved successfully!`,
+        response,
+        request.url,
+      );
+    } catch (error) {
+      this.logger.error(
+        `Error in findMonthlyDebtSummary: ${error.message}`,
         error.stack,
       );
       throw new RpcException(error);
