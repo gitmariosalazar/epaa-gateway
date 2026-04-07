@@ -25,6 +25,7 @@ export class KafkaConnectionReplySubscriberService implements OnModuleInit {
       'connections.get-connections-paginated',
       'connections.find-connections-by-sector',
       'connections.find-connections-by-client-id',
+      'connections.get-advance-dashboard-stats',
     ];
     const photoConnectionReplyPatterns: string[] = [
       'photo-connection.create-photo-connection',

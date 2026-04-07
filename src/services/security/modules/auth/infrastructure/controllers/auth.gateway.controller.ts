@@ -6,6 +6,7 @@ import {
   Post,
   Req,
   Res,
+  UseGuards,
 } from '@nestjs/common';
 import { ClientKafka, RpcException } from '@nestjs/microservices';
 import { environments } from '../../../../../../settings/environments/environments';
@@ -14,8 +15,9 @@ import { AuthRequest } from '../../domain/schemas/dto/request/auth.request';
 import { ApiResponse } from '../../../../../../shared/errors/responses/ApiResponse';
 import { sendKafkaRequest } from '../../../../../../shared/utils/kafka/send.kafka.request';
 import { AuthResponse } from '../../domain/schemas/dto/response/auth.response';
-import { Response } from 'express';
+import { Response, Request as ExpressRequest } from 'express';
 import { parseExpirationToSeconds } from '../../../../../../shared/utils/jwt/time.util';
+import { AuthGuard } from '../../../../../../auth/guard/auth.guard';
 
 @Controller('auth')
 export class AuthGatewayController implements OnModuleInit {
@@ -28,6 +30,8 @@ export class AuthGatewayController implements OnModuleInit {
     const requestPatterns = [
       'authentication.auth.signin',
       'authentication.auth.signup',
+      'authentication.auth.signout',
+      'authentication.auth.refresh',
     ];
 
     requestPatterns.forEach((pattern) => {
@@ -62,8 +66,7 @@ export class AuthGatewayController implements OnModuleInit {
           secure: false, // environments.COOKIE_SECURE,
           sameSite: 'lax', //environments.COOKIE_SAME_SITE,
           path: '/',
-          maxAge:
-            parseExpirationToSeconds(environments.JWT_ACCESS_EXPIRATION) * 1000, //environments.JWT_ACCESS_TOKEN_EXPIRES_IN * 1000, // Convertir a milisegundos
+          maxAge: parseExpirationToSeconds(environments.JWT_ACCESS_EXPIRATION), //environments.JWT_ACCESS_TOKEN_EXPIRES_IN * 1000, // Convertir a milisegundos
         });
       }
 
@@ -87,15 +90,29 @@ export class AuthGatewayController implements OnModuleInit {
   }
 
   @Post('signout')
+  @UseGuards(AuthGuard)
   @ApiOperation({
     summary: 'Sign out user',
     description: 'Endpoint to sign out a user',
   })
   async signOut(
     @Res({ passthrough: true }) res: Response,
-    @Req() request: Request,
+    @Req() request: ExpressRequest,
+    @Body() payload: { refreshToken?: string },
   ): Promise<ApiResponse> {
     try {
+      const user = request['user'];
+
+      // Notificar al microservicio para invalidar tokens y auditar LOGOUT
+      if (user?.sub) {
+        await sendKafkaRequest(
+          this.authKafkaClient.send('authentication.auth.signout', {
+            userId: user.sub,
+            refreshToken: payload?.refreshToken,
+          }),
+        );
+      }
+
       res.clearCookie('auth_token', {
         httpOnly: true,
         secure: true, // environments.COOKIE_SECURE,
@@ -106,6 +123,30 @@ export class AuthGatewayController implements OnModuleInit {
       return new ApiResponse('Sign Out successfully!', null, request.url);
     } catch (error) {
       throw new RpcException(error);
+    }
+  }
+
+  @Post('refresh')
+  @ApiOperation({
+    summary: 'Refresh access token',
+    description: 'Endpoint to get a new access token using a refresh token',
+  })
+  async refresh(
+    @Req() request: ExpressRequest,
+    @Body() payload: { refreshToken: string },
+  ): Promise<ApiResponse> {
+    try {
+      const kafkaResponse: AuthResponse = await sendKafkaRequest(
+        this.authKafkaClient.send('authentication.auth.refresh', payload),
+      );
+
+      return new ApiResponse(
+        'Token refreshed successfully!',
+        kafkaResponse,
+        request.url,
+      );
+    } catch (error) {
+      throw error;
     }
   }
 }

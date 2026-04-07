@@ -27,6 +27,7 @@ import { CategoriesModule } from './services/security/modules/categories/infrast
 import { PermissionGatewayModule } from './services/security/modules/permissions/infrastructure/modules/permission.gateway.module';
 import { RolPermissionGatewayModule } from './services/security/modules/rol-permission/infrastructure/modules/rol-permission.gateway.module';
 import { UserGatewayModule } from './services/security/modules/users/infrastructure/modules/user.gateway.module';
+import { AuditGatewayModule } from './services/security/modules/audit/infrastructure/modules/audit.gateway.module';
 import { UserEmployeeGatewayModule } from './services/security/modules/user-employee/infrastructure/modules/user-employee.gateway.module';
 import { AuthGatewayModule } from './services/security/modules/auth/infrastructure/modules/auth.gateway.module';
 import { JwtModule } from '@nestjs/jwt';
@@ -34,6 +35,8 @@ import { AuthGuard } from './auth/guard/auth.guard';
 import { LocationGlobalGatewayModule } from './services/location/modules/location/infrastructure/modules/location-global.gateway.module';
 import { EpaaLegacyFactoryModule } from './services/epaa-legacy/modules/factory/epaa-legacy.factory.module';
 import { ConnectionFactoryModule } from './services/connections/modules/factory/epaa-legacy.factory.module';
+import { AuditContextInterceptor } from './shared/interceptors/audit-context.interceptor';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 
 @Module({
   imports: [
@@ -65,6 +68,7 @@ import { ConnectionFactoryModule } from './services/connections/modules/factory/
     PermissionGatewayModule,
     RolPermissionGatewayModule,
     UserGatewayModule,
+    AuditGatewayModule,
     UserEmployeeGatewayModule,
     AuthGatewayModule,
     LocationGlobalGatewayModule,
@@ -77,7 +81,13 @@ import { ConnectionFactoryModule } from './services/connections/modules/factory/
     }),
   ],
   controllers: [],
-  providers: [AuthGuard],
+  providers: [
+    AuthGuard,
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: AuditContextInterceptor,
+    },
+  ],
   exports: [AuthGuard],
 })
 export class AppModule {}

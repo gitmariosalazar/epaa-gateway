@@ -1,25 +1,20 @@
 import { Module } from '@nestjs/common';
-import { ClientsModule, Transport } from '@nestjs/microservices';
 import { environments } from '../../settings/environments/environments';
+import { provideContextualKafkaClient } from './provide-contextual-kafka';
+
+const qrcodeKafkaProvider = provideContextualKafkaClient(environments.QRCODE_KAFKA_CLIENT, {
+  client: {
+    clientId: environments.QRCODE_KAFKA_CLIENT_ID!,
+    brokers: [`${environments.KAFKA_BROKER_URL}`],
+  },
+  consumer: {
+    groupId: environments.QRCODE_KAFKA_GROUP_ID!,
+  },
+});
 
 @Module({
-  imports: [
-    ClientsModule.register([
-      {
-        name: environments.QRCODE_KAFKA_CLIENT,
-        transport: Transport.KAFKA,
-        options: {
-          client: {
-            clientId: environments.QRCODE_KAFKA_CLIENT_ID!,
-            brokers: [`${environments.KAFKA_BROKER_URL}`],
-          },
-          consumer: {
-            groupId: environments.QRCODE_KAFKA_GROUP_ID!,
-          },
-        },
-      },
-    ]),
-  ],
-  exports: [ClientsModule],
+  imports: [],
+  providers: [qrcodeKafkaProvider],
+  exports: [qrcodeKafkaProvider.provide],
 })
 export class QRCodeKafkaModule { }

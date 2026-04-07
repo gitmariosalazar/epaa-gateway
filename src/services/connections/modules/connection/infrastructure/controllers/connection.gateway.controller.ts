@@ -39,6 +39,33 @@ export class ConnectionGatewayController {
     private readonly connectionKafkaClient: ClientKafka,
   ) {}
 
+  @Get('dashboard/advancement-stats')
+  @ApiOperation({
+    summary: 'Method GET - Get advancement dashboard stats',
+    description:
+      'Retrieves consolidated stats for the connections advancement dashboard',
+  })
+  async getAdvanceDashboardStats(
+    @Req() request: Request,
+  ): Promise<ApiResponse> {
+    try {
+      this.logger.log(`Received request to get advancement dashboard stats`);
+      const response: any = await sendKafkaRequest(
+        this.connectionKafkaClient.send(
+          'connections.get-advance-dashboard-stats',
+          {},
+        ),
+      );
+      return new ApiResponse(
+        `Dashboard stats retrieved successfully!`,
+        response,
+        request.url,
+      );
+    } catch (error) {
+      throw new RpcException(error);
+    }
+  }
+
   @Post('create-connection')
   @ApiOperation({
     summary: 'Method POST - Create a new connection',
