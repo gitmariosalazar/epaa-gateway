@@ -7,16 +7,29 @@ const epaaLegacyKafkaProviders = [
   provideContextualKafkaClient(environments.EPAA_LEGACY_READINGS_KAFKA_CLIENT, {
     client: {
       brokers: [environments.KAFKA_BROKER_URL],
-      clientId: environments.EPAA_LEGACY_READINGS_KAFKA_CLIENT_ID,
+      // Adding -gateway avoids collision with the microservice which uses the exact same variable
+      clientId: `${environments.EPAA_LEGACY_READINGS_KAFKA_CLIENT_ID}-gw-v3`,
     },
     consumer: {
-      groupId: environments.EPAA_LEGACY_READINGS_KAFKA_GROUP_ID,
-      sessionTimeout: 60000,
-      heartbeatInterval: 5000,
-      rebalanceTimeout: 120000,
-      subscribe: {
-        fromBeginning: true,
-      },
+      groupId: `${environments.EPAA_LEGACY_READINGS_KAFKA_GROUP_ID}-gw-v3`,
+      sessionTimeout: 30000,
+      heartbeatInterval: 10000,
+      rebalanceTimeout: 60000,
+      subscribe: { fromBeginning: true },
+    },
+  }),
+  // Epaa Legacy Accounting Kafka Client
+  provideContextualKafkaClient('EPAA_LEGACY_ACCOUNTING_KAFKA_CLIENT', {
+    client: {
+      brokers: [environments.KAFKA_BROKER_URL],
+      clientId: `${environments.EPAA_LEGACY_READINGS_KAFKA_CLIENT_ID}-acc-gw-v3`,
+    },
+    consumer: {
+      groupId: `${environments.EPAA_LEGACY_READINGS_KAFKA_GROUP_ID}-acc-gw-v3`,
+      sessionTimeout: 30000,
+      heartbeatInterval: 10000,
+      rebalanceTimeout: 60000,
+      subscribe: { fromBeginning: true },
     },
   }),
 ];
