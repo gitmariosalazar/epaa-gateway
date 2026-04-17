@@ -28,7 +28,11 @@ import {
   DailyPaymentMethodReport,
   FullBreakdownReport,
 } from '../../../readings/domain/schemas/dto/response/entry-data.response';
-import { GeneralCollectionsParams, GeneralTrendCollectionsParams } from '../../domain/schemas/dto/request/general-collection.params';
+import {
+  AgreementsParams,
+  GeneralCollectionsParams,
+  GeneralTrendCollectionsParams,
+} from '../../domain/schemas/dto/request/general-collection.params';
 
 @Controller('accounting')
 @ApiTags('Accounting - Legacy')
@@ -63,6 +67,8 @@ export class AccountingLegacyGatewayController implements OnModuleInit {
       'epaa-legacy.accounting.get-general-monthly-collection-grouped-report',
       'epaa-legacy.accounting.get-general-yearly-collection-kpi',
       'epaa-legacy.accounting.get-general-monthly-collection-kpi',
+      //AGrreements
+      'epaa-legacy.accounting.get-agreements-kpi',
     ];
 
     messagePatterns.forEach((pattern) => {
@@ -577,7 +583,10 @@ export class AccountingLegacyGatewayController implements OnModuleInit {
     description:
       'The endpoint allows you to get general collection KPI (Legacy)',
   })
-  async getGeneralCollectionKPI(@Req() request: Request, @Query() params: GeneralCollectionsParams): Promise<ApiResponse> {
+  async getGeneralCollectionKPI(
+    @Req() request: Request,
+    @Query() params: GeneralCollectionsParams,
+  ): Promise<ApiResponse> {
     try {
       this.logger.log(`Sending getGeneralCollectionKPI request`);
       const response = await sendKafkaRequest(
@@ -677,7 +686,9 @@ export class AccountingLegacyGatewayController implements OnModuleInit {
     @Query() params: GeneralTrendCollectionsParams,
   ): Promise<ApiResponse> {
     try {
-      this.logger.log(`Sending getGeneralYearlyCollectionGroupedReport request`);
+      this.logger.log(
+        `Sending getGeneralYearlyCollectionGroupedReport request`,
+      );
       const response = await sendKafkaRequest(
         this.kafkaClient.send(
           'epaa-legacy.accounting.get-general-yearly-collection-grouped-report',
@@ -710,7 +721,9 @@ export class AccountingLegacyGatewayController implements OnModuleInit {
     @Query() params: GeneralTrendCollectionsParams,
   ): Promise<ApiResponse> {
     try {
-      this.logger.log(`Sending getGeneralMonthlyCollectionGroupedReport request`);
+      this.logger.log(
+        `Sending getGeneralMonthlyCollectionGroupedReport request`,
+      );
       const response = await sendKafkaRequest(
         this.kafkaClient.send(
           'epaa-legacy.accounting.get-general-monthly-collection-grouped-report',
@@ -789,6 +802,37 @@ export class AccountingLegacyGatewayController implements OnModuleInit {
     } catch (error) {
       this.logger.error(
         `Error in getGeneralMonthlyCollectionKPI: ${error.message}`,
+        error.stack,
+      );
+      throw new RpcException(error);
+    }
+  }
+
+  @Get('get-agreements-kpi')
+  @ApiOperation({
+    summary: 'Method GET - Get Agreements KPI (Legacy)',
+    description: 'The endpoint allows you to get agreements KPI (Legacy)',
+  })
+  async getAgreementsKPI(
+    @Req() request: Request,
+    @Query() params: AgreementsParams,
+  ): Promise<ApiResponse> {
+    try {
+      this.logger.log(`Sending getAgreementsKPI request`);
+      const response = await sendKafkaRequest(
+        this.kafkaClient.send(
+          'epaa-legacy.accounting.get-agreements-kpi',
+          params,
+        ),
+      );
+      return new ApiResponse(
+        'Agreements KPI retrieved successfully!',
+        response,
+        request.url,
+      );
+    } catch (error) {
+      this.logger.error(
+        `Error in getAgreementsKPI: ${error.message}`,
         error.stack,
       );
       throw new RpcException(error);
