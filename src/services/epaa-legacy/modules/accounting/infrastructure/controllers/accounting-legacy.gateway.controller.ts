@@ -26,13 +26,17 @@ import {
   DailyCollectorSummary,
   DailyGroupedReport,
   DailyPaymentMethodReport,
+  DateRangeParams,
   FullBreakdownReport,
 } from '../../../readings/domain/schemas/dto/response/entry-data.response';
 import {
-  AgreementsParams,
   GeneralCollectionsParams,
   GeneralTrendCollectionsParams,
 } from '../../domain/schemas/dto/request/general-collection.params';
+import {
+  AgreementsCustomerParams,
+  AgreementsParams,
+} from '../../domain/schemas/dto/request/agreements.params';
 
 @Controller('accounting')
 @ApiTags('Accounting - Legacy')
@@ -69,6 +73,13 @@ export class AccountingLegacyGatewayController implements OnModuleInit {
       'epaa-legacy.accounting.get-general-monthly-collection-kpi',
       //AGrreements
       'epaa-legacy.accounting.get-agreements-kpi',
+      'epaa-legacy.accounting.get-agreements-kpi-customer',
+      'epaa-legacy.accounting.get-agreement-installment-details',
+      'epaa-legacy.accounting.get-monthly-collection-summary',
+      'epaa-legacy.accounting.get-debtors-with-risk',
+      'epaa-legacy.accounting.get-collector-performance',
+      'epaa-legacy.accounting.get-payment-method-summary',
+      'epaa-legacy.accounting.get-citizen-summary',
     ];
 
     messagePatterns.forEach((pattern) => {
@@ -833,6 +844,222 @@ export class AccountingLegacyGatewayController implements OnModuleInit {
     } catch (error) {
       this.logger.error(
         `Error in getAgreementsKPI: ${error.message}`,
+        error.stack,
+      );
+      throw new RpcException(error);
+    }
+  }
+
+  @Get('get-agreements-kpi-customer/:cardId')
+  @ApiOperation({
+    summary: 'Method GET - Get Agreements KPI by Customer (Legacy)',
+    description:
+      'The endpoint allows you to get agreements KPI by customer (Legacy)',
+  })
+  async getAgreementsKpiCustomer(
+    @Req() request: Request,
+    @Param('cardId') cardId: string,
+    @Query() params: AgreementsCustomerParams,
+  ): Promise<ApiResponse> {
+    try {
+      this.logger.log(`Sending getAgreementsKpiCustomer request`);
+      const data = { cardId, params };
+      const response = await sendKafkaRequest(
+        this.kafkaClient.send(
+          'epaa-legacy.accounting.get-agreements-kpi-customer',
+          data,
+        ),
+      );
+      return new ApiResponse(
+        'Agreements KPI by customer retrieved successfully!',
+        response,
+        request.url,
+      );
+    } catch (error) {
+      this.logger.error(
+        `Error in getAgreementsKpiCustomer: ${error.message}`,
+        error.stack,
+      );
+      throw new RpcException(error);
+    }
+  }
+
+  @Get('get-agreement-installment-details/:cardId')
+  @ApiOperation({
+    summary: 'Method GET - Get Agreement Installment Details (Legacy)',
+    description:
+      'The endpoint allows you to get agreement installment details (Legacy)',
+  })
+  async getAgreementInstallmentDetails(
+    @Req() request: Request,
+    @Param('cardId') cardId: string,
+    @Query() params: DateRangeParams,
+  ): Promise<ApiResponse> {
+    try {
+      this.logger.log(`Sending getAgreementInstallmentDetails request`);
+      const response = await sendKafkaRequest(
+        this.kafkaClient.send(
+          'epaa-legacy.accounting.get-agreement-installment-details',
+          { cardId, params },
+        ),
+      );
+      return new ApiResponse(
+        'Agreement installment details retrieved successfully!',
+        response,
+        request.url,
+      );
+    } catch (error) {
+      this.logger.error(
+        `Error in getAgreementInstallmentDetails: ${error.message}`,
+        error.stack,
+      );
+      throw new RpcException(error);
+    }
+  }
+
+  @Get('get-monthly-collection-summary')
+  @ApiOperation({
+    summary: 'Method GET - Get Monthly Collection Summary (Legacy)',
+    description:
+      'The endpoint allows you to get monthly collection summary (Legacy)',
+  })
+  async getMonthlyCollectionSummary(
+    @Req() request: Request,
+    @Query('monthsBack') monthsBack: number,
+  ): Promise<ApiResponse> {
+    try {
+      this.logger.log(`Sending getMonthlyCollectionSummary request`);
+      const response = await sendKafkaRequest(
+        this.kafkaClient.send(
+          'epaa-legacy.accounting.get-monthly-collection-summary',
+          monthsBack || 12,
+        ),
+      );
+      return new ApiResponse(
+        'Monthly collection summary retrieved successfully!',
+        response,
+        request.url,
+      );
+    } catch (error) {
+      this.logger.error(
+        `Error in getMonthlyCollectionSummary: ${error.message}`,
+        error.stack,
+      );
+      throw new RpcException(error);
+    }
+  }
+
+  @Get('get-debtors-with-risk')
+  @ApiOperation({
+    summary: 'Method GET - Get Debtors With Risk (Legacy)',
+    description: 'The endpoint allows you to get debtors with risk (Legacy)',
+  })
+  async getDebtorsWithRisk(@Req() request: Request): Promise<ApiResponse> {
+    try {
+      this.logger.log(`Sending getDebtorsWithRisk request`);
+      const response = await sendKafkaRequest(
+        this.kafkaClient.send('epaa-legacy.accounting.get-debtors-with-risk', {}),
+      );
+      return new ApiResponse(
+        'Debtors with risk retrieved successfully!',
+        response,
+        request.url,
+      );
+    } catch (error) {
+      this.logger.error(
+        `Error in getDebtorsWithRisk: ${error.message}`,
+        error.stack,
+      );
+      throw new RpcException(error);
+    }
+  }
+
+  @Get('get-collector-performance')
+  @ApiOperation({
+    summary: 'Method GET - Get Collector Performance (Legacy)',
+    description:
+      'The endpoint allows you to get collector performance (Legacy)',
+  })
+  async getCollectorPerformance(
+    @Req() request: Request,
+    @Query() params: DateRangeParams,
+  ): Promise<ApiResponse> {
+    try {
+      this.logger.log(`Sending getCollectorPerformance request`);
+      const response = await sendKafkaRequest(
+        this.kafkaClient.send(
+          'epaa-legacy.accounting.get-collector-performance',
+          params,
+        ),
+      );
+      return new ApiResponse(
+        'Collector performance retrieved successfully!',
+        response,
+        request.url,
+      );
+    } catch (error) {
+      this.logger.error(
+        `Error in getCollectorPerformance: ${error.message}`,
+        error.stack,
+      );
+      throw new RpcException(error);
+    }
+  }
+
+  @Get('get-payment-method-summary')
+  @ApiOperation({
+    summary: 'Method GET - Get Payment Method Summary (Legacy)',
+    description:
+      'The endpoint allows you to get payment method summary (Legacy)',
+  })
+  async getPaymentMethodSummary(
+    @Req() request: Request,
+    @Query() params: DateRangeParams,
+  ): Promise<ApiResponse> {
+    try {
+      this.logger.log(`Sending getPaymentMethodSummary request`);
+      const response = await sendKafkaRequest(
+        this.kafkaClient.send(
+          'epaa-legacy.accounting.get-payment-method-summary',
+          params,
+        ),
+      );
+      return new ApiResponse(
+        'Payment method summary retrieved successfully!',
+        response,
+        request.url,
+      );
+    } catch (error) {
+      this.logger.error(
+        `Error in getPaymentMethodSummary: ${error.message}`,
+        error.stack,
+      );
+      throw new RpcException(error);
+    }
+  }
+
+  @Get('get-citizen-summary')
+  @ApiOperation({
+    summary: 'Method GET - Get Citizen Summary (Legacy)',
+    description: 'The endpoint allows you to get citizen summary (Legacy)',
+  })
+  async getCitizenSummary(
+    @Req() request: Request,
+    @Query() params: DateRangeParams,
+  ): Promise<ApiResponse> {
+    try {
+      this.logger.log(`Sending getCitizenSummary request`);
+      const response = await sendKafkaRequest(
+        this.kafkaClient.send('epaa-legacy.accounting.get-citizen-summary', params),
+      );
+      return new ApiResponse(
+        'Citizen summary retrieved successfully!',
+        response,
+        request.url,
+      );
+    } catch (error) {
+      this.logger.error(
+        `Error in getCitizenSummary: ${error.message}`,
         error.stack,
       );
       throw new RpcException(error);

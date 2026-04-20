@@ -4,7 +4,7 @@ import { statusCode } from '../../../settings/environments/status-code';
 
 export async function sendKafkaRequest<T>(
   observable$,
-  timeoutMs = 100000,
+  timeoutMs = 60000 * 5, // 5 minutos (ajusta según tu entorno)
 ): Promise<T> {
   try {
     return await firstValueFrom(observable$.pipe(timeout(timeoutMs)));
