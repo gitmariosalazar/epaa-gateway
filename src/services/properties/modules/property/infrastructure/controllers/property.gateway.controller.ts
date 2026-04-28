@@ -57,10 +57,15 @@ export class PropertyGatewayController implements OnModuleInit {
     this.propertyKafkaClient.subscribeToResponseOf(
       'properties.get-properties-by-owner',
     );
+
+    this.propertyKafkaClient.subscribeToResponseOf(
+      'properties.get-properties-by-type',
+    );
     this.logger.log(
       'Response patterns:',
       this.propertyKafkaClient['responsePatterns'],
     );
+
     this.propertyKafkaClient.connect();
   }
 
@@ -288,6 +293,31 @@ export class PropertyGatewayController implements OnModuleInit {
       );
       return new ApiResponse(
         `Properties retrieved successfully!`,
+        response,
+        request.url,
+      );
+    } catch (error) {
+      throw new RpcException(error);
+    }
+  }
+
+  @Get('get-properties-by-type')
+  @ApiOperation({
+    summary: 'Method GET - Get properties by type',
+    description:
+      'The endpoint allows you to retrieve properties by type with aggregated data',
+  })
+  async getPropertiesByType(@Req() request: Request): Promise<ApiResponse> {
+    try {
+      this.logger.log(`Received request to get properties by type`);
+      const response = await sendKafkaRequest(
+        this.propertyKafkaClient.send('properties.get-properties-by-type', {}),
+      );
+      this.logger.log(
+        `Properties by type retrieved successfully: ${JSON.stringify(response)}`,
+      );
+      return new ApiResponse(
+        `Properties by type retrieved successfully!`,
         response,
         request.url,
       );
