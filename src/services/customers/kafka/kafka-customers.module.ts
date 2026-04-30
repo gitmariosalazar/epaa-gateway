@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { environments } from '../../../settings/environments/environments';
 import { provideContextualKafkaClient } from '../../../shared/kafka/provide-contextual-kafka';
+import { KafkaReplySubscriberService } from './kafka-reply-subscriber.service';
 
 const customerKafkaProviders = [
   provideContextualKafkaClient(environments.CLIENTS_KAFKA_CLIENT, {
@@ -22,7 +23,7 @@ const customerKafkaProviders = [
 
 @Module({
   imports: [],
-  providers: [...customerKafkaProviders],
+  providers: [...customerKafkaProviders, KafkaReplySubscriberService],
   exports: [...customerKafkaProviders.map((p) => p.provide)],
 })
 export class KafkaCustomersModule {}
