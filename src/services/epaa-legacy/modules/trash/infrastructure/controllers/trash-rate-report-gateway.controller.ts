@@ -78,6 +78,7 @@ export class TrashRateReportGatewayController implements OnModuleInit {
         endDate: params.endDate,
         limit: params.limit ?? 100,
         offset: params.offset ?? 0,
+        diagnosticFilter: params.diagnosticFilter,
       };
       const response: TrashRateAuditRowResponse[] = await sendKafkaRequest(
         this.trashRateClient.send('trash-rate-audit-report', payload),

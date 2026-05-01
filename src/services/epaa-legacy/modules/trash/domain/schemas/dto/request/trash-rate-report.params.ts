@@ -40,4 +40,13 @@ export class TrashRateReportParams {
     required: false,
   })
   offset: number;
+
+  @ApiProperty({
+    type: 'string',
+    description:
+      "Diagnostic filter for audit report. Use 'DIFFERENT_AND_NO_RECORD' to get records where calculated trash rate differs from valor record by at least 0.01 or there is no valor record, or 'ALL' to get all records.",
+    example: 'DIFFERENT_AND_NO_RECORD',
+    required: true,
+  })
+  diagnosticFilter: 'DIFFERENT_AND_NO_RECORD' | 'ALL';
 }
