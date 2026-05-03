@@ -80,7 +80,9 @@ export class WorkOrderGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(`Error in createWorkOrder: ${err.message}`, err.stack);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -104,7 +106,9 @@ export class WorkOrderGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(`Error in updateWorkOrder: ${err.message}`, err.stack);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -127,7 +131,9 @@ export class WorkOrderGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(`Error in getWorkOrderById: ${err.message}`, err.stack);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -150,7 +156,12 @@ export class WorkOrderGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error in getWorkOrdersByClientId: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -174,7 +185,9 @@ export class WorkOrderGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(`Error in getAllWorkOrders: ${err.message}`, err.stack);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -202,7 +215,12 @@ export class WorkOrderGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error in getAllWorkOrdersFullDetails: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -230,7 +248,12 @@ export class WorkOrderGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error in getWorkOrderStatistics: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -258,7 +281,12 @@ export class WorkOrderGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error in getWorkOrderAssignments: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -286,7 +314,12 @@ export class WorkOrderGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error in getWorkOrderMaterials: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -314,7 +347,12 @@ export class WorkOrderGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error in getWorkOrderObservations: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -342,7 +380,12 @@ export class WorkOrderGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error in getWorkOrderAttachments: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -370,7 +413,12 @@ export class WorkOrderGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error in getWorkOrdersByClient: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -397,7 +445,12 @@ export class WorkOrderGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error in findWorkOrdersFullDetailsByOrderCode: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -422,7 +475,12 @@ export class WorkOrderGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error in getWorkOrderPriorityStatistics: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -447,7 +505,12 @@ export class WorkOrderGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error in getWorkOrderStatusStatistics: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -472,7 +535,12 @@ export class WorkOrderGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error in getWorkOrderTypeStatistics: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -497,7 +565,12 @@ export class WorkOrderGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error in getWorkOrdersStatisticsKey: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 }

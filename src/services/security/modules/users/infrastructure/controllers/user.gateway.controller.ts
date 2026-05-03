@@ -44,6 +44,7 @@ import {
 @ApiBearerAuth()
 @UseGuards(AuthGuard)
 export class UserGatewayController implements OnModuleInit {
+  private readonly logger = new Logger(UserGatewayController.name);
   constructor(
     @Inject(environments.GATEWAY_USERS_KAFKA_CLIENT)
     private readonly clientKafka: ClientKafka,
@@ -108,7 +109,9 @@ export class UserGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(`Error creating user: ${err.message}`, err.stack);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -141,7 +144,12 @@ export class UserGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error finding user by username or email: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -169,7 +177,9 @@ export class UserGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(`Error updating user: ${err.message}`, err.stack);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -193,7 +203,9 @@ export class UserGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(`Error finding user by ID: ${err.message}`, err.stack);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -222,7 +234,12 @@ export class UserGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error checking user existence by username or email: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -250,7 +267,12 @@ export class UserGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error checking user existence by username: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -275,7 +297,12 @@ export class UserGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error checking user existence by email: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -300,7 +327,12 @@ export class UserGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error finding user by username: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
   @Get('find-by-email/:email')
@@ -323,7 +355,12 @@ export class UserGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error finding user by email: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -353,7 +390,12 @@ export class UserGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error updating user password: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -381,7 +423,12 @@ export class UserGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error finding user by refresh token: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -405,7 +452,9 @@ export class UserGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(`Error soft deleting user: ${err.message}`, err.stack);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -429,7 +478,9 @@ export class UserGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(`Error restoring user: ${err.message}`, err.stack);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -457,7 +508,12 @@ export class UserGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error incrementing failed login attempts: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -485,7 +541,12 @@ export class UserGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error resetting failed login attempts: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -513,7 +574,12 @@ export class UserGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error verifying user credentials: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -542,7 +608,9 @@ export class UserGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(`Error finding all users: ${err.message}`, err.stack);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -572,7 +640,12 @@ export class UserGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error retrieving user profile: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -599,7 +672,12 @@ export class UserGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error assigning role to user: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -627,7 +705,12 @@ export class UserGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error assigning permission to user: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -657,7 +740,12 @@ export class UserGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error removing role from user: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -688,7 +776,12 @@ export class UserGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error removing permission from user: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -715,7 +808,12 @@ export class UserGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error retrieving roles by user: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -743,7 +841,12 @@ export class UserGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error retrieving permissions by user: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -770,7 +873,12 @@ export class UserGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error retrieving users by permission: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -797,7 +905,12 @@ export class UserGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error retrieving users by role: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 }

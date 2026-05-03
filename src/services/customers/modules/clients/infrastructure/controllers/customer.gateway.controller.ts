@@ -56,7 +56,7 @@ export class CustomerGatewayController {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      throw new RpcException(error as string | object);
     }
   }
 
@@ -84,7 +84,7 @@ export class CustomerGatewayController {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      throw new RpcException(error as string | object);
     }
   }
 
@@ -108,7 +108,7 @@ export class CustomerGatewayController {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      throw new RpcException(error as string | object);
     }
   }
 
@@ -132,7 +132,7 @@ export class CustomerGatewayController {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      throw new RpcException(error as string | object);
     }
   }
 
@@ -161,7 +161,7 @@ export class CustomerGatewayController {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      throw new RpcException(error as string | object);
     }
   }
 
@@ -188,7 +188,7 @@ export class CustomerGatewayController {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      throw new RpcException(error as string | object);
     }
   }
 
@@ -217,7 +217,7 @@ export class CustomerGatewayController {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      throw new RpcException(error as string | object);
     }
   }
 }

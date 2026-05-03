@@ -73,11 +73,9 @@ export class ReadingLegacyGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      this.logger.error(
-        `Error in createReading: ${error.message}`,
-        error.stack,
-      );
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(`Error in createReading: ${err.message}`, err.stack);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -108,11 +106,12 @@ export class ReadingLegacyGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
+      const err = error as Error;
       this.logger.error(
-        `Error in findCurrentReading: ${error.message}`,
-        error.stack,
+        `Error in findCurrentReading: ${err.message}`,
+        err.stack,
       );
-      throw new RpcException(error);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -144,11 +143,12 @@ export class ReadingLegacyGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
+      const err = error as Error;
       this.logger.error(
-        `Error in updateCurrentReading: ${error.message}`,
-        error.stack,
+        `Error in updateCurrentReading: ${err.message}`,
+        err.stack,
       );
-      throw new RpcException(error);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -185,11 +185,12 @@ export class ReadingLegacyGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
+      const err = error as Error;
       this.logger.error(
-        `Error in calculateReadingValue: ${error.message}`,
-        error.stack,
+        `Error in calculateReadingValue: ${err.message}`,
+        err.stack,
       );
-      throw new RpcException(error);
+      throw new RpcException(err as string | object);
     }
   }
 }

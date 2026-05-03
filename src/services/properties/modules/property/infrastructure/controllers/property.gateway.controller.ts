@@ -95,7 +95,9 @@ export class PropertyGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(`Error in createProperty: ${err.message}`, err.stack);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -129,7 +131,9 @@ export class PropertyGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(`Error in updateProperty: ${err.message}`, err.stack);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -161,7 +165,9 @@ export class PropertyGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(`Error in deleteProperty: ${err.message}`, err.stack);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -194,7 +200,12 @@ export class PropertyGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error in getPropertyByCadastralKey: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -228,7 +239,9 @@ export class PropertyGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(`Error in getAllProperties: ${err.message}`, err.stack);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -261,7 +274,12 @@ export class PropertyGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error in verifyPropertyExists: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -297,7 +315,12 @@ export class PropertyGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error in getPropertiesByOwner: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -322,7 +345,12 @@ export class PropertyGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error in getPropertiesByType: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 }

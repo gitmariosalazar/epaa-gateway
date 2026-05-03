@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Inject,
+  Logger,
   OnModuleInit,
   Param,
   ParseIntPipe,
@@ -31,6 +32,7 @@ import { UserEmployeeResponse } from '../../domain/schemas/dto/response/user-emp
 @ApiBearerAuth()
 @UseGuards(AuthGuard)
 export class UserEmployeeGatewayController implements OnModuleInit {
+  private readonly logger = new Logger(UserEmployeeGatewayController.name);
   constructor(
     @Inject(environments.GATEWAY_EMPLOYEES_KAFKA_CLIENT)
     private readonly clientKafka: ClientKafka,
@@ -89,7 +91,12 @@ export class UserEmployeeGatewayController implements OnModuleInit {
 
       return new ApiResponse('Employee found', response, request.url);
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error finding employee by ID: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -112,7 +119,12 @@ export class UserEmployeeGatewayController implements OnModuleInit {
 
       return new ApiResponse('Employee found', response, request.url);
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error finding employee by user ID: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -135,7 +147,12 @@ export class UserEmployeeGatewayController implements OnModuleInit {
 
       return new ApiResponse('Employee found', response, request.url);
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error finding employee by ID Card: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -165,7 +182,12 @@ export class UserEmployeeGatewayController implements OnModuleInit {
 
       return new ApiResponse('Employees found', response, request.url);
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error searching employees by name: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -193,7 +215,12 @@ export class UserEmployeeGatewayController implements OnModuleInit {
 
       return new ApiResponse('Existence check', { exists }, request.url);
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error checking existence by user ID: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -217,7 +244,12 @@ export class UserEmployeeGatewayController implements OnModuleInit {
 
       return new ApiResponse('Existence check', { exists }, request.url);
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error checking existence by ID Card: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -245,7 +277,9 @@ export class UserEmployeeGatewayController implements OnModuleInit {
         requestObj.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(`Error creating employee: ${err.message}`, err.stack);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -273,7 +307,9 @@ export class UserEmployeeGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(`Error updating employee: ${err.message}`, err.stack);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -300,7 +336,12 @@ export class UserEmployeeGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error soft deleting employee: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -327,7 +368,9 @@ export class UserEmployeeGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(`Error restoring employee: ${err.message}`, err.stack);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -355,7 +398,9 @@ export class UserEmployeeGatewayController implements OnModuleInit {
 
       return new ApiResponse('Zones assigned successfully', null, request.url);
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(`Error assigning zones: ${err.message}`, err.stack);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -383,7 +428,12 @@ export class UserEmployeeGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error changing employee status: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -414,7 +464,12 @@ export class UserEmployeeGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error changing employee supervisor: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -442,7 +497,12 @@ export class UserEmployeeGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error retrieving active employees: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -469,7 +529,12 @@ export class UserEmployeeGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error retrieving employees by position: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -496,7 +561,12 @@ export class UserEmployeeGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error retrieving employees by zone: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -523,7 +593,12 @@ export class UserEmployeeGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error retrieving employees by supervisor: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -547,7 +622,12 @@ export class UserEmployeeGatewayController implements OnModuleInit {
 
       return new ApiResponse('All employees retrieved', response, request.url);
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error retrieving all employees: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 }

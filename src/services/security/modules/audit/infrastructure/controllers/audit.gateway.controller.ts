@@ -5,6 +5,7 @@ import {
   Controller,
   Get,
   Inject,
+  Logger,
   OnModuleInit,
   Post,
   Query,
@@ -17,13 +18,18 @@ import { ApiResponse } from '../../../../../../shared/errors/responses/ApiRespon
 import { sendKafkaRequest } from '../../../../../../shared/utils/kafka/send.kafka.request';
 import { RpcException } from '@nestjs/microservices';
 import { LogSessionRequest } from '../../domain/schemas/dto/request/log-session.request';
-import { GetAuditLogsRequest, GetSessionLogsRequest } from '../../domain/schemas/dto/request/get-audit-logs.request';
+import {
+  GetAuditLogsRequest,
+  GetSessionLogsRequest,
+} from '../../domain/schemas/dto/request/get-audit-logs.request';
 
 @Controller('audit-gateway')
 @ApiTags('Audit-Gateway')
 @ApiBearerAuth()
 @UseGuards(AuthGuard)
 export class AuditGatewayController implements OnModuleInit {
+  private readonly logger = new Logger(AuditGatewayController.name);
+
   constructor(
     @Inject('GATEWAY_AUDIT_KAFKA_CLIENT')
     private readonly clientKafka: ClientKafka,
@@ -46,7 +52,8 @@ export class AuditGatewayController implements OnModuleInit {
   @Post('log-session')
   @ApiOperation({
     summary: 'Registrar un evento de sesión (Login/Logout)',
-    description: 'Guarda un registro detallado de intentos de inicio o cierre de sesión.',
+    description:
+      'Guarda un registro detallado de intentos de inicio o cierre de sesión.',
   })
   async logSession(
     @Body() requestData: LogSessionRequest,
@@ -63,14 +70,20 @@ export class AuditGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error logging session event: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
   @Get('get-logs')
   @ApiOperation({
     summary: 'Obtener historial de mutaciones de base de datos',
-    description: 'Retorna los registros de auditoría de tablas (INSERT/UPDATE/DELETE).',
+    description:
+      'Retorna los registros de auditoría de tablas (INSERT/UPDATE/DELETE).',
   })
   async getAuditLogs(
     @Query('limit') limit: number,
@@ -100,14 +113,20 @@ export class AuditGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error retrieving audit logs: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
   @Get('get-session-logs')
   @ApiOperation({
     summary: 'Obtener historial de sesiones',
-    description: 'Retorna los registros de los eventos de inicio o falla de sesión de usuarios.',
+    description:
+      'Retorna los registros de los eventos de inicio o falla de sesión de usuarios.',
   })
   async getSessionLogs(
     @Query('limit') limit: number,
@@ -134,7 +153,12 @@ export class AuditGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error retrieving session logs: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 }

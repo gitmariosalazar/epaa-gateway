@@ -114,11 +114,12 @@ export class AccountingLegacyGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
+      const err = error as Error;
       this.logger.error(
-        `Error in findPendingReadingByCadastralKey: ${error.message}`,
-        error.stack,
+        `Error in findPendingReadingByCadastralKey: ${err.message}`,
+        err.stack,
       );
-      throw new RpcException(error);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -146,11 +147,12 @@ export class AccountingLegacyGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
+      const err = error as Error;
       this.logger.error(
-        `Error in findPendingReadingByCardId: ${error.message}`,
-        error.stack,
+        `Error in findPendingReadingByCardId: ${err.message}`,
+        err.stack,
       );
-      throw new RpcException(error);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -181,11 +183,12 @@ export class AccountingLegacyGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
+      const err = error as Error;
       this.logger.error(
-        `Error in findPendingReadingByCadastralKeyOrCardId: ${error.message}`,
-        error.stack,
+        `Error in findPendingReadingByCadastralKeyOrCardId: ${err.message}`,
+        err.stack,
       );
-      throw new RpcException(error);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -216,11 +219,12 @@ export class AccountingLegacyGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
+      const err = error as Error;
       this.logger.error(
-        `Error in findPendingReadingByCadastralKeyOrCardIdAll: ${error.message}`,
-        error.stack,
+        `Error in findPendingReadingByCadastralKeyOrCardIdAll: ${err.message}`,
+        err.stack,
       );
-      throw new RpcException(error);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -250,11 +254,12 @@ export class AccountingLegacyGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
+      const err = error as Error;
       this.logger.error(
-        `Error in findPaymentReadingsByPaymentDate: ${error.message}`,
-        error.stack,
+        `Error in findPaymentReadingsByPaymentDate: ${err.message}`,
+        err.stack,
       );
-      throw new RpcException(error);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -285,11 +290,12 @@ export class AccountingLegacyGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
+      const err = error as Error;
       this.logger.error(
-        `Error in findPaymentByPaymentDateAndOrder: ${error.message}`,
-        error.stack,
+        `Error in findPaymentByPaymentDateAndOrder: ${err.message}`,
+        err.stack,
       );
-      throw new RpcException(error);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -323,11 +329,12 @@ export class AccountingLegacyGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
+      const err = error as Error;
       this.logger.error(
-        `Error in findPaymentByInitDateAndEndDate: ${error.message}`,
-        error.stack,
+        `Error in findPaymentByInitDateAndEndDate: ${err.message}`,
+        err.stack,
       );
-      throw new RpcException(error);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -356,11 +363,12 @@ export class AccountingLegacyGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
+      const err = error as Error;
       this.logger.error(
-        `Error in getDailyGroupedReport: ${error.message}`,
-        error.stack,
+        `Error in getDailyGroupedReport: ${err.message}`,
+        err.stack,
       );
-      throw new RpcException(error);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -390,11 +398,12 @@ export class AccountingLegacyGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
+      const err = error as Error;
       this.logger.error(
-        `Error in getDailyCollectorSummary: ${error.message}`,
-        error.stack,
+        `Error in getDailyCollectorSummary: ${err.message}`,
+        err.stack,
       );
-      throw new RpcException(error);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -424,11 +433,12 @@ export class AccountingLegacyGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
+      const err = error as Error;
       this.logger.error(
-        `Error in getDailyPaymentMethodReport: ${error.message}`,
-        error.stack,
+        `Error in getDailyPaymentMethodReport: ${err.message}`,
+        err.stack,
       );
-      throw new RpcException(error);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -458,11 +468,12 @@ export class AccountingLegacyGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
+      const err = error as Error;
       this.logger.error(
-        `Error in getFullBreakdownReport: ${error.message}`,
-        error.stack,
+        `Error in getFullBreakdownReport: ${err.message}`,
+        err.stack,
       );
-      throw new RpcException(error);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -492,11 +503,12 @@ export class AccountingLegacyGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
+      const err = error as Error;
       this.logger.error(
-        `Error in findAllOverduePayments: ${error.message}`,
-        error.stack,
+        `Error in findAllOverduePayments: ${err.message}`,
+        err.stack,
       );
-      throw new RpcException(error);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -520,11 +532,12 @@ export class AccountingLegacyGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
+      const err = error as Error;
       this.logger.error(
-        `Error in findOverdueSummary: ${error.message}`,
-        error.stack,
+        `Error in findOverdueSummary: ${err.message}`,
+        err.stack,
       );
-      throw new RpcException(error);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -551,11 +564,12 @@ export class AccountingLegacyGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
+      const err = error as Error;
       this.logger.error(
-        `Error in findYearlyOverdueSummary: ${error.message}`,
-        error.stack,
+        `Error in findYearlyOverdueSummary: ${err.message}`,
+        err.stack,
       );
-      throw new RpcException(error);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -580,11 +594,12 @@ export class AccountingLegacyGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
+      const err = error as Error;
       this.logger.error(
-        `Error in findMonthlyDebtSummary: ${error.message}`,
-        error.stack,
+        `Error in findMonthlyDebtSummary: ${err.message}`,
+        err.stack,
       );
-      throw new RpcException(error);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -612,11 +627,12 @@ export class AccountingLegacyGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
+      const err = error as Error;
       this.logger.error(
-        `Error in getGeneralCollectionKPI: ${error.message}`,
-        error.stack,
+        `Error in getGeneralCollectionKPI: ${err.message}`,
+        err.stack,
       );
-      throw new RpcException(error);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -644,11 +660,12 @@ export class AccountingLegacyGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
+      const err = error as Error;
       this.logger.error(
-        `Error in getGeneralCollectionReport: ${error.message}`,
-        error.stack,
+        `Error in getGeneralCollectionReport: ${err.message}`,
+        err.stack,
       );
-      throw new RpcException(error);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -677,11 +694,12 @@ export class AccountingLegacyGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
+      const err = error as Error;
       this.logger.error(
-        `Error in getGeneralDailyCollectionGroupedReport: ${error.message}`,
-        error.stack,
+        `Error in getGeneralDailyCollectionGroupedReport: ${err.message}`,
+        err.stack,
       );
-      throw new RpcException(error);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -712,11 +730,12 @@ export class AccountingLegacyGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
+      const err = error as Error;
       this.logger.error(
-        `Error in getGeneralYearlyCollectionGroupedReport: ${error.message}`,
-        error.stack,
+        `Error in getGeneralYearlyCollectionGroupedReport: ${err.message}`,
+        err.stack,
       );
-      throw new RpcException(error);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -747,11 +766,12 @@ export class AccountingLegacyGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
+      const err = error as Error;
       this.logger.error(
-        `Error in getGeneralMonthlyCollectionGroupedReport: ${error.message}`,
-        error.stack,
+        `Error in getGeneralMonthlyCollectionGroupedReport: ${err.message}`,
+        err.stack,
       );
-      throw new RpcException(error);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -779,11 +799,12 @@ export class AccountingLegacyGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
+      const err = error as Error;
       this.logger.error(
-        `Error in getGeneralYearlyCollectionKPI: ${error.message}`,
-        error.stack,
+        `Error in getGeneralYearlyCollectionKPI: ${err.message}`,
+        err.stack,
       );
-      throw new RpcException(error);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -811,11 +832,12 @@ export class AccountingLegacyGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
+      const err = error as Error;
       this.logger.error(
-        `Error in getGeneralMonthlyCollectionKPI: ${error.message}`,
-        error.stack,
+        `Error in getGeneralMonthlyCollectionKPI: ${err.message}`,
+        err.stack,
       );
-      throw new RpcException(error);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -842,11 +864,12 @@ export class AccountingLegacyGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
+      const err = error as Error;
       this.logger.error(
-        `Error in getAgreementsKPI: ${error.message}`,
-        error.stack,
+        `Error in getAgreementsKPI: ${err.message}`,
+        err.stack,
       );
-      throw new RpcException(error);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -876,11 +899,12 @@ export class AccountingLegacyGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
+      const err = error as Error;
       this.logger.error(
-        `Error in getAgreementsKpiCustomer: ${error.message}`,
-        error.stack,
+        `Error in getAgreementsKpiCustomer: ${err.message}`,
+        err.stack,
       );
-      throw new RpcException(error);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -909,11 +933,12 @@ export class AccountingLegacyGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
+      const err = error as Error;
       this.logger.error(
-        `Error in getAgreementInstallmentDetails: ${error.message}`,
-        error.stack,
+        `Error in getAgreementInstallmentDetails: ${err.message}`,
+        err.stack,
       );
-      throw new RpcException(error);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -941,11 +966,12 @@ export class AccountingLegacyGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
+      const err = error as Error;
       this.logger.error(
-        `Error in getMonthlyCollectionSummary: ${error.message}`,
-        error.stack,
+        `Error in getMonthlyCollectionSummary: ${err.message}`,
+        err.stack,
       );
-      throw new RpcException(error);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -958,7 +984,10 @@ export class AccountingLegacyGatewayController implements OnModuleInit {
     try {
       this.logger.log(`Sending getDebtorsWithRisk request`);
       const response = await sendKafkaRequest(
-        this.kafkaClient.send('epaa-legacy.accounting.get-debtors-with-risk', {}),
+        this.kafkaClient.send(
+          'epaa-legacy.accounting.get-debtors-with-risk',
+          {},
+        ),
       );
       return new ApiResponse(
         'Debtors with risk retrieved successfully!',
@@ -966,11 +995,12 @@ export class AccountingLegacyGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
+      const err = error as Error;
       this.logger.error(
-        `Error in getDebtorsWithRisk: ${error.message}`,
-        error.stack,
+        `Error in getDebtorsWithRisk: ${err.message}`,
+        err.stack,
       );
-      throw new RpcException(error);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -998,11 +1028,12 @@ export class AccountingLegacyGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
+      const err = error as Error;
       this.logger.error(
-        `Error in getCollectorPerformance: ${error.message}`,
-        error.stack,
+        `Error in getCollectorPerformance: ${err.message}`,
+        err.stack,
       );
-      throw new RpcException(error);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -1030,11 +1061,12 @@ export class AccountingLegacyGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
+      const err = error as Error;
       this.logger.error(
-        `Error in getPaymentMethodSummary: ${error.message}`,
-        error.stack,
+        `Error in getPaymentMethodSummary: ${err.message}`,
+        err.stack,
       );
-      throw new RpcException(error);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -1050,7 +1082,10 @@ export class AccountingLegacyGatewayController implements OnModuleInit {
     try {
       this.logger.log(`Sending getCitizenSummary request`);
       const response = await sendKafkaRequest(
-        this.kafkaClient.send('epaa-legacy.accounting.get-citizen-summary', params),
+        this.kafkaClient.send(
+          'epaa-legacy.accounting.get-citizen-summary',
+          params,
+        ),
       );
       return new ApiResponse(
         'Citizen summary retrieved successfully!',
@@ -1058,11 +1093,12 @@ export class AccountingLegacyGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
+      const err = error as Error;
       this.logger.error(
-        `Error in getCitizenSummary: ${error.message}`,
-        error.stack,
+        `Error in getCitizenSummary: ${err.message}`,
+        err.stack,
       );
-      throw new RpcException(error);
+      throw new RpcException(err as string | object);
     }
   }
 }

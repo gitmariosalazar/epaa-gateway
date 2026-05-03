@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Inject,
+  Logger,
   OnModuleInit,
   Param,
   ParseIntPipe,
@@ -29,6 +30,7 @@ import { CategoryResponse } from '../../domain/schemas/dto/response/category.res
 @ApiBearerAuth()
 @UseGuards(AuthGuard)
 export class CategoryGatewayController implements OnModuleInit {
+  private readonly logger = new Logger(CategoryGatewayController.name);
   constructor(
     @Inject(environments.GATEWAY_CATEGORIES_KAFKA_CLIENT)
     private readonly kafkaClient: ClientKafka,
@@ -65,7 +67,9 @@ export class CategoryGatewayController implements OnModuleInit {
       );
       return new ApiResponse('Create Category success', response, request.url);
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(`Error creating category: ${err.message}`, err.stack);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -89,7 +93,9 @@ export class CategoryGatewayController implements OnModuleInit {
       );
       return new ApiResponse('Update Category success', response, request.url);
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(`Error updating category: ${err.message}`, err.stack);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -109,7 +115,9 @@ export class CategoryGatewayController implements OnModuleInit {
       );
       return new ApiResponse('Delete Category success', response, request.url);
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(`Error deleting category: ${err.message}`, err.stack);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -133,7 +141,12 @@ export class CategoryGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error getting category by ID: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -158,7 +171,12 @@ export class CategoryGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error getting all categories: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -182,7 +200,12 @@ export class CategoryGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error verifying category existence: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 }

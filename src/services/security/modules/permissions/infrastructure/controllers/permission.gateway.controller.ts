@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Inject,
+  Logger,
   OnModuleInit,
   Param,
   ParseIntPipe,
@@ -29,6 +30,7 @@ import {
 @ApiBearerAuth()
 @UseGuards(AuthGuard)
 export class PermissionGatewayController implements OnModuleInit {
+  private readonly logger = new Logger(PermissionGatewayController.name);
   constructor(
     @Inject(environments.GATEWAY_PERMISSIONS_KAFKA_CLIENT)
     private readonly clientKafka: ClientKafka,
@@ -77,7 +79,9 @@ export class PermissionGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(`Error creating permission: ${err.message}`, err.stack);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -105,7 +109,9 @@ export class PermissionGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(`Error updating permission: ${err.message}`, err.stack);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -132,7 +138,9 @@ export class PermissionGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(`Error deleting permission: ${err.message}`, err.stack);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -159,7 +167,12 @@ export class PermissionGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error getting permission by ID: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -185,7 +198,12 @@ export class PermissionGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error getting all permissions: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -212,7 +230,12 @@ export class PermissionGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error verifying permission existence: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -239,7 +262,12 @@ export class PermissionGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error getting permissions with category: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -266,7 +294,12 @@ export class PermissionGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error getting permissions by category ID: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -293,7 +326,12 @@ export class PermissionGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error getting permission search advanced: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 }

@@ -102,7 +102,12 @@ export class ReadingGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error finding basic reading by catastral code ${catastralCode}: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -126,7 +131,12 @@ export class ReadingGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error finding reading info by cadastral key ${cadastralKey}: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -141,10 +151,12 @@ export class ReadingGatewayController implements OnModuleInit {
     @Req() request: Request,
   ): Promise<ApiResponse> {
     try {
+      const updateUserId = (request as any)['user']?.sub ?? (request as any)['user']?.userId;
       const response: ReadingResponse = await sendKafkaRequest(
         this.readingClient.send('reading.update-current-reading', {
           readingId,
           readingRequest,
+          updateUserId,
         }),
       );
 
@@ -203,7 +215,12 @@ export class ReadingGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error updating current reading with reading ID ${readingId}: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -236,8 +253,12 @@ export class ReadingGatewayController implements OnModuleInit {
       console.log('readingRequest', readingRequest);
       */
 
+      const creatorUserId = (request as any)['user']?.sub ?? (request as any)['user']?.userId;
       const response: ReadingResponse = await sendKafkaRequest<ReadingResponse>(
-        this.readingClient.send('reading.create-reading', readingRequest),
+        this.readingClient.send('reading.create-reading', {
+          ...readingRequest,
+          creatorUserId,
+        }),
       );
 
       if (!response) {
@@ -328,7 +349,12 @@ export class ReadingGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error creating reading legacy: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -358,7 +384,12 @@ export class ReadingGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error finding reading history by cadastral key ${cadastralKey}: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -391,7 +422,12 @@ export class ReadingGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error getting pending readings by month ${month} and sector ${sector || 'ALL'}: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -423,7 +459,12 @@ export class ReadingGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error getting taken reading estimates or average by month ${month} and sector ${sector || 'ALL'}: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -454,7 +495,12 @@ export class ReadingGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error getting taken readings by month ${month} and sector ${sector || 'ALL'}: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 }

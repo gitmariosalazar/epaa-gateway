@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Inject,
+  Logger,
   OnModuleInit,
   Post,
   Req,
@@ -21,6 +22,7 @@ import { AuthGuard } from '../../../../../../auth/guard/auth.guard';
 
 @Controller('auth')
 export class AuthGatewayController implements OnModuleInit {
+  private readonly logger = new Logger(AuthGatewayController.name);
   constructor(
     @Inject(environments.GATEWAY_AUTH_KAFKA_CLIENT)
     private readonly authKafkaClient: ClientKafka,
@@ -76,7 +78,9 @@ export class AuthGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw error;
+      const err = error as Error;
+      this.logger.error(`Error signing in: ${err.message}`, err.stack);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -122,7 +126,9 @@ export class AuthGatewayController implements OnModuleInit {
 
       return new ApiResponse('Sign Out successfully!', null, request.url);
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(`Error signing out: ${err.message}`, err.stack);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -146,7 +152,9 @@ export class AuthGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw error;
+      const err = error as Error;
+      this.logger.error(`Error refreshing token: ${err.message}`, err.stack);
+      throw new RpcException(err as string | object);
     }
   }
 }

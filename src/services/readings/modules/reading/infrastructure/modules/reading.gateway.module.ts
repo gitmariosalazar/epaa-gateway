@@ -5,6 +5,7 @@ import { environments } from '../../../../../../settings/environments/environmen
 import { ReadingReportDashboardGatewayController } from '../controller/reading.report-dashboard.gateway.controller';
 import { ReadingImagesGatewayController } from '../controller/reading-images.gateway.controller';
 import { KafkaEpaaLegacyModule } from '../../../../../../services/epaa-legacy/modules/kafka/kafka-epaa-legacy.module';
+import { ReadingAuditGatewayController } from '../controller/reading-audit.gateway.controller';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { KafkaEpaaLegacyModule } from '../../../../../../services/epaa-legacy/mo
     ReadingGatewayController,
     ReadingReportDashboardGatewayController,
     ReadingImagesGatewayController,
+    ReadingAuditGatewayController,
   ],
   providers: [],
   exports: [ClientsModule],

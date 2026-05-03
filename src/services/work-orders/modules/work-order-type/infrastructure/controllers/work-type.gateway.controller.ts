@@ -87,7 +87,9 @@ export class WorkTypeGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(`Error in createWorkType: ${err.message}`, err.stack);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -121,7 +123,9 @@ export class WorkTypeGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(`Error in updateWorkType: ${err.message}`, err.stack);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -152,7 +156,9 @@ export class WorkTypeGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(`Error in getWorkTypeById: ${err.message}`, err.stack);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -177,7 +183,12 @@ export class WorkTypeGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error in getAllWorkTypeTypes: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -212,7 +223,12 @@ export class WorkTypeGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error in verifyWorkTypeExistsByName: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -245,7 +261,12 @@ export class WorkTypeGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error in findWorkTypesByDepartmentId: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 }

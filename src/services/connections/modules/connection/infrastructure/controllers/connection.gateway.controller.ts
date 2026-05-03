@@ -62,7 +62,7 @@ export class ConnectionGatewayController {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      throw new RpcException(error as string | object);
     }
   }
 
@@ -92,7 +92,7 @@ export class ConnectionGatewayController {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      throw new RpcException(error as string | object);
     }
   }
 
@@ -123,7 +123,7 @@ export class ConnectionGatewayController {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      throw new RpcException(error as string | object);
     }
   }
 
@@ -152,7 +152,7 @@ export class ConnectionGatewayController {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      throw new RpcException(error as string | object);
     }
   }
 
@@ -187,7 +187,7 @@ export class ConnectionGatewayController {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      throw new RpcException(error as string | object);
     }
   }
 
@@ -223,7 +223,7 @@ export class ConnectionGatewayController {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      throw new RpcException(error as string | object);
     }
   }
 
@@ -254,7 +254,7 @@ export class ConnectionGatewayController {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      throw new RpcException(error as string | object);
     }
   }
 
@@ -284,7 +284,7 @@ export class ConnectionGatewayController {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      throw new RpcException(error as string | object);
     }
   }
 
@@ -317,7 +317,7 @@ export class ConnectionGatewayController {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      throw new RpcException(error as string | object);
     }
   }
 
@@ -350,7 +350,7 @@ export class ConnectionGatewayController {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      throw new RpcException(error as string | object);
     }
   }
 
@@ -383,7 +383,7 @@ export class ConnectionGatewayController {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      throw new RpcException(error as string | object);
     }
   }
 
@@ -419,7 +419,7 @@ export class ConnectionGatewayController {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      throw new RpcException(error as string | object);
     }
   }
 
@@ -455,7 +455,7 @@ export class ConnectionGatewayController {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      throw new RpcException(error as string | object);
     }
   }
 }

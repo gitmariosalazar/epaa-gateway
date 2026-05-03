@@ -148,8 +148,12 @@ export class PhotoReadingGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      this.logger.error('Error creating photo readings:', error);
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error creating photo readings: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 }

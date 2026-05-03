@@ -70,7 +70,9 @@ export class RolGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(`Error creating role: ${err.message}`, err.stack);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -97,7 +99,9 @@ export class RolGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(`Error updating role: ${err.message}`, err.stack);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -122,7 +126,9 @@ export class RolGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(`Error getting role by ID: ${err.message}`, err.stack);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -140,10 +146,7 @@ export class RolGatewayController implements OnModuleInit {
     try {
       const payload = { limit, offset };
       const response: RolResponse[] = await sendKafkaRequest(
-        this.kafkaClient.send('authentication.roles.get_all_rols', {
-          limit,
-          offset,
-        }),
+        this.kafkaClient.send('authentication.roles.get_all_rols', payload),
       );
 
       return new ApiResponse(
@@ -152,7 +155,9 @@ export class RolGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(`Error getting all roles: ${err.message}`, err.stack);
+      throw new RpcException(err as string | object);
     }
   }
 }

@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Inject,
+  Logger,
   OnModuleInit,
   Param,
   ParseIntPipe,
@@ -26,6 +27,7 @@ import { RolPermissionResponse } from '../../domain/schemas/dto/response/rol-per
 @ApiBearerAuth()
 @UseGuards(AuthGuard)
 export class RolPermissionGatewayController implements OnModuleInit {
+  private readonly logger = new Logger(RolPermissionGatewayController.name);
   constructor(
     @Inject(environments.GATEWAY_ROL_PERMISSION_KAFKA_CLIENT)
     private readonly clientKafka: ClientKafka,
@@ -72,7 +74,12 @@ export class RolPermissionGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error creating rol-permission: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -104,7 +111,12 @@ export class RolPermissionGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error updating rol-permission: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -132,7 +144,12 @@ export class RolPermissionGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error deleting rol-permission: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -160,7 +177,12 @@ export class RolPermissionGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error getting rol-permission by ID: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -187,7 +209,12 @@ export class RolPermissionGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error getting all rol-permissions: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -216,7 +243,12 @@ export class RolPermissionGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error verifying rol-permission existence: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 }

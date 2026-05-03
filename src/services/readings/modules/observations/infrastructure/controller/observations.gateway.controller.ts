@@ -70,11 +70,12 @@ export class ObservationsGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
+      const err = error as Error;
       this.logger.error(
-        'Error fetching observation details by cadastral key',
-        error,
+        `Error fetching observation details by cadastral key: ${err.message}`,
+        err.stack,
       );
-      throw new RpcException(error);
+      throw new RpcException(err as string | object);
     }
   }
   @Get('get-observations')
@@ -92,8 +93,12 @@ export class ObservationsGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      this.logger.error('Error fetching observations', error);
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error fetching observations: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 }

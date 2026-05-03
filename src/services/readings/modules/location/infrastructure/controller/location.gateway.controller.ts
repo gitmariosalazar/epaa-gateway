@@ -66,7 +66,9 @@ export class LocationGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(`Error creating location: ${err.message}`, err.stack);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -93,7 +95,12 @@ export class LocationGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error retrieving locations: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -120,7 +127,9 @@ export class LocationGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(`Error verifying location: ${err.message}`, err.stack);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -143,7 +152,12 @@ export class LocationGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error retrieving location by ID: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 }

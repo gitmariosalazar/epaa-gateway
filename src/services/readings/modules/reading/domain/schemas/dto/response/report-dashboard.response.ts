@@ -13,6 +13,8 @@ export interface ConnectionLastReadingsReport {
   currentReading?: number;
   clientId?: number;
   averageConsumption: number;
+  connectionStatus?: string;  // Current state name from cat_estados_acometida
+  isReadable?: boolean;       // Whether the connection allows readings
 }
 
 export interface DailyReadingsReport {
@@ -97,6 +99,9 @@ export interface SectorStatsReport {
   averageSewerRate: number;
   averageConsumption: number;
   activeDays: number;
+  // Cross-validation from auditoria_lectura_sector (0 if not yet generated)
+  expectedConnections: number;
+  auditProgress: number;
 }
 
 export interface NoveltyStatsReport {
@@ -113,4 +118,13 @@ export interface AdvancedReportReadingsResponse {
   readingsCompleted: number;
   missingReadings: number;
   progressPercentage: number;
+  pureActiveUnits: number;
+  suspendedOrArrearsWithReading: number;
+  dataDiscrepancy: number;
+  totalVisitEfficiency: number;
+  // Cross-validation from auditoria_lectura_sector (0 / false if not yet generated for the period)
+  auditTotalEsperado: number;
+  auditTotalCompletadas: number;
+  auditAvancePorcentaje: number;
+  auditCompleto: boolean;
 }

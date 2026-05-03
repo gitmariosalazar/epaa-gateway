@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Inject,
+  Logger,
   OnModuleInit,
   Param,
   Post,
@@ -21,7 +22,12 @@ import { AuthGuard } from '../../../../../../auth/guard/auth.guard';
 @ApiTags('work-order-worker-assignment')
 @ApiBearerAuth()
 @UseGuards(AuthGuard)
-export class WorkOrderWorkerAssignmentGatewayController implements OnModuleInit {
+export class WorkOrderWorkerAssignmentGatewayController
+  implements OnModuleInit
+{
+  private readonly logger = new Logger(
+    WorkOrderWorkerAssignmentGatewayController.name,
+  );
   constructor(
     @Inject(environments.GATEWAY_WORK_ORDER_WORKER_ASSIGNMENT_KAFKA_CLIENT)
     private readonly workOrderWorkerAssignmentKafkaClient: ClientKafka,
@@ -74,7 +80,12 @@ export class WorkOrderWorkerAssignmentGatewayController implements OnModuleInit 
       );
       return new ApiResponse('', response, request.url);
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error in addWorkerAssignmentToWorkOrderList: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -97,7 +108,12 @@ export class WorkOrderWorkerAssignmentGatewayController implements OnModuleInit 
       );
       return new ApiResponse('', response, request.url);
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error in findWorkerAssignmentByWorkerId: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -120,7 +136,12 @@ export class WorkOrderWorkerAssignmentGatewayController implements OnModuleInit 
       );
       return new ApiResponse('', response, request.url);
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error in findWorkerAssignmentsByWorkOrderId: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 }

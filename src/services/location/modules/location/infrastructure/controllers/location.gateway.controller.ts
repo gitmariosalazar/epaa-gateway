@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Inject,
+  Logger,
   OnModuleInit,
   Param,
   Req,
@@ -16,6 +17,7 @@ import { sendKafkaRequest } from '../../../../../../shared/utils/kafka/send.kafk
 @Controller('location-global')
 @ApiTags('Location Global')
 export class LocationGlobalGatewayController implements OnModuleInit {
+  private readonly logger = new Logger(LocationGlobalGatewayController.name);
   constructor(
     @Inject(environments.GATEWAY_LOCATION_KAFKA_CLIENT)
     private readonly kafkaClient: ClientKafka,
@@ -71,7 +73,9 @@ export class LocationGlobalGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(`Error in getCountries: ${err.message}`, err.stack);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -94,7 +98,9 @@ export class LocationGlobalGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(`Error in getCountryById: ${err.message}`, err.stack);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -117,7 +123,9 @@ export class LocationGlobalGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(`Error in getCountryByName: ${err.message}`, err.stack);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -138,7 +146,9 @@ export class LocationGlobalGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(`Error in getProvinces: ${err.message}`, err.stack);
+      throw new RpcException(error as string | object);
     }
   }
 
@@ -161,7 +171,12 @@ export class LocationGlobalGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error in getProvinceByName: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -184,7 +199,9 @@ export class LocationGlobalGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(`Error in getProvinceById: ${err.message}`, err.stack);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -210,7 +227,12 @@ export class LocationGlobalGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error in getProvincesByCountryId: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -232,7 +254,9 @@ export class LocationGlobalGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(`Error in getCantons: ${err.message}`, err.stack);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -255,7 +279,9 @@ export class LocationGlobalGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(`Error in getCantonById: ${err.message}`, err.stack);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -278,7 +304,9 @@ export class LocationGlobalGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(`Error in getCantonByName: ${err.message}`, err.stack);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -304,7 +332,12 @@ export class LocationGlobalGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error in getCantonsByProvinceId: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -326,7 +359,9 @@ export class LocationGlobalGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(`Error in getParishes: ${err.message}`, err.stack);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -349,7 +384,9 @@ export class LocationGlobalGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(`Error in getParishById: ${err.message}`, err.stack);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -372,7 +409,9 @@ export class LocationGlobalGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(`Error in getParishByName: ${err.message}`, err.stack);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -395,7 +434,12 @@ export class LocationGlobalGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error in getParishesByCantonId: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 }

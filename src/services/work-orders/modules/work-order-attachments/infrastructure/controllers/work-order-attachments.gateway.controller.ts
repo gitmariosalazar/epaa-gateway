@@ -40,6 +40,9 @@ import { AuthGuard } from '../../../../../../auth/guard/auth.guard';
 @ApiBearerAuth()
 @UseGuards(AuthGuard)
 export class WorkOrderAttachmentsGatewayController implements OnModuleInit {
+  private readonly logger = new Logger(
+    WorkOrderAttachmentsGatewayController.name,
+  );
   constructor(
     @Inject(environments.GATEWAY_WORK_ORDER_ATTACHMENTS_KAFKA_CLIENT)
     private readonly workOrderAttachmentsKafkaClient: ClientKafka,
@@ -164,7 +167,12 @@ export class WorkOrderAttachmentsGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error in addWorkOrderAttachment: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -188,7 +196,12 @@ export class WorkOrderAttachmentsGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error in findAllAttachments: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -215,7 +228,12 @@ export class WorkOrderAttachmentsGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error in getWorkOrderAttachmentById: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -242,7 +260,12 @@ export class WorkOrderAttachmentsGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error in deleteWorkOrderAttachment: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -271,7 +294,12 @@ export class WorkOrderAttachmentsGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error in updateWorkOrderAttachment: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -299,7 +327,12 @@ export class WorkOrderAttachmentsGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error in findAttachmentsByWorkOrderId: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 }

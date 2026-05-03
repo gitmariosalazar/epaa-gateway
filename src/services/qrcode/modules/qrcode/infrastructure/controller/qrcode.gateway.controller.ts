@@ -67,7 +67,9 @@ export class QRCodeGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.looger.error(`Error creating QRCode: ${err.message}`, err.stack);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -94,7 +96,12 @@ export class QRCodeGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.looger.error(
+        `Error finding QRCode by acometidaId: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 }

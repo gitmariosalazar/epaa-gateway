@@ -89,11 +89,12 @@ export class TrashRateReportGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
+      const err = error as Error;
       this.logger.error(
-        `Error in getTrashRateAuditReport: ${error.message}`,
-        error.stack,
+        `Error in getTrashRateAuditReport: ${err.message}`,
+        err.stack,
       );
-      throw new RpcException(error);
+      throw new RpcException(error as string | object);
     }
   }
 
@@ -120,11 +121,9 @@ export class TrashRateReportGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      this.logger.error(
-        `Error in getCreditNotes: ${error.message}`,
-        error.stack,
-      );
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(`Error in getCreditNotes: ${err.message}`, err.stack);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -146,11 +145,12 @@ export class TrashRateReportGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
+      const err = error as Error;
       this.logger.error(
-        `Error in getMissingValorRecords: ${error.message}`,
-        error.stack,
+        `Error in getMissingValorRecords: ${err.message}`,
+        err.stack,
       );
-      throw new RpcException(error);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -172,11 +172,12 @@ export class TrashRateReportGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
+      const err = error as Error;
       this.logger.error(
-        `Error in getMonthlySummary: ${error.message}`,
-        error.stack,
+        `Error in getMonthlySummary: ${err.message}`,
+        err.stack,
       );
-      throw new RpcException(error);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -198,11 +199,9 @@ export class TrashRateReportGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      this.logger.error(
-        `Error in getTopDebtors: ${error.message}`,
-        error.stack,
-      );
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(`Error in getTopDebtors: ${err.message}`, err.stack);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -224,11 +223,12 @@ export class TrashRateReportGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
+      const err = error as Error;
       this.logger.error(
-        `Error in getTrashDashboardKpi: ${error.message}`,
-        error.stack,
+        `Error in getTrashDashboardKpi: ${err.message}`,
+        err.stack,
       );
-      throw new RpcException(error);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -250,11 +250,12 @@ export class TrashRateReportGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
+      const err = error as Error;
       this.logger.error(
-        `Error in getClientTrashDetail: ${error.message}`,
-        error.stack,
+        `Error in getClientTrashDetail: ${err.message}`,
+        err.stack,
       );
-      throw new RpcException(error);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -276,11 +277,9 @@ export class TrashRateReportGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      this.logger.error(
-        `Error in getTrashRateKPI: ${error.message}`,
-        error.stack,
-      );
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(`Error in getTrashRateKPI: ${err.message}`, err.stack);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -303,11 +302,12 @@ export class TrashRateReportGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
+      const err = error as Error;
       this.logger.error(
-        `Error in getCollectorPerformanceKPI: ${error.message}`,
-        error.stack,
+        `Error in getCollectorPerformanceKPI: ${err.message}`,
+        err.stack,
       );
-      throw new RpcException(error);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -329,11 +329,12 @@ export class TrashRateReportGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
+      const err = error as Error;
       this.logger.error(
-        `Error in getDailyCollectorDetail: ${error.message}`,
-        error.stack,
+        `Error in getDailyCollectorDetail: ${err.message}`,
+        err.stack,
       );
-      throw new RpcException(error);
+      throw new RpcException(err as string | object);
     }
   }
 }

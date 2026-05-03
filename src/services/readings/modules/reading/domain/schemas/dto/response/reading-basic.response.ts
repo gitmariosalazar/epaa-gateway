@@ -49,4 +49,8 @@ export interface ReadingInfoResponse {
   monthReading: string;
   startDatePeriod: Date;
   endDatePeriod: Date;
+  connectionStateId: number;
+  connectionStateName: string;
+  connectionStateDescription: string;
+  permitReading: boolean;
 }

@@ -86,11 +86,9 @@ export class InventoryGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      this.logger.error(
-        `Error in getInventoryById: ${error.message}`,
-        error.stack,
-      );
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(`Error in getInventoryById: ${err.message}`, err.stack);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -121,11 +119,12 @@ export class InventoryGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
+      const err = error as Error;
       this.logger.error(
-        `Error in getAllInventories: ${error.message}`,
-        error.stack,
+        `Error in getAllInventories: ${err.message}`,
+        err.stack,
       );
-      throw new RpcException(error);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -152,11 +151,12 @@ export class InventoryGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
+      const err = error as Error;
       this.logger.error(
-        `Error in getInventoriesBelowMinStock: ${error.message}`,
-        error.stack,
+        `Error in getInventoriesBelowMinStock: ${err.message}`,
+        err.stack,
       );
-      throw new RpcException(error);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -186,11 +186,12 @@ export class InventoryGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
+      const err = error as Error;
       this.logger.error(
-        `Error in getInventoriesByAccountCode: ${error.message}`,
-        error.stack,
+        `Error in getInventoriesByAccountCode: ${err.message}`,
+        err.stack,
       );
-      throw new RpcException(error);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -220,11 +221,12 @@ export class InventoryGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
+      const err = error as Error;
       this.logger.error(
-        `Error in getInventoriesByCompanyCode: ${error.message}`,
-        error.stack,
+        `Error in getInventoriesByCompanyCode: ${err.message}`,
+        err.stack,
       );
-      throw new RpcException(error);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -252,11 +254,12 @@ export class InventoryGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
+      const err = error as Error;
       this.logger.error(
-        `Error in getInventoriesByStatus: ${error.message}`,
-        error.stack,
+        `Error in getInventoriesByStatus: ${err.message}`,
+        err.stack,
       );
-      throw new RpcException(error);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -284,11 +287,12 @@ export class InventoryGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
+      const err = error as Error;
       this.logger.error(
-        `Error in getInventoriesByItemType: ${error.message}`,
-        error.stack,
+        `Error in getInventoriesByItemType: ${err.message}`,
+        err.stack,
       );
-      throw new RpcException(error);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -318,11 +322,12 @@ export class InventoryGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
+      const err = error as Error;
       this.logger.error(
-        `Error in getInventoriesByUnitOfMeasure: ${error.message}`,
-        error.stack,
+        `Error in getInventoriesByUnitOfMeasure: ${err.message}`,
+        err.stack,
       );
-      throw new RpcException(error);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -352,11 +357,12 @@ export class InventoryGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
+      const err = error as Error;
       this.logger.error(
-        `Error in getInventoriesLikeItemName: ${error.message}`,
-        error.stack,
+        `Error in getInventoriesLikeItemName: ${err.message}`,
+        err.stack,
       );
-      throw new RpcException(error);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -386,11 +392,12 @@ export class InventoryGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
+      const err = error as Error;
       this.logger.error(
-        `Error in getInventoriesLikeItemCode: ${error.message}`,
-        error.stack,
+        `Error in getInventoriesLikeItemCode: ${err.message}`,
+        err.stack,
       );
-      throw new RpcException(error);
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -438,11 +445,12 @@ export class InventoryGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
+      const err = error as Error;
       this.logger.error(
-        `Error in findAllInventoriesPaginated: ${error.message}`,
-        error.stack,
+        `Error in findAllInventoriesPaginated: ${err.message}`,
+        err.stack,
       );
-      throw new RpcException(error);
+      throw new RpcException(err as string | object);
     }
   }
 }

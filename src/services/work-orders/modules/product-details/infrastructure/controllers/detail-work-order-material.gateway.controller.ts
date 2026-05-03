@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Inject,
+  Logger,
   OnModuleInit,
   Param,
   Post,
@@ -23,6 +24,9 @@ import { AuthGuard } from '../../../../../../auth/guard/auth.guard';
 @ApiBearerAuth()
 @UseGuards(AuthGuard)
 export class DetailWorkOrderMaterialGatewayController implements OnModuleInit {
+  private readonly logger = new Logger(
+    DetailWorkOrderMaterialGatewayController.name,
+  );
   constructor(
     @Inject(environments.GATEWAY_DETAIL_WORK_ORDER_MATERIAL_KAFKA_CLIENT)
     private readonly detailWorkOrderMaterialKafkaClient: ClientKafka,
@@ -87,7 +91,12 @@ export class DetailWorkOrderMaterialGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error in createDetailWorkOrderMaterials: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -114,7 +123,12 @@ export class DetailWorkOrderMaterialGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error in getDetailWorkOrderMaterialsByWorkOrderId: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 
@@ -141,7 +155,12 @@ export class DetailWorkOrderMaterialGatewayController implements OnModuleInit {
         request.url,
       );
     } catch (error) {
-      throw new RpcException(error);
+      const err = error as Error;
+      this.logger.error(
+        `Error in deleteDetailWorkOrderMaterialsByWorkOrderId: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
     }
   }
 }
