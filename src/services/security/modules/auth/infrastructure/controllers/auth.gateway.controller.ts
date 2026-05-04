@@ -13,9 +13,11 @@ import { ClientKafka, RpcException } from '@nestjs/microservices';
 import { environments } from '../../../../../../settings/environments/environments';
 import { ApiOperation } from '@nestjs/swagger';
 import { AuthRequest } from '../../domain/schemas/dto/request/auth.request';
+import { VerifyUserRequest } from '../../domain/schemas/dto/request/verify-user.request';
 import { ApiResponse } from '../../../../../../shared/errors/responses/ApiResponse';
 import { sendKafkaRequest } from '../../../../../../shared/utils/kafka/send.kafka.request';
 import { AuthResponse } from '../../domain/schemas/dto/response/auth.response';
+import { VerifyUserResponse } from '../../domain/schemas/dto/response/verify-user.response';
 import { Response, Request as ExpressRequest } from 'express';
 import { parseExpirationToSeconds } from '../../../../../../shared/utils/jwt/time.util';
 import { AuthGuard } from '../../../../../../auth/guard/auth.guard';
@@ -34,6 +36,7 @@ export class AuthGatewayController implements OnModuleInit {
       'authentication.auth.signup',
       'authentication.auth.signout',
       'authentication.auth.refresh',
+      'authentication.auth.verify',
     ];
 
     requestPatterns.forEach((pattern) => {
@@ -154,6 +157,32 @@ export class AuthGatewayController implements OnModuleInit {
     } catch (error) {
       const err = error as Error;
       this.logger.error(`Error refreshing token: ${err.message}`, err.stack);
+      throw new RpcException(err as string | object);
+    }
+  }
+
+  @Post('verify')
+  @ApiOperation({
+    summary: 'Verify user existence',
+    description: 'Checks whether a user with the given username or email exists in the system before proceeding with login',
+  })
+  async verifyUser(
+    @Req() request: ExpressRequest,
+    @Body() payload: VerifyUserRequest,
+  ): Promise<ApiResponse> {
+    try {
+      const kafkaResponse: VerifyUserResponse = await sendKafkaRequest(
+        this.authKafkaClient.send('authentication.auth.verify', payload),
+      );
+
+      return new ApiResponse(
+        'User verified successfully!',
+        kafkaResponse,
+        request.url,
+      );
+    } catch (error) {
+      const err = error as Error;
+      this.logger.error(`Error verifying user: ${err.message}`, err.stack);
       throw new RpcException(err as string | object);
     }
   }
