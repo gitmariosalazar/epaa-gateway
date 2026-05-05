@@ -39,6 +39,7 @@ import {
   ReadingInfoResponse,
 } from '../../domain/schemas/dto/response/reading-basic.response';
 import { CreateReadingLegacyRequest } from '../../../../../epaa-legacy/modules/readings/domain/schemas/dto/request/create.reading-legacy.request';
+import { ReadingsWebsocketGateway } from '../websocket/readings.websocket.gateway';
 
 @Controller('Readings')
 @ApiTags('Readings')
@@ -51,6 +52,7 @@ export class ReadingGatewayController implements OnModuleInit {
     private readonly readingClient: ClientKafka,
     @Inject(environments.EPAA_LEGACY_READINGS_KAFKA_CLIENT)
     private readonly legacyReadingClient: ClientKafka,
+    private readonly wsGateway: ReadingsWebsocketGateway,
   ) {}
 
   async onModuleInit() {
@@ -209,6 +211,13 @@ export class ReadingGatewayController implements OnModuleInit {
         },
       );
 
+      // 📡 Notificar a todos los clientes Flutter conectados por WebSocket
+      this.wsGateway.emitReadingUpdated({
+        sectorId: response.sector ?? 0,
+        month: readingRequest.readingMonth.toString(),
+        type: 'updated',
+      });
+
       return new ApiResponse(
         `Current reading with reading ID ${readingId} updated successfully!`,
         response,
@@ -342,6 +351,14 @@ export class ReadingGatewayController implements OnModuleInit {
         'epaa-legacy.reading.create-reading-legacy',
         reading,
       );
+
+      // 📡 Notificar a todos los clientes Flutter conectados por WebSocket
+      // Usamos el mes actual del servidor (no previousMonthReading, que es el mes anterior)
+      this.wsGateway.emitReadingUpdated({
+        sectorId: response.sector ?? 0,
+        month: new Date().toISOString().slice(0, 7), // 'yyyy-MM' del mes actual
+        type: 'created',
+      });
 
       return new ApiResponse(
         `Reading created successfully!`,

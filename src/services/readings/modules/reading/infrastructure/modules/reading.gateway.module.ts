@@ -6,6 +6,7 @@ import { ReadingReportDashboardGatewayController } from '../controller/reading.r
 import { ReadingImagesGatewayController } from '../controller/reading-images.gateway.controller';
 import { KafkaEpaaLegacyModule } from '../../../../../../services/epaa-legacy/modules/kafka/kafka-epaa-legacy.module';
 import { ReadingAuditGatewayController } from '../controller/reading-audit.gateway.controller';
+import { ReadingsWebsocketGateway } from '../websocket/readings.websocket.gateway';
 
 @Module({
   imports: [
@@ -46,7 +47,15 @@ import { ReadingAuditGatewayController } from '../controller/reading-audit.gatew
     ReadingImagesGatewayController,
     ReadingAuditGatewayController,
   ],
-  providers: [],
-  exports: [ClientsModule],
+  providers: [
+    // WebSocket Gateway: singleton compartido por todos los controladores
+    ReadingsWebsocketGateway,
+  ],
+  exports: [
+    ClientsModule,
+    // Exportado para que otros módulos puedan emitir eventos si es necesario
+    ReadingsWebsocketGateway,
+  ],
 })
 export class ReadingGatewayModule {}
+

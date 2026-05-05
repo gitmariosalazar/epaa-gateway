@@ -1,5 +1,23 @@
 import { ApiProperty } from '@nestjs/swagger';
 
+export type AuditTrashRateType =
+  | 'Pendientes (Cartera Corriente)' // Audita los ingresos ya pagados dentro de un rango de fechas de emisión (`Fecha_Ingreso`).
+  | 'En Mora (Cartera Vencida)' // Audita todos los ingresos pendientes dentro de un rango de fechas de emisión (`Fecha_Ingreso`)
+  | 'Pagados (Recaudados)'
+  | 'Todos (Pagados y Pendientes)'; // Audita todos los ingresos, sin importar su estado de pago, dentro de un rango de fechas de emisión (`Fecha_Ingreso`).
+
+export type dateFilter = 'paymentDate' | 'incomeDate';
+
+export interface TrashRateAuditReportParams {
+  startDate: string;
+  endDate: string;
+  limit: number;
+  offset: number;
+  diagnosticFilter: 'DIFFERENT_AND_NO_RECORD' | 'ALL';
+  auditType: AuditTrashRateType;
+  dateFilter: dateFilter;
+}
+
 export class TrashRateReportParams {
   @ApiProperty({
     type: 'string',
@@ -44,9 +62,33 @@ export class TrashRateReportParams {
   @ApiProperty({
     type: 'string',
     description:
-      "Diagnostic filter for audit report. Use 'DIFFERENT_AND_NO_RECORD' to get records where calculated trash rate differs from valor record by at least 0.01 or there is no valor record, or 'ALL' to get all records.",
-    example: 'DIFFERENT_AND_NO_RECORD',
+      "Diagnostic filter. 'DIFFERENT_AND_NO_RECORD' returns only records with discrepancies or missing Valor entry. 'ALL' returns everything.",
+    example: 'ALL',
     required: true,
   })
   diagnosticFilter: 'DIFFERENT_AND_NO_RECORD' | 'ALL';
+
+  @ApiProperty({
+    type: 'string',
+    description: 'Type of audit report to generate.',
+    enum: [
+      'Auditoria general (Pagados)',
+      'Ingresos pendientes de pago en caja  (Todos Ingresos sin pagar)',
+      'Ingresos pendientes de pago en caja (Solo ingresos en Mora Ingresos sin pagar)',
+      'Ingresos Netos (Por fecha de pago)',
+      'Todos los ingresos (Pagados y Pendientes de pago en caja)',
+    ],
+    example: 'Auditoria general (Pagados)',
+    required: false,
+  })
+  auditType?: AuditTrashRateType;
+
+  @ApiProperty({
+    type: 'string',
+    description: 'Date filter for the audit report.',
+    enum: ['paymentDate', 'incomeDate'],
+    example: 'paymentDate',
+    required: false,
+  })
+  dateFilter?: dateFilter;
 }

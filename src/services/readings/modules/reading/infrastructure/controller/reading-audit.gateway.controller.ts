@@ -24,6 +24,7 @@ import {
   CloseAuditSectorResponse,
   InitializeAuditResponse,
 } from '../../domain/schemas/dto/response/audit-sector.response';
+import { ReadingsWebsocketGateway } from '../websocket/readings.websocket.gateway';
 
 @Controller('readings/audit')
 @ApiTags('Readings — Audit')
@@ -37,6 +38,7 @@ export class ReadingAuditGatewayController implements OnModuleInit {
   constructor(
     @Inject(environments.READINGS_KAFKA_CLIENT)
     private readonly readingClient: ClientKafka,
+    private readonly wsGateway: ReadingsWebsocketGateway,
   ) {}
 
   async onModuleInit() {
@@ -178,6 +180,13 @@ export class ReadingAuditGatewayController implements OnModuleInit {
           observaciones: body.observaciones,
         }),
       );
+      // 📡 Notificar a todos los clientes Flutter conectados por WebSocket
+      this.wsGateway.emitAuditUpdated({
+        sectorId: sector,
+        month,
+        type: 'closed',
+      });
+
       return new ApiResponse(
         `Audit for sector ${sector} / ${month} closed successfully!`,
         response,

@@ -74,11 +74,16 @@ export class TrashRateReportGatewayController implements OnModuleInit {
         `Sending getTrashRateAuditReport request: ${JSON.stringify(params)}`,
       );
       const payload = {
-        startDate: params.startDate,
-        endDate: params.endDate,
-        limit: params.limit ?? 100,
-        offset: params.offset ?? 0,
-        diagnosticFilter: params.diagnosticFilter,
+        params: {
+          startDate: params.startDate,
+          endDate: params.endDate,
+          // limit/offset omitted when undefined → backend falls back to 1_000_000
+          limit: params.limit,
+          offset: params.offset ?? 0,
+          diagnosticFilter: params.diagnosticFilter ?? 'ALL',
+          auditType: params.auditType ?? 'Pagados (Recaudados)',
+          dateFilter: params.dateFilter ?? 'incomeDate',
+        },
       };
       const response: TrashRateAuditRowResponse[] = await sendKafkaRequest(
         this.trashRateClient.send('trash-rate-audit-report', payload),
