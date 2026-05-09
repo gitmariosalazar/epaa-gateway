@@ -37,10 +37,12 @@ import { EpaaLegacyFactoryModule } from './services/epaa-legacy/modules/factory/
 import { ConnectionFactoryModule } from './services/connections/modules/factory/epaa-legacy.factory.module';
 import { AuditContextInterceptor } from './shared/interceptors/audit-context.interceptor';
 import { APP_INTERCEPTOR } from '@nestjs/core';
+import { RealtimeModule } from './shared/realtime';
 
 @Module({
   imports: [
     HomeModule,
+    RealtimeModule,   // ← WebSocket global: RealtimeService disponible en TODA la app
     QRCodeKafkaModule,
     QRCodeGatewayModule,
     ReadingGatewayModule,

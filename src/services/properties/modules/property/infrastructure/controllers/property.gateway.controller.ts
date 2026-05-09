@@ -86,9 +86,6 @@ export class PropertyGatewayController implements OnModuleInit {
       const response = await sendKafkaRequest(
         this.propertyKafkaClient.send('properties.create-property', property),
       );
-      this.logger.log(
-        `Property created successfully: ${JSON.stringify(response)}`,
-      );
       return new ApiResponse(
         `Property created successfully!`,
         response,
@@ -122,9 +119,6 @@ export class PropertyGatewayController implements OnModuleInit {
           property,
         }),
       );
-      this.logger.log(
-        `Property updated successfully: ${JSON.stringify(response)}`,
-      );
       return new ApiResponse(
         `Property updated successfully!`,
         response,
@@ -155,9 +149,6 @@ export class PropertyGatewayController implements OnModuleInit {
         this.propertyKafkaClient.send('properties.delete-property', {
           propertyCadastralKey,
         }),
-      );
-      this.logger.log(
-        `Property deleted successfully: ${JSON.stringify(response)}`,
       );
       return new ApiResponse(
         `Property deleted successfully!`,
@@ -190,9 +181,6 @@ export class PropertyGatewayController implements OnModuleInit {
           'properties.get-property-by-id',
           propertyCadastralKey,
         ),
-      );
-      this.logger.log(
-        `Property retrieved successfully: ${JSON.stringify(response)}`,
       );
       return new ApiResponse(
         `Property retrieved successfully!`,
@@ -230,9 +218,6 @@ export class PropertyGatewayController implements OnModuleInit {
           offset,
         }),
       );
-      this.logger.log(
-        `Properties retrieved successfully: ${JSON.stringify(response)}`,
-      );
       return new ApiResponse(
         `Properties retrieved successfully!`,
         response,
@@ -264,9 +249,6 @@ export class PropertyGatewayController implements OnModuleInit {
           'properties.verify-property-exists',
           propertyCadastralKey,
         ),
-      );
-      this.logger.log(
-        `Property existence verified successfully: ${JSON.stringify(response)}`,
       );
       return new ApiResponse(
         `Property existence verified successfully!`,
@@ -306,9 +288,6 @@ export class PropertyGatewayController implements OnModuleInit {
           offset,
         }),
       );
-      this.logger.log(
-        `Properties retrieved successfully: ${JSON.stringify(response)}`,
-      );
       return new ApiResponse(
         `Properties retrieved successfully!`,
         response,
@@ -335,9 +314,6 @@ export class PropertyGatewayController implements OnModuleInit {
       this.logger.log(`Received request to get properties by type`);
       const response = await sendKafkaRequest(
         this.propertyKafkaClient.send('properties.get-properties-by-type', {}),
-      );
-      this.logger.log(
-        `Properties by type retrieved successfully: ${JSON.stringify(response)}`,
       );
       return new ApiResponse(
         `Properties by type retrieved successfully!`,

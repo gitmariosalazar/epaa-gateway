@@ -9,6 +9,7 @@ import {
   ParseIntPipe,
   Post,
   Put,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -17,6 +18,7 @@ import {
   ApiBearerAuth,
   ApiOperation,
   ApiParam,
+  ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
 import { UpdateReadingRequest } from '../../domain/schemas/dto/request/update-reading.request';
@@ -24,6 +26,7 @@ import { CreateReadingRequest } from '../../domain/schemas/dto/request/create-re
 import {
   PendingReadingConnectionResponse,
   ReadingHistoryResponse,
+  ReadingNoveltyResponse,
   ReadingResponse,
   TakenReadingConnectionResponse,
 } from '../../domain/schemas/dto/response/reading.response';
@@ -39,7 +42,7 @@ import {
   ReadingInfoResponse,
 } from '../../domain/schemas/dto/response/reading-basic.response';
 import { CreateReadingLegacyRequest } from '../../../../../epaa-legacy/modules/readings/domain/schemas/dto/request/create.reading-legacy.request';
-import { ReadingsWebsocketGateway } from '../websocket/readings.websocket.gateway';
+import { RealtimeService } from '../../../../../../shared/realtime';
 
 @Controller('Readings')
 @ApiTags('Readings')
@@ -52,7 +55,7 @@ export class ReadingGatewayController implements OnModuleInit {
     private readonly readingClient: ClientKafka,
     @Inject(environments.EPAA_LEGACY_READINGS_KAFKA_CLIENT)
     private readonly legacyReadingClient: ClientKafka,
-    private readonly wsGateway: ReadingsWebsocketGateway,
+    private readonly realtimeService: RealtimeService,
   ) {}
 
   async onModuleInit() {
@@ -72,6 +75,7 @@ export class ReadingGatewayController implements OnModuleInit {
       'reading.get-pending-readings-by-month',
       'reading.get-taken-reading-estimates-or-average',
       'reading.get-taken-readings-by-month',
+      'reading.get-reading-by-novelty',
       // Legacy calculate-reading-value is called from createReading using
       // legacyReadingClient (EPAA_LEGACY_READINGS_KAFKA_CLIENT), which already
       // subscribes this topic in ReadingLegacyGatewayController.onModuleInit().
@@ -153,7 +157,8 @@ export class ReadingGatewayController implements OnModuleInit {
     @Req() request: Request,
   ): Promise<ApiResponse> {
     try {
-      const updateUserId = (request as any)['user']?.sub ?? (request as any)['user']?.userId;
+      const updateUserId =
+        (request as any)['user']?.sub ?? (request as any)['user']?.userId;
       const response: ReadingResponse = await sendKafkaRequest(
         this.readingClient.send('reading.update-current-reading', {
           readingId,
@@ -212,7 +217,7 @@ export class ReadingGatewayController implements OnModuleInit {
       );
 
       // 📡 Notificar a todos los clientes Flutter conectados por WebSocket
-      this.wsGateway.emitReadingUpdated({
+      this.realtimeService.notifyReadingUpdated({
         sectorId: response.sector ?? 0,
         month: readingRequest.readingMonth.toString(),
         type: 'updated',
@@ -262,7 +267,8 @@ export class ReadingGatewayController implements OnModuleInit {
       console.log('readingRequest', readingRequest);
       */
 
-      const creatorUserId = (request as any)['user']?.sub ?? (request as any)['user']?.userId;
+      const creatorUserId =
+        (request as any)['user']?.sub ?? (request as any)['user']?.userId;
       const response: ReadingResponse = await sendKafkaRequest<ReadingResponse>(
         this.readingClient.send('reading.create-reading', {
           ...readingRequest,
@@ -354,7 +360,7 @@ export class ReadingGatewayController implements OnModuleInit {
 
       // 📡 Notificar a todos los clientes Flutter conectados por WebSocket
       // Usamos el mes actual del servidor (no previousMonthReading, que es el mes anterior)
-      this.wsGateway.emitReadingUpdated({
+      this.realtimeService.notifyReadingUpdated({
         sectorId: response.sector ?? 0,
         month: new Date().toISOString().slice(0, 7), // 'yyyy-MM' del mes actual
         type: 'created',
@@ -518,6 +524,57 @@ export class ReadingGatewayController implements OnModuleInit {
         err.stack,
       );
       throw new RpcException(err as string | object);
+    }
+  }
+
+  // 1. Quitar el /:novelty de la ruta
+  @Get('get-reading-by-novelty/:month')
+  @ApiOperation({
+    summary: 'Method GET - Get Reading by novelty',
+    description:
+      'The endpoint allows you to get Reading by novelty. The novelty and sector are optional filters.',
+  })
+  @ApiParam({ name: 'month', type: String, example: '2026-05' })
+  @ApiQuery({
+    name: 'novelty',
+    type: String,
+    example: 'NORMAL',
+    description: 'The novelty to filter readings by (optional)',
+    required: false,
+  })
+  @ApiQuery({
+    name: 'sector',
+    required: false,
+    type: Number,
+    description: 'Optional sector filter',
+  })
+  async getReadingByNovelty(
+    @Param('month') month: string,
+    @Req() request: Request,
+    @Query('novelty') novelty?: string,
+    @Query('sector', new ParseIntPipe({ optional: true })) sector?: number,
+  ): Promise<ApiResponse> {
+    try {
+      const response: ReadingNoveltyResponse[] = await sendKafkaRequest(
+        this.readingClient.send('reading.get-reading-by-novelty', {
+          novelty, // Si es undefined, Kafka recibirá undefined
+          month,
+          sector,
+        }),
+      );
+
+      return new ApiResponse(
+        `Reading with novelty ${novelty ?? 'ALL'}, month ${month} and sector ${sector ?? 'ALL'} found successfully!`,
+        response,
+        request.url,
+      );
+    } catch (error) {
+      const err = error as Error;
+      this.logger.error(
+        `Error getting reading by novelty ${novelty ?? 'ALL'}, month ${month} and sector ${sector ?? 'ALL'}: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err.message || err);
     }
   }
 }

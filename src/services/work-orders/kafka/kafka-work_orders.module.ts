@@ -13,6 +13,7 @@ import { environments } from '../../../settings/environments/environments';
           client: {
             brokers: [environments.KAFKA_BROKER_URL],
             clientId: environments.GATEWAY_WORK_ORDER_KAFKA_CLIENT_ID,
+            retry: { retries: 25, initialRetryTime: 1000 },
           },
           consumer: {
             groupId: environments.GATEWAY_WORK_ORDER_KAFKA_GROUP_ID,
@@ -32,8 +33,8 @@ import { environments } from '../../../settings/environments/environments';
         options: {
           client: {
             brokers: [environments.KAFKA_BROKER_URL],
-            clientId:
-              environments.GATEWAY_WORK_ORDER_OBSERVATION_KAFKA_CLIENT_ID,
+            clientId: environments.GATEWAY_WORK_ORDER_OBSERVATION_KAFKA_CLIENT_ID,
+            retry: { retries: 25, initialRetryTime: 1000 },
           },
           consumer: {
             groupId: environments.GATEWAY_WORK_ORDER_OBSERVATION_KAFKA_GROUP_ID,
@@ -54,6 +55,7 @@ import { environments } from '../../../settings/environments/environments';
           client: {
             brokers: [environments.KAFKA_BROKER_URL],
             clientId: environments.GATEWAY_WORK_TYPE_KAFKA_CLIENT_ID,
+            retry: { retries: 25, initialRetryTime: 1000 },
           },
           consumer: {
             groupId: environments.GATEWAY_WORK_TYPE_KAFKA_GROUP_ID,
@@ -74,6 +76,7 @@ import { environments } from '../../../settings/environments/environments';
           client: {
             brokers: [environments.KAFKA_BROKER_URL],
             clientId: environments.GATEWAY_WORK_ORDER_HISTORY_KAFKA_CLIENT_ID,
+            retry: { retries: 25, initialRetryTime: 1000 },
           },
           consumer: {
             groupId: environments.GATEWAY_WORK_ORDER_HISTORY_KAFKA_GROUP_ID,
@@ -92,8 +95,8 @@ import { environments } from '../../../settings/environments/environments';
         options: {
           client: {
             brokers: [environments.KAFKA_BROKER_URL],
-            clientId:
-              environments.GATEWAY_DETAIL_WORK_ORDER_MATERIAL_KAFKA_CLIENT_ID,
+            clientId: environments.GATEWAY_DETAIL_WORK_ORDER_MATERIAL_KAFKA_CLIENT_ID,
+            retry: { retries: 25, initialRetryTime: 1000 },
           },
           consumer: {
             groupId:
@@ -113,8 +116,8 @@ import { environments } from '../../../settings/environments/environments';
         options: {
           client: {
             brokers: [environments.KAFKA_BROKER_URL],
-            clientId:
-              environments.GATEWAY_WORK_ORDER_WORKER_ASSIGNMENT_KAFKA_CLIENT_ID,
+            clientId: environments.GATEWAY_WORK_ORDER_WORKER_ASSIGNMENT_KAFKA_CLIENT_ID,
+            retry: { retries: 25, initialRetryTime: 1000 },
           },
           consumer: {
             groupId:
@@ -134,8 +137,8 @@ import { environments } from '../../../settings/environments/environments';
         options: {
           client: {
             brokers: [environments.KAFKA_BROKER_URL],
-            clientId:
-              environments.GATEWAY_WORK_ORDER_ATTACHMENTS_KAFKA_CLIENT_ID,
+            clientId: environments.GATEWAY_WORK_ORDER_ATTACHMENTS_KAFKA_CLIENT_ID,
+            retry: { retries: 25, initialRetryTime: 1000 },
           },
           consumer: {
             groupId: environments.GATEWAY_WORK_ORDER_ATTACHMENTS_KAFKA_GROUP_ID,

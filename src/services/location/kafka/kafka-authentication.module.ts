@@ -13,6 +13,7 @@ import { environments } from '../../../settings/environments/environments';
           client: {
             brokers: [environments.KAFKA_BROKER_URL],
             clientId: environments.GATEWAY_LOCATION_KAFKA_CLIENT_ID,
+            retry: { retries: 25, initialRetryTime: 1000 },
           },
           consumer: {
             groupId: environments.GATEWAY_LOCATION_KAFKA_GROUP_ID,

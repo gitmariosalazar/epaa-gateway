@@ -13,6 +13,7 @@ import { KafkaConnectionReplySubscriberService } from './kafka-reply-subscriber.
           client: {
             brokers: [environments.KAFKA_BROKER_URL],
             clientId: environments.CONNECTION_KAFKA_CLIENT_ID,
+            retry: { retries: 25, initialRetryTime: 1000 },
           },
           consumer: {
             groupId: environments.CONNECTION_KAFKA_GROUP_ID,

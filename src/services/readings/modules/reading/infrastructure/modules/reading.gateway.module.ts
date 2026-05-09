@@ -6,7 +6,6 @@ import { ReadingReportDashboardGatewayController } from '../controller/reading.r
 import { ReadingImagesGatewayController } from '../controller/reading-images.gateway.controller';
 import { KafkaEpaaLegacyModule } from '../../../../../../services/epaa-legacy/modules/kafka/kafka-epaa-legacy.module';
 import { ReadingAuditGatewayController } from '../controller/reading-audit.gateway.controller';
-import { ReadingsWebsocketGateway } from '../websocket/readings.websocket.gateway';
 
 @Module({
   imports: [
@@ -21,6 +20,7 @@ import { ReadingsWebsocketGateway } from '../websocket/readings.websocket.gatewa
           client: {
             brokers: [environments.KAFKA_BROKER_URL],
             clientId: environments.READINGS_KAFKA_CLIENT_ID,
+            retry: { retries: 25, initialRetryTime: 1000 },
           },
           consumer: {
             groupId: environments.READINGS_KAFKA_GROUP_ID,
@@ -48,13 +48,11 @@ import { ReadingsWebsocketGateway } from '../websocket/readings.websocket.gatewa
     ReadingAuditGatewayController,
   ],
   providers: [
-    // WebSocket Gateway: singleton compartido por todos los controladores
-    ReadingsWebsocketGateway,
+    // RealtimeService se inyecta directamente desde el RealtimeModule global
+    // sin necesidad de registrar ReadingsWebsocketGateway aquí.
   ],
   exports: [
     ClientsModule,
-    // Exportado para que otros módulos puedan emitir eventos si es necesario
-    ReadingsWebsocketGateway,
   ],
 })
 export class ReadingGatewayModule {}

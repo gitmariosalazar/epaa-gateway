@@ -9,6 +9,7 @@ const kafkaProviders = [
     client: {
       brokers: [environments.KAFKA_BROKER_URL],
       clientId: environments.GATEWAY_AUTHENTICATION_KAFKA_CLIENT_ID,
+            retry: { retries: 25, initialRetryTime: 1000 },
     },
     consumer: {
       groupId: environments.GATEWAY_AUTHENTICATION_KAFKA_GROUP_ID,
@@ -23,6 +24,7 @@ const kafkaProviders = [
     client: {
       brokers: [environments.KAFKA_BROKER_URL],
       clientId: environments.GATEWAY_ROLES_KAFKA_CLIENT_ID,
+            retry: { retries: 25, initialRetryTime: 1000 },
     },
     consumer: {
       groupId: environments.GATEWAY_ROLES_KAFKA_GROUP_ID,
@@ -37,6 +39,7 @@ const kafkaProviders = [
     client: {
       brokers: [environments.KAFKA_BROKER_URL],
       clientId: environments.GATEWAY_CATEGORIES_KAFKA_CLIENT_ID,
+            retry: { retries: 25, initialRetryTime: 1000 },
     },
     consumer: {
       groupId: environments.GATEWAY_CATEGORIES_KAFKA_GROUP_ID,
@@ -51,6 +54,7 @@ const kafkaProviders = [
     client: {
       brokers: [environments.KAFKA_BROKER_URL],
       clientId: environments.GATEWAY_PERMISSIONS_KAFKA_CLIENT_ID,
+            retry: { retries: 25, initialRetryTime: 1000 },
     },
     consumer: {
       groupId: environments.GATEWAY_PERMISSIONS_KAFKA_GROUP_ID,
@@ -65,6 +69,7 @@ const kafkaProviders = [
     client: {
       brokers: [environments.KAFKA_BROKER_URL],
       clientId: environments.GATEWAY_ROL_PERMISSION_KAFKA_CLIENT_ID,
+            retry: { retries: 25, initialRetryTime: 1000 },
     },
     consumer: {
       groupId: environments.GATEWAY_ROL_PERMISSION_KAFKA_GROUP_ID,
@@ -79,6 +84,7 @@ const kafkaProviders = [
     client: {
       brokers: [environments.KAFKA_BROKER_URL],
       clientId: environments.GATEWAY_USERS_KAFKA_CLIENT_ID,
+            retry: { retries: 25, initialRetryTime: 1000 },
     },
     consumer: {
       groupId: environments.GATEWAY_USERS_KAFKA_GROUP_ID,
@@ -93,6 +99,7 @@ const kafkaProviders = [
     client: {
       brokers: [environments.KAFKA_BROKER_URL],
       clientId: environments.GATEWAY_EMPLOYEES_KAFKA_CLIENT_ID,
+            retry: { retries: 25, initialRetryTime: 1000 },
     },
     consumer: {
       groupId: environments.GATEWAY_EMPLOYEES_KAFKA_GROUP_ID,
@@ -107,6 +114,7 @@ const kafkaProviders = [
     client: {
       brokers: [environments.KAFKA_BROKER_URL],
       clientId: environments.GATEWAY_AUTH_KAFKA_CLIENT_ID,
+            retry: { retries: 25, initialRetryTime: 1000 },
     },
     consumer: {
       groupId: environments.GATEWAY_AUTH_KAFKA_GROUP_ID,
@@ -121,6 +129,7 @@ const kafkaProviders = [
     client: {
       brokers: [environments.KAFKA_BROKER_URL],
       clientId: 'audit-gateway-client',
+            retry: { retries: 25, initialRetryTime: 1000 },
     },
     consumer: {
       groupId: 'audit-gateway-group',

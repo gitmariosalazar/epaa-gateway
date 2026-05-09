@@ -38,8 +38,13 @@ export const WS_EVENTS = {
 export class ReadingsWebsocketGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
+  /**
+   * Instancia del servidor Socket.io inyectada por NestJS en tiempo de ejecución.
+   * El operador `!` (definite assignment assertion) suprime TS2564 porque
+   * el framework garantiza su asignación antes de cualquier evento del gateway.
+   */
   @WebSocketServer()
-  server: Server;
+  server!: Server;
 
   private readonly logger = new Logger(ReadingsWebsocketGateway.name);
 

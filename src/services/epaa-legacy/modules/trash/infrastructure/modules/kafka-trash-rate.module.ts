@@ -20,6 +20,7 @@ import { environments } from '../../../../../../settings/environments/environmen
           client: {
             brokers: [environments.KAFKA_BROKER_URL],
             clientId: environments.TRASH_RATE_KAFKA_CLIENT_ID,
+            retry: { retries: 25, initialRetryTime: 1000 },
           },
           consumer: {
             groupId: environments.TRASH_RATE_KAFKA_GROUP_ID,
