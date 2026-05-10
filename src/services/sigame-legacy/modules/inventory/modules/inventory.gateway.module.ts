@@ -10,6 +10,7 @@ import { InventoryGatewayController } from '../infrastructure/controllers/invent
         name: environments.INVENTORY_KAFKA_CLIENT!,
         transport: Transport.KAFKA,
         options: {
+          replyTopic: 'inventory_topic.reply',
           client: {
             brokers: [environments.KAFKA_BROKER_URL],
           },

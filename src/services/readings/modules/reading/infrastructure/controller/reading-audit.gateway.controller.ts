@@ -4,15 +4,15 @@ import {
   Get,
   Inject,
   Logger,
-  OnModuleInit,
   Param,
   ParseIntPipe,
   Post,
   Query,
   Req,
-  UseGuards,
+  UseGuards
 } from '@nestjs/common';
 import { ClientKafka, RpcException } from '@nestjs/microservices';
+import { KafkaProxyService } from '../../../../../../shared/kafka/kafka-proxy.service';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { environments } from '../../../../../../settings/environments/environments';
 import { ApiResponse } from '../../../../../../shared/errors/responses/ApiResponse';
@@ -30,7 +30,7 @@ import { RealtimeService } from '../../../../../../shared/realtime';
 @ApiTags('Readings — Audit')
 @ApiBearerAuth()
 @UseGuards(AuthGuard)
-export class ReadingAuditGatewayController implements OnModuleInit {
+export class ReadingAuditGatewayController {
   private readonly logger: Logger = new Logger(
     ReadingAuditGatewayController.name,
   );
@@ -39,20 +39,8 @@ export class ReadingAuditGatewayController implements OnModuleInit {
     @Inject(environments.READINGS_KAFKA_CLIENT)
     private readonly readingClient: ClientKafka,
     private readonly realtimeService: RealtimeService,
+    private readonly kafkaProxy: KafkaProxyService,
   ) {}
-
-  async onModuleInit() {
-    this.readingClient.subscribeToResponseOf(
-      'reading.audit.initialize-monthly',
-    );
-    this.readingClient.subscribeToResponseOf('reading.audit.by-month');
-    this.readingClient.subscribeToResponseOf(
-      'reading.audit.by-sector-and-month',
-    );
-    this.readingClient.subscribeToResponseOf('reading.audit.close-sector');
-    this.readingClient.subscribeToResponseOf('reading.audit.history-by-sector');
-    this.logger.log('ReadingAuditGatewayController initialized');
-  }
 
   // ── Initialize Monthly Audit ───────────────────────────────────────────────
 
@@ -69,7 +57,7 @@ export class ReadingAuditGatewayController implements OnModuleInit {
     try {
       this.logger.log(`Initializing monthly audit for period: ${month}`);
       const response: InitializeAuditResponse = await sendKafkaRequest(
-        this.readingClient.send('reading.audit.initialize-monthly', month),
+        this.kafkaProxy.send(this.readingClient, 'reading.audit.initialize-monthly', month),
       );
       return new ApiResponse(
         `Monthly audit initialized: ${response.sectorsGenerated} sectors created for ${response.period}`,
@@ -101,7 +89,7 @@ export class ReadingAuditGatewayController implements OnModuleInit {
     try {
       this.logger.log(`Fetching audit for month: ${month}`);
       const response: AuditSectorResponse[] = await sendKafkaRequest(
-        this.readingClient.send('reading.audit.by-month', month),
+        this.kafkaProxy.send(this.readingClient, 'reading.audit.by-month', month),
       );
       return new ApiResponse(
         `Audit for month ${month} retrieved successfully!`,
@@ -134,7 +122,7 @@ export class ReadingAuditGatewayController implements OnModuleInit {
     try {
       this.logger.log(`Fetching audit for sector ${sector}, month: ${month}`);
       const response: AuditSectorResponse | null = await sendKafkaRequest(
-        this.readingClient.send('reading.audit.by-sector-and-month', {
+        this.kafkaProxy.send(this.readingClient, 'reading.audit.by-sector-and-month', {
           sector,
           month,
         }),
@@ -173,7 +161,7 @@ export class ReadingAuditGatewayController implements OnModuleInit {
         `Closing audit for sector ${sector}, month ${month} by supervisor ${body.supervisorId}`,
       );
       const response: CloseAuditSectorResponse = await sendKafkaRequest(
-        this.readingClient.send('reading.audit.close-sector', {
+        this.kafkaProxy.send(this.readingClient, 'reading.audit.close-sector', {
           sector,
           month,
           supervisorId: body.supervisorId,
@@ -220,7 +208,7 @@ export class ReadingAuditGatewayController implements OnModuleInit {
         `Fetching audit history for sector ${sector}, last ${months ?? 12} months`,
       );
       const response: AuditSectorHistoryResponse[] = await sendKafkaRequest(
-        this.readingClient.send('reading.audit.history-by-sector', {
+        this.kafkaProxy.send(this.readingClient, 'reading.audit.history-by-sector', {
           sector,
           months: months ? Number(months) : 12,
         }),

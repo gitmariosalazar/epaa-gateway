@@ -1,4 +1,7 @@
-import { ClientKafka, RpcException } from '@nestjs/microservices';
+import {
+  ClientKafka,
+  RpcException } from '@nestjs/microservices';
+import { KafkaProxyService } from '../../../../../../shared/kafka/kafka-proxy.service';
 import { environments } from '../../../../../../settings/environments/environments';
 import {
   BadRequestException,
@@ -8,7 +11,6 @@ import {
   Get,
   Inject,
   Logger,
-  OnModuleInit,
   Param,
   ParseIntPipe,
   Post,
@@ -17,7 +19,7 @@ import {
   UploadedFile,
   UploadedFiles,
   UseGuards,
-  UseInterceptors,
+  UseInterceptors
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -39,31 +41,15 @@ import { AuthGuard } from '../../../../../../auth/guard/auth.guard';
 @ApiTags('Work Order Attachments')
 @ApiBearerAuth()
 @UseGuards(AuthGuard)
-export class WorkOrderAttachmentsGatewayController implements OnModuleInit {
+export class WorkOrderAttachmentsGatewayController {
   private readonly logger = new Logger(
     WorkOrderAttachmentsGatewayController.name,
   );
   constructor(
     @Inject(environments.GATEWAY_WORK_ORDER_ATTACHMENTS_KAFKA_CLIENT)
     private readonly workOrderAttachmentsKafkaClient: ClientKafka,
+    private readonly kafkaProxy: KafkaProxyService,
   ) {}
-
-  async onModuleInit() {
-    const requestPatterns = [
-      'work-order-attachments.add_work_order_attachment',
-      'work-order-attachments.find_all_attachments',
-      'work-order-attachments.get_work_order_attachment_by_id',
-      'work-order-attachments.delete_work_order_attachment',
-      'work-order-attachments.update_work_order_attachment',
-      'work-order-attachments.find_attachments_by_work_order_id',
-    ];
-
-    requestPatterns.forEach((pattern) => {
-      this.workOrderAttachmentsKafkaClient.subscribeToResponseOf(pattern);
-    });
-
-    await this.workOrderAttachmentsKafkaClient.connect();
-  }
 
   @Post('add-work-order-attachment')
   @UseInterceptors(
@@ -152,9 +138,8 @@ export class WorkOrderAttachmentsGatewayController implements OnModuleInit {
         );
 
         const result = await sendKafkaRequest(
-          this.workOrderAttachmentsKafkaClient.send(
-            'work-order-attachments.add_work_order_attachment',
-            attachmentRequest,
+          this.kafkaProxy.send(this.workOrderAttachmentsKafkaClient, 
+            'work-order-attachments.add_work_order_attachment', attachmentRequest,
           ),
         );
 
@@ -184,9 +169,8 @@ export class WorkOrderAttachmentsGatewayController implements OnModuleInit {
   async findAllAttachments(@Req() request: Request): Promise<ApiResponse> {
     try {
       const result = await sendKafkaRequest(
-        this.workOrderAttachmentsKafkaClient.send(
-          'work-order-attachments.find_all_attachments',
-          {},
+        this.kafkaProxy.send(this.workOrderAttachmentsKafkaClient, 
+          'work-order-attachments.find_all_attachments', {},
         ),
       );
 
@@ -216,9 +200,8 @@ export class WorkOrderAttachmentsGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const result = await sendKafkaRequest(
-        this.workOrderAttachmentsKafkaClient.send(
-          'work-order-attachments.get_work_order_attachment_by_id',
-          attachmentId,
+        this.kafkaProxy.send(this.workOrderAttachmentsKafkaClient, 
+          'work-order-attachments.get_work_order_attachment_by_id', attachmentId,
         ),
       );
 
@@ -248,9 +231,8 @@ export class WorkOrderAttachmentsGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const result = await sendKafkaRequest(
-        this.workOrderAttachmentsKafkaClient.send(
-          'work-order-attachments.delete_work_order_attachment',
-          attachmentId,
+        this.kafkaProxy.send(this.workOrderAttachmentsKafkaClient, 
+          'work-order-attachments.delete_work_order_attachment', attachmentId,
         ),
       );
 
@@ -282,9 +264,8 @@ export class WorkOrderAttachmentsGatewayController implements OnModuleInit {
     try {
       const payload = { attachmentId, ...attachment };
       const result = await sendKafkaRequest(
-        this.workOrderAttachmentsKafkaClient.send(
-          'work-order-attachments.update_work_order_attachment',
-          payload,
+        this.kafkaProxy.send(this.workOrderAttachmentsKafkaClient, 
+          'work-order-attachments.update_work_order_attachment', payload,
         ),
       );
 
@@ -315,9 +296,8 @@ export class WorkOrderAttachmentsGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const result = await sendKafkaRequest(
-        this.workOrderAttachmentsKafkaClient.send(
-          'work-order-attachments.find_attachments_by_work_order_id',
-          workOrderId,
+        this.kafkaProxy.send(this.workOrderAttachmentsKafkaClient, 
+          'work-order-attachments.find_attachments_by_work_order_id', workOrderId,
         ),
       );
 

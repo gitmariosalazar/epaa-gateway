@@ -1,4 +1,4 @@
-import { ClientKafka } from '@nestjs/microservices/client/client-kafka';
+import { ClientKafka, RpcException } from '@nestjs/microservices';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import {
   Body,
@@ -6,17 +6,16 @@ import {
   Get,
   Inject,
   Logger,
-  OnModuleInit,
   Post,
   Query,
   Req,
-  UseGuards,
+  UseGuards
 } from '@nestjs/common';
 import { environments } from '../../../../../../settings/environments/environments';
 import { AuthGuard } from '../../../../../../auth/guard/auth.guard';
 import { ApiResponse } from '../../../../../../shared/errors/responses/ApiResponse';
 import { sendKafkaRequest } from '../../../../../../shared/utils/kafka/send.kafka.request';
-import { RpcException } from '@nestjs/microservices';
+import { KafkaProxyService } from '../../../../../../shared/kafka/kafka-proxy.service';
 import { LogSessionRequest } from '../../domain/schemas/dto/request/log-session.request';
 import {
   GetAuditLogsRequest,
@@ -27,27 +26,16 @@ import {
 @ApiTags('Audit-Gateway')
 @ApiBearerAuth()
 @UseGuards(AuthGuard)
-export class AuditGatewayController implements OnModuleInit {
+export class AuditGatewayController {
   private readonly logger = new Logger(AuditGatewayController.name);
 
   constructor(
     @Inject('GATEWAY_AUDIT_KAFKA_CLIENT')
     private readonly clientKafka: ClientKafka,
+    private readonly kafkaProxy: KafkaProxyService,
   ) {}
 
-  onModuleInit() {
-    const requestPatterns = [
-      'audit.log-session',
-      'audit.get-logs',
-      'audit.get-session-logs',
-    ];
 
-    requestPatterns.forEach((pattern) => {
-      this.clientKafka.subscribeToResponseOf(pattern);
-    });
-
-    return this.clientKafka.connect();
-  }
 
   @Post('log-session')
   @ApiOperation({
@@ -61,7 +49,7 @@ export class AuditGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const response = await sendKafkaRequest(
-        this.clientKafka.send('audit.log-session', requestData),
+        this.kafkaProxy.send(this.clientKafka, 'audit.log-session', requestData),
       );
 
       return new ApiResponse(
@@ -104,7 +92,7 @@ export class AuditGatewayController implements OnModuleInit {
       };
 
       const response = await sendKafkaRequest(
-        this.clientKafka.send('audit.get-logs', payload),
+        this.kafkaProxy.send(this.clientKafka, 'audit.get-logs', payload),
       );
 
       return new ApiResponse(
@@ -144,7 +132,7 @@ export class AuditGatewayController implements OnModuleInit {
       };
 
       const response = await sendKafkaRequest(
-        this.clientKafka.send('audit.get-session-logs', payload),
+        this.kafkaProxy.send(this.clientKafka, 'audit.get-session-logs', payload),
       );
 
       return new ApiResponse(

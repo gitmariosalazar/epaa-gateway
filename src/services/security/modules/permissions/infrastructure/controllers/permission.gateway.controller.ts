@@ -5,15 +5,15 @@ import {
   Get,
   Inject,
   Logger,
-  OnModuleInit,
   Param,
   ParseIntPipe,
   Post,
   Put,
   Req,
-  UseGuards,
+  UseGuards
 } from '@nestjs/common';
 import { ClientKafka, RpcException } from '@nestjs/microservices';
+import { KafkaProxyService } from '../../../../../../shared/kafka/kafka-proxy.service';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { environments } from '../../../../../../settings/environments/environments';
 import { CreatePermissionRequest } from '../../domain/schemas/dto/request/create.permission.request';
@@ -29,32 +29,13 @@ import {
 @ApiTags('Permissions Gateway')
 @ApiBearerAuth()
 @UseGuards(AuthGuard)
-export class PermissionGatewayController implements OnModuleInit {
+export class PermissionGatewayController {
   private readonly logger = new Logger(PermissionGatewayController.name);
   constructor(
     @Inject(environments.GATEWAY_PERMISSIONS_KAFKA_CLIENT)
     private readonly clientKafka: ClientKafka,
+    private readonly kafkaProxy: KafkaProxyService,
   ) {}
-
-  async onModuleInit() {
-    const requestPatterns = [
-      'authentication.permission.verify-permission-exists-by-name',
-      'authentication.permission.get-permission-by-id',
-      'authentication.permission.get-all-permissions',
-      'authentication.permission.create-permission',
-      'authentication.permission.update-permission',
-      'authentication.permission.delete-permission',
-      'authentication.permission.get-permissions-with-category',
-      'authentication.permission.get-permissions-by-category-id',
-      'authentication.permission.get-permission-search-advanced',
-    ];
-
-    requestPatterns.forEach((pattern) => {
-      this.clientKafka.subscribeToResponseOf(pattern);
-    });
-
-    await this.clientKafka.connect();
-  }
 
   @Post('create-permission')
   @ApiOperation({
@@ -68,9 +49,8 @@ export class PermissionGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const response: PermissionResponse = await sendKafkaRequest(
-        this.clientKafka.send(
-          'authentication.permission.create-permission',
-          permission,
+        this.kafkaProxy.send(this.clientKafka, 
+          'authentication.permission.create-permission', permission,
         ),
       );
       return new ApiResponse(
@@ -98,7 +78,7 @@ export class PermissionGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const response: PermissionResponse = await sendKafkaRequest(
-        this.clientKafka.send('authentication.permission.update-permission', {
+        this.kafkaProxy.send(this.clientKafka, 'authentication.permission.update-permission', {
           permissionId,
           permission,
         }),
@@ -127,9 +107,8 @@ export class PermissionGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const response: boolean = await sendKafkaRequest(
-        this.clientKafka.send(
-          'authentication.permission.delete-permission',
-          permissionId,
+        this.kafkaProxy.send(this.clientKafka, 
+          'authentication.permission.delete-permission', permissionId,
         ),
       );
       return new ApiResponse(
@@ -156,9 +135,8 @@ export class PermissionGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const response: PermissionResponse = await sendKafkaRequest(
-        this.clientKafka.send(
-          'authentication.permission.get-permission-by-id',
-          permissionId,
+        this.kafkaProxy.send(this.clientKafka, 
+          'authentication.permission.get-permission-by-id', permissionId,
         ),
       );
       return new ApiResponse(
@@ -187,9 +165,8 @@ export class PermissionGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const response: PermissionResponse[] = await sendKafkaRequest(
-        this.clientKafka.send(
-          'authentication.permission.get-all-permissions',
-          {},
+        this.kafkaProxy.send(this.clientKafka, 
+          'authentication.permission.get-all-permissions', {},
         ),
       );
       return new ApiResponse(
@@ -219,9 +196,8 @@ export class PermissionGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const response: boolean = await sendKafkaRequest(
-        this.clientKafka.send(
-          'authentication.permission.verify-permission-exists-by-name',
-          permissionName,
+        this.kafkaProxy.send(this.clientKafka, 
+          'authentication.permission.verify-permission-exists-by-name', permissionName,
         ),
       );
       return new ApiResponse(
@@ -251,9 +227,8 @@ export class PermissionGatewayController implements OnModuleInit {
     try {
       const response: CategoryResponseWithPermissions[] =
         await sendKafkaRequest(
-          this.clientKafka.send(
-            'authentication.permission.get-permissions-with-category',
-            {},
+          this.kafkaProxy.send(this.clientKafka, 
+            'authentication.permission.get-permissions-with-category', {},
           ),
         );
       return new ApiResponse(
@@ -283,9 +258,8 @@ export class PermissionGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const response: CategoryResponseWithPermissions = await sendKafkaRequest(
-        this.clientKafka.send(
-          'authentication.permission.get-permissions-by-category-id',
-          categoryId,
+        this.kafkaProxy.send(this.clientKafka, 
+          'authentication.permission.get-permissions-by-category-id', categoryId,
         ),
       );
       return new ApiResponse(
@@ -315,9 +289,8 @@ export class PermissionGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const response: PermissionResponse[] = await sendKafkaRequest(
-        this.clientKafka.send(
-          'authentication.permission.get-permission-search-advanced',
-          search,
+        this.kafkaProxy.send(this.clientKafka, 
+          'authentication.permission.get-permission-search-advanced', search,
         ),
       );
       return new ApiResponse(

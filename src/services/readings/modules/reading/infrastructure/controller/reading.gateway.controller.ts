@@ -37,6 +37,8 @@ import { MONTHS } from '../../../../../../shared/consts/months';
 import { UpdateReadingLegacyRequest } from '../../../../../epaa-legacy/modules/readings/domain/schemas/dto/request/update.reading.request';
 import { FindCurrentReadingParams } from '../../../../../epaa-legacy/modules/readings/domain/schemas/dto/request/find-current-reading-params';
 import { AuthGuard } from '../../../../../../auth/guard/auth.guard';
+import { KafkaProxyService } from '../../../../../../shared/kafka/kafka-proxy.service';
+
 import {
   ReadingBasicInfoResponse,
   ReadingInfoResponse,
@@ -48,46 +50,17 @@ import { RealtimeService } from '../../../../../../shared/realtime';
 @ApiTags('Readings')
 @ApiBearerAuth()
 @UseGuards(AuthGuard)
-export class ReadingGatewayController implements OnModuleInit {
+export class ReadingGatewayController {
   private readonly logger: Logger = new Logger(ReadingGatewayController.name);
+
   constructor(
     @Inject(environments.READINGS_KAFKA_CLIENT)
     private readonly readingClient: ClientKafka,
     @Inject(environments.EPAA_LEGACY_READINGS_KAFKA_CLIENT)
     private readonly legacyReadingClient: ClientKafka,
     private readonly realtimeService: RealtimeService,
+    private readonly kafkaProxy: KafkaProxyService,
   ) {}
-
-  async onModuleInit() {
-    /**
-     * Subscribe only to the reply topics owned by the readings bounded context.
-     * epaa-legacy.* subscriptions are managed exclusively by
-     * ReadingLegacyGatewayController via EPAA_LEGACY_READINGS_KAFKA_CLIENT.
-     * Cross-domain subscriptions on the wrong client instance cause the
-     * "did not subscribe to the corresponding reply topic" error.
-     */
-    const replyTopics: string[] = [
-      'reading.find-basic-reading',
-      'reading.update-current-reading',
-      'reading.create-reading',
-      'reading.find-reading-info',
-      'reading.find-reading-history',
-      'reading.get-pending-readings-by-month',
-      'reading.get-taken-reading-estimates-or-average',
-      'reading.get-taken-readings-by-month',
-      'reading.get-reading-by-novelty',
-      // Legacy calculate-reading-value is called from createReading using
-      // legacyReadingClient (EPAA_LEGACY_READINGS_KAFKA_CLIENT), which already
-      // subscribes this topic in ReadingLegacyGatewayController.onModuleInit().
-    ];
-
-    replyTopics.forEach((topic) =>
-      this.readingClient.subscribeToResponseOf(topic),
-    );
-
-    this.logger.log('ReadingController initialized and connected to Kafka');
-    await this.readingClient.connect();
-  }
 
   @Get('find-basic-reading/:catastralCode')
   @ApiOperation({
@@ -100,7 +73,11 @@ export class ReadingGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const response: ReadingBasicInfoResponse[] = await sendKafkaRequest(
-        this.readingClient.send('reading.find-basic-reading', catastralCode),
+        this.kafkaProxy.send(
+          this.readingClient,
+          'reading.find-basic-reading',
+          catastralCode,
+        ),
       );
       return new ApiResponse(
         `QR Code with acometida ID ${catastralCode} found successfully!`,
@@ -129,7 +106,11 @@ export class ReadingGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const response: ReadingInfoResponse[] = await sendKafkaRequest(
-        this.readingClient.send('reading.find-reading-info', cadastralKey),
+        this.kafkaProxy.send(
+          this.readingClient,
+          'reading.find-reading-info',
+          cadastralKey,
+        ),
       );
       return new ApiResponse(
         `Reading info with cadastral key ${cadastralKey} found successfully!`,
@@ -160,18 +141,23 @@ export class ReadingGatewayController implements OnModuleInit {
       const updateUserId =
         (request as any)['user']?.sub ?? (request as any)['user']?.userId;
       const response: ReadingResponse = await sendKafkaRequest(
-        this.readingClient.send('reading.update-current-reading', {
-          readingId,
-          readingRequest,
-          updateUserId,
-        }),
+        this.kafkaProxy.send(
+          this.readingClient,
+          'reading.update-current-reading',
+          {
+            readingId,
+            readingRequest,
+            updateUserId,
+          },
+        ),
       );
-
+      /*
       console.log('updateCurrentReading - readingRequest', readingRequest);
       console.log(
         'updateCurrentReading - readingId',
         typeof readingRequest.readingMonth,
       );
+      */
 
       const updateReadingLegacyRequest: UpdateReadingLegacyRequest =
         new UpdateReadingLegacyRequest();
@@ -208,7 +194,8 @@ export class ReadingGatewayController implements OnModuleInit {
         `With findCurrentReadingParams: ${JSON.stringify(findCurrentReadingParams)}`,
       );
 
-      await this.legacyReadingClient.emit(
+      await this.kafkaProxy.emit(
+        this.legacyReadingClient,
         'epaa-legacy.reading.update-current-reading',
         {
           params: findCurrentReadingParams,
@@ -248,7 +235,7 @@ export class ReadingGatewayController implements OnModuleInit {
     @Req() request: Request,
   ): Promise<ApiResponse> {
     try {
-      console.log('readingRequest', readingRequest);
+      //console.log('readingRequest', readingRequest);
       const params = {
         cadastralKey: readingRequest.cadastralKey,
         consumptionM3:
@@ -270,7 +257,7 @@ export class ReadingGatewayController implements OnModuleInit {
       const creatorUserId =
         (request as any)['user']?.sub ?? (request as any)['user']?.userId;
       const response: ReadingResponse = await sendKafkaRequest<ReadingResponse>(
-        this.readingClient.send('reading.create-reading', {
+        this.kafkaProxy.send(this.readingClient, 'reading.create-reading', {
           ...readingRequest,
           creatorUserId,
         }),
@@ -348,12 +335,14 @@ export class ReadingGatewayController implements OnModuleInit {
         ? MONTHS[new Date(response.readingDate).getMonth() + 1]
         : MONTHS[new Date().getMonth() + 1];
       reading.readingValue = parseFloat('0');
-
+      /*
       this.logger.log(
         `Sending createReadingLegacy request: ${JSON.stringify(reading)}`,
       );
+      */
 
-      await this.legacyReadingClient.emit(
+      await this.kafkaProxy.emit(
+        this.legacyReadingClient,
         'epaa-legacy.reading.create-reading-legacy',
         reading,
       );
@@ -395,11 +384,15 @@ export class ReadingGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const response: ReadingHistoryResponse[] = await sendKafkaRequest(
-        this.readingClient.send('reading.find-reading-history', {
-          cadastralKey,
-          limit,
-          offset,
-        }),
+        this.kafkaProxy.send(
+          this.readingClient,
+          'reading.find-reading-history',
+          {
+            cadastralKey,
+            limit,
+            offset,
+          },
+        ),
       );
       return new ApiResponse(
         `Reading history with cadastral key ${cadastralKey} found successfully!`,
@@ -434,10 +427,14 @@ export class ReadingGatewayController implements OnModuleInit {
     try {
       const response: PendingReadingConnectionResponse[] =
         await sendKafkaRequest(
-          this.readingClient.send('reading.get-pending-readings-by-month', {
-            month,
-            sector, // Si no viene, pasará como undefined correctamente
-          }),
+          this.kafkaProxy.send(
+            this.readingClient,
+            'reading.get-pending-readings-by-month',
+            {
+              month,
+              sector, // Si no viene, pasará como undefined correctamente
+            },
+          ),
         );
       return new ApiResponse(
         `Pending readings with month ${month} and sector ${sector || 'ALL'} found successfully!`,
@@ -471,7 +468,8 @@ export class ReadingGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const response: TakenReadingConnectionResponse[] = await sendKafkaRequest(
-        this.readingClient.send(
+        this.kafkaProxy.send(
+          this.readingClient,
           'reading.get-taken-reading-estimates-or-average',
           { month, sector },
         ),
@@ -507,10 +505,14 @@ export class ReadingGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const response: TakenReadingConnectionResponse[] = await sendKafkaRequest(
-        this.readingClient.send('reading.get-taken-readings-by-month', {
-          month,
-          sector,
-        }),
+        this.kafkaProxy.send(
+          this.readingClient,
+          'reading.get-taken-readings-by-month',
+          {
+            month,
+            sector,
+          },
+        ),
       );
       return new ApiResponse(
         `Taken readings with month ${month} and sector ${sector || 'ALL'} found successfully!`,
@@ -556,11 +558,15 @@ export class ReadingGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const response: ReadingNoveltyResponse[] = await sendKafkaRequest(
-        this.readingClient.send('reading.get-reading-by-novelty', {
-          novelty, // Si es undefined, Kafka recibirá undefined
-          month,
-          sector,
-        }),
+        this.kafkaProxy.send(
+          this.readingClient,
+          'reading.get-reading-by-novelty',
+          {
+            novelty, // Si es undefined, Kafka recibirá undefined
+            month,
+            sector,
+          },
+        ),
       );
 
       return new ApiResponse(

@@ -3,12 +3,12 @@ import {
   Get,
   Inject,
   Logger,
-  OnModuleInit,
   Param,
   Query,
-  Req,
+  Req
 } from '@nestjs/common';
 import { ClientKafka, RpcException } from '@nestjs/microservices';
+import { KafkaProxyService } from '../../../../../../shared/kafka/kafka-proxy.service';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { environments } from '../../../../../../settings/environments/environments';
 import { sendKafkaRequest } from '../../../../../../shared/utils/kafka/send.kafka.request';
@@ -40,88 +40,13 @@ import {
 
 @Controller('accounting')
 @ApiTags('Accounting - Legacy')
-export class AccountingLegacyGatewayController implements OnModuleInit {
+export class AccountingLegacyGatewayController {
   private readonly logger = new Logger(AccountingLegacyGatewayController.name);
   constructor(
     @Inject('EPAA_LEGACY_ACCOUNTING_KAFKA_CLIENT')
     private readonly kafkaClient: ClientKafka,
+    private readonly kafkaProxy: KafkaProxyService,
   ) {}
-
-  async onModuleInit() {
-    const messagePatterns: string[] = [
-      'epaa-legacy.accounting.find-pending-readings-by-cadastral-key',
-      'epaa-legacy.accounting.find-pending-readings-by-card-id',
-      'epaa-legacy.accounting.find-pending-readings-by-cadastral-key-or-card-id',
-      'epaa-legacy.accounting.find-pending-readings-by-cadastral-key-or-card-id-all',
-      'epaa-legacy.accounting.find-payment-readings-by-payment-date',
-      'epaa-legacy.accounting.find-payment-by-payment-date-and-order',
-      'epaa-legacy.accounting.find-payment-by-init-date-and-end-date',
-      'epaa-legacy.accounting.get-daily-grouped-report',
-      'epaa-legacy.accounting.get-daily-collector-summary',
-      'epaa-legacy.accounting.get-daily-payment-method-report',
-      'epaa-legacy.accounting.get-full-breakdown-report',
-      'epaa-legacy.accounting.find-all-overdue-payments',
-      'epaa-legacy.accounting.find-overdue-summary',
-      'epaa-legacy.accounting.find-yearly-overdue-summary',
-      'epaa-legacy.accounting.find-monthly-debt-summary',
-      'epaa-legacy.accounting.get-general-collection-kpi',
-      'epaa-legacy.accounting.get-general-collection-report',
-      'epaa-legacy.accounting.get-general-daily-collection-grouped-report',
-      'epaa-legacy.accounting.get-general-yearly-collection-grouped-report',
-      'epaa-legacy.accounting.get-general-monthly-collection-grouped-report',
-      'epaa-legacy.accounting.get-general-yearly-collection-kpi',
-      'epaa-legacy.accounting.get-general-monthly-collection-kpi',
-      //AGrreements
-      'epaa-legacy.accounting.get-agreements-kpi',
-      'epaa-legacy.accounting.get-agreements-kpi-customer',
-      'epaa-legacy.accounting.get-agreement-installment-details',
-      'epaa-legacy.accounting.get-monthly-collection-summary',
-      'epaa-legacy.accounting.get-debtors-with-risk',
-      'epaa-legacy.accounting.get-collector-performance',
-      'epaa-legacy.accounting.get-payment-method-summary',
-      'epaa-legacy.accounting.get-citizen-summary',
-    ];
-
-    messagePatterns.forEach((pattern) => {
-      this.kafkaClient.subscribeToResponseOf(pattern);
-    });
-    await this.kafkaClient.connect();
-  }
-
-  @Get('find-pending-reading-by-cadastral-key/:cadastralKey')
-  @ApiOperation({
-    summary: 'Method GET - Find Pending Reading by Cadastral Key (Legacy)',
-    description:
-      'The endpoint allows you to find pending readings by cadastral key (Legacy)',
-  })
-  async findPendingReadingByCadastralKey(
-    @Req() request: Request,
-    @Param('cadastralKey') cadastralKey: string,
-  ): Promise<ApiResponse> {
-    try {
-      this.logger.log(
-        `Sending findPendingReadingByCadastralKey request: ${cadastralKey}`,
-      );
-      const response: PendingReadingResponse[] = await sendKafkaRequest(
-        this.kafkaClient.send(
-          'epaa-legacy.accounting.find-pending-readings-by-cadastral-key',
-          cadastralKey,
-        ),
-      );
-      return new ApiResponse(
-        'Pending reading by cadastral key found successfully!',
-        response,
-        request.url,
-      );
-    } catch (error) {
-      const err = error as Error;
-      this.logger.error(
-        `Error in findPendingReadingByCadastralKey: ${err.message}`,
-        err.stack,
-      );
-      throw new RpcException(err as string | object);
-    }
-  }
 
   @Get('find-pending-reading-by-card-id/:cardId')
   @ApiOperation({
@@ -136,9 +61,8 @@ export class AccountingLegacyGatewayController implements OnModuleInit {
     try {
       this.logger.log(`Sending findPendingReadingByCardId request: ${cardId}`);
       const response: PendingReadingResponse[] = await sendKafkaRequest(
-        this.kafkaClient.send(
-          'epaa-legacy.accounting.find-pending-readings-by-card-id',
-          cardId,
+        this.kafkaProxy.send(this.kafkaClient, 
+          'epaa-legacy.accounting.find-pending-readings-by-card-id', cardId,
         ),
       );
       return new ApiResponse(
@@ -172,9 +96,8 @@ export class AccountingLegacyGatewayController implements OnModuleInit {
         `Sending findPendingReadingByCadastralKeyOrCardId request: ${searchValue}`,
       );
       const response: PendingReadingResponse[] = await sendKafkaRequest(
-        this.kafkaClient.send(
-          'epaa-legacy.accounting.find-pending-readings-by-cadastral-key-or-card-id',
-          searchValue,
+        this.kafkaProxy.send(this.kafkaClient, 
+          'epaa-legacy.accounting.find-pending-readings-by-cadastral-key-or-card-id', searchValue,
         ),
       );
       return new ApiResponse(
@@ -208,9 +131,8 @@ export class AccountingLegacyGatewayController implements OnModuleInit {
         `Sending findPendingReadingByCadastralKeyOrCardIdAll request: ${searchValue}`,
       );
       const response: PendingReadingResponse[] = await sendKafkaRequest(
-        this.kafkaClient.send(
-          'epaa-legacy.accounting.find-pending-readings-by-cadastral-key-or-card-id-all',
-          searchValue,
+        this.kafkaProxy.send(this.kafkaClient, 
+          'epaa-legacy.accounting.find-pending-readings-by-cadastral-key-or-card-id-all', searchValue,
         ),
       );
       return new ApiResponse(
@@ -243,9 +165,8 @@ export class AccountingLegacyGatewayController implements OnModuleInit {
         `Sending findPaymentReadingsByPaymentDate request: ${paymentDate}`,
       );
       const response: PaymentReadingResponse[] = await sendKafkaRequest(
-        this.kafkaClient.send(
-          'epaa-legacy.accounting.find-payment-readings-by-payment-date',
-          paymentDate,
+        this.kafkaProxy.send(this.kafkaClient, 
+          'epaa-legacy.accounting.find-payment-readings-by-payment-date', paymentDate,
         ),
       );
       return new ApiResponse(
@@ -279,9 +200,8 @@ export class AccountingLegacyGatewayController implements OnModuleInit {
       this.logger.log(`Sending findPaymentByPaymentDateAndOrder request`);
       const params = { paymentDate, orderValue };
       const response: PaymentResponse[] = await sendKafkaRequest(
-        this.kafkaClient.send(
-          'epaa-legacy.accounting.find-payment-by-payment-date-and-order',
-          params,
+        this.kafkaProxy.send(this.kafkaClient, 
+          'epaa-legacy.accounting.find-payment-by-payment-date-and-order', params,
         ),
       );
       return new ApiResponse(
@@ -318,9 +238,8 @@ export class AccountingLegacyGatewayController implements OnModuleInit {
       this.logger.log(`Sending findPaymentByInitDateAndEndDate request`);
       const params = { initDate, endDate, limit, offset };
       const response: PaymentResponse[] = await sendKafkaRequest(
-        this.kafkaClient.send(
-          'epaa-legacy.accounting.find-payment-by-init-date-and-end-date',
-          params,
+        this.kafkaProxy.send(this.kafkaClient, 
+          'epaa-legacy.accounting.find-payment-by-init-date-and-end-date', params,
         ),
       );
       return new ApiResponse(
@@ -352,9 +271,8 @@ export class AccountingLegacyGatewayController implements OnModuleInit {
       this.logger.log(`Sending getDailyGroupedReport request`);
       const params = { initDate, endDate };
       const response: DailyGroupedReport[] = await sendKafkaRequest(
-        this.kafkaClient.send(
-          'epaa-legacy.accounting.get-daily-grouped-report',
-          params,
+        this.kafkaProxy.send(this.kafkaClient, 
+          'epaa-legacy.accounting.get-daily-grouped-report', params,
         ),
       );
       return new ApiResponse(
@@ -387,9 +305,8 @@ export class AccountingLegacyGatewayController implements OnModuleInit {
       this.logger.log(`Sending getDailyCollectorSummary request`);
       const params = { initDate, endDate };
       const response: DailyCollectorSummary[] = await sendKafkaRequest(
-        this.kafkaClient.send(
-          'epaa-legacy.accounting.get-daily-collector-summary',
-          params,
+        this.kafkaProxy.send(this.kafkaClient, 
+          'epaa-legacy.accounting.get-daily-collector-summary', params,
         ),
       );
       return new ApiResponse(
@@ -422,9 +339,8 @@ export class AccountingLegacyGatewayController implements OnModuleInit {
       this.logger.log(`Sending getDailyPaymentMethodReport request`);
       const params = { initDate, endDate };
       const response: DailyPaymentMethodReport[] = await sendKafkaRequest(
-        this.kafkaClient.send(
-          'epaa-legacy.accounting.get-daily-payment-method-report',
-          params,
+        this.kafkaProxy.send(this.kafkaClient, 
+          'epaa-legacy.accounting.get-daily-payment-method-report', params,
         ),
       );
       return new ApiResponse(
@@ -457,9 +373,8 @@ export class AccountingLegacyGatewayController implements OnModuleInit {
       this.logger.log(`Sending getFullBreakdownReport request`);
       const params = { initDate, endDate };
       const response: FullBreakdownReport[] = await sendKafkaRequest(
-        this.kafkaClient.send(
-          'epaa-legacy.accounting.get-full-breakdown-report',
-          params,
+        this.kafkaProxy.send(this.kafkaClient, 
+          'epaa-legacy.accounting.get-full-breakdown-report', params,
         ),
       );
       return new ApiResponse(
@@ -492,9 +407,8 @@ export class AccountingLegacyGatewayController implements OnModuleInit {
       const params = { limit, offset };
       this.logger.log(`Sending findAllOverduePayments request`);
       const response: OverduePaymentResponse[] = await sendKafkaRequest(
-        this.kafkaClient.send(
-          'epaa-legacy.accounting.find-all-overdue-payments',
-          params,
+        this.kafkaProxy.send(this.kafkaClient, 
+          'epaa-legacy.accounting.find-all-overdue-payments', params,
         ),
       );
       return new ApiResponse(
@@ -521,9 +435,8 @@ export class AccountingLegacyGatewayController implements OnModuleInit {
     try {
       this.logger.log(`Sending findOverdueSummary request`);
       const response: OverdueSummaryResponse = await sendKafkaRequest(
-        this.kafkaClient.send(
-          'epaa-legacy.accounting.find-overdue-summary',
-          {},
+        this.kafkaProxy.send(this.kafkaClient, 
+          'epaa-legacy.accounting.find-overdue-summary', {},
         ),
       );
       return new ApiResponse(
@@ -553,9 +466,8 @@ export class AccountingLegacyGatewayController implements OnModuleInit {
     try {
       this.logger.log(`Sending findYearlyOverdueSummary request`);
       const response: YearlyOverdueSummaryResponse[] = await sendKafkaRequest(
-        this.kafkaClient.send(
-          'epaa-legacy.accounting.find-yearly-overdue-summary',
-          {},
+        this.kafkaProxy.send(this.kafkaClient, 
+          'epaa-legacy.accounting.find-yearly-overdue-summary', {},
         ),
       );
       return new ApiResponse(
@@ -583,9 +495,8 @@ export class AccountingLegacyGatewayController implements OnModuleInit {
     try {
       this.logger.log(`Sending findMonthlyDebtSummary request`);
       const response: MonthlyDebtSummaryResponse[] = await sendKafkaRequest(
-        this.kafkaClient.send(
-          'epaa-legacy.accounting.find-monthly-debt-summary',
-          {},
+        this.kafkaProxy.send(this.kafkaClient, 
+          'epaa-legacy.accounting.find-monthly-debt-summary', {},
         ),
       );
       return new ApiResponse(
@@ -616,9 +527,8 @@ export class AccountingLegacyGatewayController implements OnModuleInit {
     try {
       this.logger.log(`Sending getGeneralCollectionKPI request`);
       const response = await sendKafkaRequest(
-        this.kafkaClient.send(
-          'epaa-legacy.accounting.get-general-collection-kpi',
-          params,
+        this.kafkaProxy.send(this.kafkaClient, 
+          'epaa-legacy.accounting.get-general-collection-kpi', params,
         ),
       );
       return new ApiResponse(
@@ -649,9 +559,8 @@ export class AccountingLegacyGatewayController implements OnModuleInit {
     try {
       this.logger.log(`Sending getGeneralCollectionReport request`);
       const response = await sendKafkaRequest(
-        this.kafkaClient.send(
-          'epaa-legacy.accounting.get-general-collection-report',
-          params,
+        this.kafkaProxy.send(this.kafkaClient, 
+          'epaa-legacy.accounting.get-general-collection-report', params,
         ),
       );
       return new ApiResponse(
@@ -683,9 +592,8 @@ export class AccountingLegacyGatewayController implements OnModuleInit {
     try {
       this.logger.log(`Sending getGeneralDailyCollectionGroupedReport request`);
       const response = await sendKafkaRequest(
-        this.kafkaClient.send(
-          'epaa-legacy.accounting.get-general-daily-collection-grouped-report',
-          params,
+        this.kafkaProxy.send(this.kafkaClient, 
+          'epaa-legacy.accounting.get-general-daily-collection-grouped-report', params,
         ),
       );
       return new ApiResponse(
@@ -719,9 +627,8 @@ export class AccountingLegacyGatewayController implements OnModuleInit {
         `Sending getGeneralYearlyCollectionGroupedReport request`,
       );
       const response = await sendKafkaRequest(
-        this.kafkaClient.send(
-          'epaa-legacy.accounting.get-general-yearly-collection-grouped-report',
-          params,
+        this.kafkaProxy.send(this.kafkaClient, 
+          'epaa-legacy.accounting.get-general-yearly-collection-grouped-report', params,
         ),
       );
       return new ApiResponse(
@@ -755,9 +662,8 @@ export class AccountingLegacyGatewayController implements OnModuleInit {
         `Sending getGeneralMonthlyCollectionGroupedReport request`,
       );
       const response = await sendKafkaRequest(
-        this.kafkaClient.send(
-          'epaa-legacy.accounting.get-general-monthly-collection-grouped-report',
-          params,
+        this.kafkaProxy.send(this.kafkaClient, 
+          'epaa-legacy.accounting.get-general-monthly-collection-grouped-report', params,
         ),
       );
       return new ApiResponse(
@@ -788,9 +694,8 @@ export class AccountingLegacyGatewayController implements OnModuleInit {
     try {
       this.logger.log(`Sending getGeneralYearlyCollectionKPI request`);
       const response = await sendKafkaRequest(
-        this.kafkaClient.send(
-          'epaa-legacy.accounting.get-general-yearly-collection-kpi',
-          params,
+        this.kafkaProxy.send(this.kafkaClient, 
+          'epaa-legacy.accounting.get-general-yearly-collection-kpi', params,
         ),
       );
       return new ApiResponse(
@@ -821,9 +726,8 @@ export class AccountingLegacyGatewayController implements OnModuleInit {
     try {
       this.logger.log(`Sending getGeneralMonthlyCollectionKPI request`);
       const response = await sendKafkaRequest(
-        this.kafkaClient.send(
-          'epaa-legacy.accounting.get-general-monthly-collection-kpi',
-          params,
+        this.kafkaProxy.send(this.kafkaClient, 
+          'epaa-legacy.accounting.get-general-monthly-collection-kpi', params,
         ),
       );
       return new ApiResponse(
@@ -853,9 +757,8 @@ export class AccountingLegacyGatewayController implements OnModuleInit {
     try {
       this.logger.log(`Sending getAgreementsKPI request`);
       const response = await sendKafkaRequest(
-        this.kafkaClient.send(
-          'epaa-legacy.accounting.get-agreements-kpi',
-          params,
+        this.kafkaProxy.send(this.kafkaClient, 
+          'epaa-legacy.accounting.get-agreements-kpi', params,
         ),
       );
       return new ApiResponse(
@@ -888,9 +791,8 @@ export class AccountingLegacyGatewayController implements OnModuleInit {
       this.logger.log(`Sending getAgreementsKpiCustomer request`);
       const data = { cardId, params };
       const response = await sendKafkaRequest(
-        this.kafkaClient.send(
-          'epaa-legacy.accounting.get-agreements-kpi-customer',
-          data,
+        this.kafkaProxy.send(this.kafkaClient, 
+          'epaa-legacy.accounting.get-agreements-kpi-customer', data,
         ),
       );
       return new ApiResponse(
@@ -922,9 +824,8 @@ export class AccountingLegacyGatewayController implements OnModuleInit {
     try {
       this.logger.log(`Sending getAgreementInstallmentDetails request`);
       const response = await sendKafkaRequest(
-        this.kafkaClient.send(
-          'epaa-legacy.accounting.get-agreement-installment-details',
-          { cardId, params },
+        this.kafkaProxy.send(this.kafkaClient, 
+          'epaa-legacy.accounting.get-agreement-installment-details', { cardId, params },
         ),
       );
       return new ApiResponse(
@@ -955,9 +856,8 @@ export class AccountingLegacyGatewayController implements OnModuleInit {
     try {
       this.logger.log(`Sending getMonthlyCollectionSummary request`);
       const response = await sendKafkaRequest(
-        this.kafkaClient.send(
-          'epaa-legacy.accounting.get-monthly-collection-summary',
-          monthsBack || 12,
+        this.kafkaProxy.send(this.kafkaClient, 
+          'epaa-legacy.accounting.get-monthly-collection-summary', monthsBack || 12,
         ),
       );
       return new ApiResponse(
@@ -984,9 +884,8 @@ export class AccountingLegacyGatewayController implements OnModuleInit {
     try {
       this.logger.log(`Sending getDebtorsWithRisk request`);
       const response = await sendKafkaRequest(
-        this.kafkaClient.send(
-          'epaa-legacy.accounting.get-debtors-with-risk',
-          {},
+        this.kafkaProxy.send(this.kafkaClient, 
+          'epaa-legacy.accounting.get-debtors-with-risk', {},
         ),
       );
       return new ApiResponse(
@@ -1017,9 +916,8 @@ export class AccountingLegacyGatewayController implements OnModuleInit {
     try {
       this.logger.log(`Sending getCollectorPerformance request`);
       const response = await sendKafkaRequest(
-        this.kafkaClient.send(
-          'epaa-legacy.accounting.get-collector-performance',
-          params,
+        this.kafkaProxy.send(this.kafkaClient, 
+          'epaa-legacy.accounting.get-collector-performance', params,
         ),
       );
       return new ApiResponse(
@@ -1050,9 +948,8 @@ export class AccountingLegacyGatewayController implements OnModuleInit {
     try {
       this.logger.log(`Sending getPaymentMethodSummary request`);
       const response = await sendKafkaRequest(
-        this.kafkaClient.send(
-          'epaa-legacy.accounting.get-payment-method-summary',
-          params,
+        this.kafkaProxy.send(this.kafkaClient, 
+          'epaa-legacy.accounting.get-payment-method-summary', params,
         ),
       );
       return new ApiResponse(
@@ -1082,9 +979,8 @@ export class AccountingLegacyGatewayController implements OnModuleInit {
     try {
       this.logger.log(`Sending getCitizenSummary request`);
       const response = await sendKafkaRequest(
-        this.kafkaClient.send(
-          'epaa-legacy.accounting.get-citizen-summary',
-          params,
+        this.kafkaProxy.send(this.kafkaClient, 
+          'epaa-legacy.accounting.get-citizen-summary', params,
         ),
       );
       return new ApiResponse(

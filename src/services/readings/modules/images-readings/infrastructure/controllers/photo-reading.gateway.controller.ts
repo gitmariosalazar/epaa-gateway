@@ -3,14 +3,14 @@ import {
   Controller,
   Inject,
   Logger,
-  OnModuleInit,
   Post,
   Req,
   UploadedFiles,
   UseGuards,
-  UseInterceptors,
+  UseInterceptors
 } from '@nestjs/common';
 import { ClientKafka, RpcException } from '@nestjs/microservices';
+import { KafkaProxyService } from '../../../../../../shared/kafka/kafka-proxy.service';
 import { ApiTags, ApiConsumes, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
 import { CreatePhotoReadingRequest } from '../../domain/schemas/dto/request/create.photo-reading.request';
 import { FilesInterceptor } from '@nestjs/platform-express';
@@ -27,30 +27,13 @@ import { PhotoReadingResponse } from '../../domain/schemas/dto/response/photo-re
 @ApiTags('Photo Reading')
 //@ApiBearerAuth()
 //@UseGuards(AuthGuard)
-export class PhotoReadingGatewayController implements OnModuleInit {
+export class PhotoReadingGatewayController {
   private readonly logger = new Logger(PhotoReadingGatewayController.name);
   constructor(
     @Inject(environments.PHOTO_READING_KAFKA_CLIENT)
     private readonly photoReadingClient: ClientKafka,
+    private readonly kafkaProxy: KafkaProxyService,
   ) {}
-
-  async onModuleInit() {
-    this.logger.log('PhotoReadingGatewayController initialized');
-    this.photoReadingClient.subscribeToResponseOf(
-      'photo-reading.create-photo-reading',
-    );
-    this.photoReadingClient.subscribeToResponseOf(
-      'photo-reading.get-photo-readings-by-reading-id',
-    );
-    this.photoReadingClient.subscribeToResponseOf(
-      'photo-reading.get-photo-readings-by-cadastral-key',
-    );
-    this.logger.log(
-      'Response patterns:',
-      this.photoReadingClient['responsePatterns'],
-    );
-    await this.photoReadingClient.connect();
-  }
 
   @Post('create-photo-readings')
   @UseInterceptors(
@@ -134,9 +117,8 @@ export class PhotoReadingGatewayController implements OnModuleInit {
       const responses: PhotoReadingResponse[] = [];
       for (const dto of photoReadingDtos) {
         const response: PhotoReadingResponse = await sendKafkaRequest(
-          this.photoReadingClient.send(
-            'photo-reading.create-photo-reading',
-            dto,
+          this.kafkaProxy.send(this.photoReadingClient, 
+            'photo-reading.create-photo-reading', dto,
           ),
         );
         responses.push(response);

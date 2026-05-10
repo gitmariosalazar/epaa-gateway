@@ -5,22 +5,23 @@ import {
   Get,
   Inject,
   Logger,
-  OnModuleInit,
   Param,
   ParseIntPipe,
   Post,
   Put,
   Query,
   Req,
-  UseGuards,
+  UseGuards
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { environments } from '../../../../../../settings/environments/environments';
-import { ClientKafka } from '@nestjs/microservices/client/client-kafka';
+import { ClientKafka, RpcException } from '@nestjs/microservices';
+import { KafkaProxyService } from '../../../../../../shared/kafka/kafka-proxy.service';
 import { ApiResponse } from '../../../../../../shared/errors/responses/ApiResponse';
+
 import { CreateCategoryRequest } from '../../domain/schemas/dto/request/create.category.request';
 import { sendKafkaRequest } from '../../../../../../shared/utils/kafka/send.kafka.request';
-import { RpcException } from '@nestjs/microservices';
+
 import { UpdateCategoryRequest } from '../../domain/schemas/dto/request/update.category.request';
 import { AuthGuard } from '../../../../../../auth/guard/auth.guard';
 import { CategoryResponse } from '../../domain/schemas/dto/response/category.response';
@@ -29,27 +30,15 @@ import { CategoryResponse } from '../../domain/schemas/dto/response/category.res
 @ApiTags('categories-gateway')
 @ApiBearerAuth()
 @UseGuards(AuthGuard)
-export class CategoryGatewayController implements OnModuleInit {
+export class CategoryGatewayController {
   private readonly logger = new Logger(CategoryGatewayController.name);
   constructor(
     @Inject(environments.GATEWAY_CATEGORIES_KAFKA_CLIENT)
     private readonly kafkaClient: ClientKafka,
+    private readonly kafkaProxy: KafkaProxyService,
   ) {}
 
-  onModuleInit() {
-    const requestPatterns = [
-      'authentication.categories.get_category_by_id',
-      'authentication.categories.get_all_categories',
-      'authentication.categories.create_category',
-      'authentication.categories.update_category',
-      'authentication.categories.delete_category',
-      'authentication.categories.verify_category_existence',
-    ];
 
-    requestPatterns.forEach((pattern) => {
-      this.kafkaClient.subscribeToResponseOf(pattern);
-    });
-  }
 
   @Post('create-category')
   @ApiOperation({
@@ -63,7 +52,7 @@ export class CategoryGatewayController implements OnModuleInit {
     try {
       const pattern = 'authentication.categories.create_category';
       const response: CategoryResponse = await sendKafkaRequest(
-        this.kafkaClient.send(pattern, category),
+        this.kafkaProxy.send(this.kafkaClient, pattern, category),
       );
       return new ApiResponse('Create Category success', response, request.url);
     } catch (error) {
@@ -86,7 +75,7 @@ export class CategoryGatewayController implements OnModuleInit {
     try {
       const pattern = 'authentication.categories.update_category';
       const response: CategoryResponse = await sendKafkaRequest(
-        this.kafkaClient.send(pattern, {
+        this.kafkaProxy.send(this.kafkaClient, pattern, {
           categoryId,
           categoryDetails: category,
         }),
@@ -111,7 +100,7 @@ export class CategoryGatewayController implements OnModuleInit {
     try {
       const pattern = 'authentication.categories.delete_category';
       const response: boolean = await sendKafkaRequest(
-        this.kafkaClient.send(pattern, categoryId),
+        this.kafkaProxy.send(this.kafkaClient, pattern, categoryId),
       );
       return new ApiResponse('Delete Category success', response, request.url);
     } catch (error) {
@@ -133,7 +122,7 @@ export class CategoryGatewayController implements OnModuleInit {
     try {
       const pattern = 'authentication.categories.get_category_by_id';
       const response: CategoryResponse = await sendKafkaRequest(
-        this.kafkaClient.send(pattern, categoryId),
+        this.kafkaProxy.send(this.kafkaClient, pattern, categoryId),
       );
       return new ApiResponse(
         'Get Category by ID success',
@@ -163,7 +152,7 @@ export class CategoryGatewayController implements OnModuleInit {
     try {
       const pattern = 'authentication.categories.get_all_categories';
       const response: CategoryResponse[] = await sendKafkaRequest(
-        this.kafkaClient.send(pattern, { limit, offset }),
+        this.kafkaProxy.send(this.kafkaClient, pattern, { limit, offset }),
       );
       return new ApiResponse(
         'Get All Categories success',
@@ -192,7 +181,7 @@ export class CategoryGatewayController implements OnModuleInit {
     try {
       const pattern = 'authentication.categories.verify_category_existence';
       const response: boolean = await sendKafkaRequest(
-        this.kafkaClient.send(pattern, categoryName),
+        this.kafkaProxy.send(this.kafkaClient, pattern, categoryName),
       );
       return new ApiResponse(
         'Verify Category Existence success',

@@ -21,45 +21,23 @@ import { ApiResponse } from '../../../../../../shared/errors/responses/ApiRespon
 import { sendKafkaRequest } from '../../../../../../shared/utils/kafka/send.kafka.request';
 import { CreateWorkOrderRequest } from '../../domain/schemas/dto/request/create.work-order.request';
 import { AuthGuard } from '../../../../../../auth/guard/auth.guard';
+import { KafkaProxyService } from '../../../../../../shared/kafka/kafka-proxy.service';
+
 
 @Controller('work-orders')
 @ApiTags('Work Orders')
 @ApiBearerAuth()
 @UseGuards(AuthGuard)
-export class WorkOrderGatewayController implements OnModuleInit {
+export class WorkOrderGatewayController {
   private readonly logger = new Logger(WorkOrderGatewayController.name);
 
   constructor(
     @Inject(environments.GATEWAY_WORK_ORDER_KAFKA_CLIENT)
     private readonly workOrderKafkaClient: ClientKafka,
+    private readonly kafkaProxy: KafkaProxyService,
   ) {}
 
-  async onModuleInit() {
-    const requestPatterns = [
-      'work-orders.create-work-order',
-      'work-orders.update-work-order',
-      'work-orders.get-work-order-by-order-code',
-      'work-orders.get-work-orders-by-client-id',
-      'work-orders.get-all-work-orders',
-      'work-orders.get-all-work-orders-full-details',
-      'work-orders.get-work-order-statistics',
-      'work-orders.get-work-order-assignments',
-      'work-orders.get-work-order-materials',
-      'work-orders.get-work-order-observations',
-      'work-orders.get-work-order-attachments',
-      'work-orders.get-work-orders-by-client',
-      'work-orders.find-work-orders-full-details-by-order-code',
-      'work-orders.get-work-order-priority-statistics',
-      'work-orders.get-work-order-status-statistics',
-      'work-orders.get-work-order-type-statistics',
-      'work-orders.get-work-orders-statistics-key',
-    ];
 
-    requestPatterns.forEach((pattern) => {
-      this.workOrderKafkaClient.subscribeToResponseOf(pattern);
-    });
-    await this.workOrderKafkaClient.connect();
-  }
 
   @Post('create-work-order')
   @ApiOperation({ summary: 'Create a new work order' })
@@ -69,7 +47,8 @@ export class WorkOrderGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const response = await sendKafkaRequest(
-        this.workOrderKafkaClient.send(
+        this.kafkaProxy.send(
+          this.workOrderKafkaClient,
           'work-orders.create-work-order',
           workOrder,
         ),
@@ -95,7 +74,7 @@ export class WorkOrderGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const response = await sendKafkaRequest(
-        this.workOrderKafkaClient.send('work-orders.update-work-order', {
+        this.kafkaProxy.send(this.workOrderKafkaClient, 'work-orders.update-work-order', {
           orderCode,
           workOrder,
         }),
@@ -120,7 +99,8 @@ export class WorkOrderGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const response = await sendKafkaRequest(
-        this.workOrderKafkaClient.send(
+        this.kafkaProxy.send(
+          this.workOrderKafkaClient,
           'work-orders.get-work-order-by-order-code',
           orderCode,
         ),
@@ -145,7 +125,8 @@ export class WorkOrderGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const response = await sendKafkaRequest(
-        this.workOrderKafkaClient.send(
+        this.kafkaProxy.send(
+          this.workOrderKafkaClient,
           'work-orders.get-work-orders-by-client-id',
           clientId,
         ),
@@ -174,7 +155,7 @@ export class WorkOrderGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const response = await sendKafkaRequest(
-        this.workOrderKafkaClient.send('work-orders.get-all-work-orders', {
+        this.kafkaProxy.send(this.workOrderKafkaClient, 'work-orders.get-all-work-orders', {
           limit,
           offset,
         }),
@@ -204,7 +185,8 @@ export class WorkOrderGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const response = await sendKafkaRequest(
-        this.workOrderKafkaClient.send(
+        this.kafkaProxy.send(
+          this.workOrderKafkaClient,
           'work-orders.get-all-work-orders-full-details',
           { limit, offset },
         ),
@@ -237,7 +219,8 @@ export class WorkOrderGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const response = await sendKafkaRequest(
-        this.workOrderKafkaClient.send(
+        this.kafkaProxy.send(
+          this.workOrderKafkaClient,
           'work-orders.get-work-order-statistics',
           { limit, offset },
         ),
@@ -270,7 +253,8 @@ export class WorkOrderGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const response = await sendKafkaRequest(
-        this.workOrderKafkaClient.send(
+        this.kafkaProxy.send(
+          this.workOrderKafkaClient,
           'work-orders.get-work-order-assignments',
           { limit, offset },
         ),
@@ -303,7 +287,7 @@ export class WorkOrderGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const response = await sendKafkaRequest(
-        this.workOrderKafkaClient.send('work-orders.get-work-order-materials', {
+        this.kafkaProxy.send(this.workOrderKafkaClient, 'work-orders.get-work-order-materials', {
           limit,
           offset,
         }),
@@ -336,7 +320,8 @@ export class WorkOrderGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const response = await sendKafkaRequest(
-        this.workOrderKafkaClient.send(
+        this.kafkaProxy.send(
+          this.workOrderKafkaClient,
           'work-orders.get-work-order-observations',
           { limit, offset },
         ),
@@ -369,7 +354,8 @@ export class WorkOrderGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const response = await sendKafkaRequest(
-        this.workOrderKafkaClient.send(
+        this.kafkaProxy.send(
+          this.workOrderKafkaClient,
           'work-orders.get-work-order-attachments',
           { limit, offset },
         ),
@@ -402,7 +388,8 @@ export class WorkOrderGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const response = await sendKafkaRequest(
-        this.workOrderKafkaClient.send(
+        this.kafkaProxy.send(
+          this.workOrderKafkaClient,
           'work-orders.get-work-orders-by-client',
           { limit, offset },
         ),
@@ -434,7 +421,8 @@ export class WorkOrderGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const response = await sendKafkaRequest(
-        this.workOrderKafkaClient.send(
+        this.kafkaProxy.send(
+          this.workOrderKafkaClient,
           'work-orders.find-work-orders-full-details-by-order-code',
           orderCode,
         ),
@@ -464,7 +452,8 @@ export class WorkOrderGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const response = await sendKafkaRequest(
-        this.workOrderKafkaClient.send(
+        this.kafkaProxy.send(
+          this.workOrderKafkaClient,
           'work-orders.get-work-order-priority-statistics',
           {},
         ),
@@ -494,7 +483,8 @@ export class WorkOrderGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const response = await sendKafkaRequest(
-        this.workOrderKafkaClient.send(
+        this.kafkaProxy.send(
+          this.workOrderKafkaClient,
           'work-orders.get-work-order-status-statistics',
           {},
         ),
@@ -524,7 +514,8 @@ export class WorkOrderGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const response = await sendKafkaRequest(
-        this.workOrderKafkaClient.send(
+        this.kafkaProxy.send(
+          this.workOrderKafkaClient,
           'work-orders.get-work-order-type-statistics',
           {},
         ),
@@ -554,7 +545,8 @@ export class WorkOrderGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const response = await sendKafkaRequest(
-        this.workOrderKafkaClient.send(
+        this.kafkaProxy.send(
+          this.workOrderKafkaClient,
           'work-orders.get-work-orders-statistics-key',
           {},
         ),

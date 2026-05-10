@@ -5,18 +5,18 @@ import {
   Get,
   Inject,
   Logger,
-  OnModuleInit,
   Param,
   ParseIntPipe,
   Post,
   Put,
   Query,
   Req,
-  UseGuards,
+  UseGuards
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { environments } from '../../../../../../settings/environments/environments';
 import { ClientKafka, RpcException } from '@nestjs/microservices';
+import { KafkaProxyService } from '../../../../../../shared/kafka/kafka-proxy.service';
 import { ApiResponse } from '../../../../../../shared/errors/responses/ApiResponse';
 import { sendKafkaRequest } from '../../../../../../shared/utils/kafka/send.kafka.request';
 import { CreateWorkTypeRequest } from '../../domain/schemas/dto/request/create.work-type.request';
@@ -27,40 +27,15 @@ import { AuthGuard } from '../../../../../../auth/guard/auth.guard';
 @ApiTags('Work Types Gateway')
 @ApiBearerAuth()
 @UseGuards(AuthGuard)
-export class WorkTypeGatewayController implements OnModuleInit {
+export class WorkTypeGatewayController {
   private readonly logger = new Logger(WorkTypeGatewayController.name);
   constructor(
     @Inject(environments.GATEWAY_WORK_TYPE_KAFKA_CLIENT)
     private readonly workTypeKafkaClient: ClientKafka,
+    private readonly kafkaProxy: KafkaProxyService,
   ) {}
 
-  onModuleInit() {
-    this.logger.log('WorkOrderTypeGatewayController initialized');
-    this.workTypeKafkaClient.subscribeToResponseOf(
-      'work-type.create-work-type',
-    );
-    this.workTypeKafkaClient.subscribeToResponseOf(
-      'work-type.update-work-type',
-    );
-    this.workTypeKafkaClient.subscribeToResponseOf(
-      'work-type.get-work-type-by-id',
-    );
-    this.workTypeKafkaClient.subscribeToResponseOf(
-      'work-type.get-all-work-types',
-    );
-    this.workTypeKafkaClient.subscribeToResponseOf(
-      'work-type.verify-work-type-exists-by-name',
-    );
-    this.workTypeKafkaClient.subscribeToResponseOf(
-      'work-type.find-work-types-by-department-id',
-    );
-    this.logger.log(
-      'Response patterns:',
-      this.workTypeKafkaClient['responsePatterns'],
-    );
-    this.workTypeKafkaClient.connect();
-  }
-
+  
   @Post('create-work-type')
   @ApiOperation({
     summary: 'Method POST - Create a new work type',
@@ -76,7 +51,7 @@ export class WorkTypeGatewayController implements OnModuleInit {
         `Received request to create work type: ${JSON.stringify(workType)}`,
       );
       const response = await sendKafkaRequest(
-        this.workTypeKafkaClient.send('work-type.create-work-type', workType),
+        this.kafkaProxy.send(this.workTypeKafkaClient, 'work-type.create-work-type', workType),
       );
       this.logger.log(
         `Work type created successfully: ${JSON.stringify(response)}`,
@@ -109,7 +84,7 @@ export class WorkTypeGatewayController implements OnModuleInit {
         `Received request to update work type: ${JSON.stringify(workType)}`,
       );
       const response = await sendKafkaRequest(
-        this.workTypeKafkaClient.send('work-type.update-work-type', {
+        this.kafkaProxy.send(this.workTypeKafkaClient, 'work-type.update-work-type', {
           workTypeId,
           workType,
         }),
@@ -142,9 +117,8 @@ export class WorkTypeGatewayController implements OnModuleInit {
     try {
       this.logger.log(`Received request to get work type by ID: ${workTypeId}`);
       const response = await sendKafkaRequest(
-        this.workTypeKafkaClient.send(
-          'work-type.get-work-type-by-id',
-          workTypeId,
+        this.kafkaProxy.send(this.workTypeKafkaClient, 
+          'work-type.get-work-type-by-id', workTypeId,
         ),
       );
       this.logger.log(
@@ -172,7 +146,7 @@ export class WorkTypeGatewayController implements OnModuleInit {
     try {
       this.logger.log(`Received request to get all work type types`);
       const response = await sendKafkaRequest(
-        this.workTypeKafkaClient.send('work-type.get-all-work-types', {}),
+        this.kafkaProxy.send(this.workTypeKafkaClient, 'work-type.get-all-work-types', {}),
       );
       this.logger.log(
         `Work type types retrieved successfully: ${JSON.stringify(response)}`,
@@ -207,9 +181,8 @@ export class WorkTypeGatewayController implements OnModuleInit {
         `Received request to verify work type exists by name: ${workTypeName}`,
       );
       const response = await sendKafkaRequest(
-        this.workTypeKafkaClient.send(
-          'work-type.verify-work-type-exists-by-name',
-          workTypeName,
+        this.kafkaProxy.send(this.workTypeKafkaClient, 
+          'work-type.verify-work-type-exists-by-name', workTypeName,
         ),
       );
       this.logger.log(
@@ -247,9 +220,8 @@ export class WorkTypeGatewayController implements OnModuleInit {
         `Received request to find work types by department ID: ${departmentId}`,
       );
       const response = await sendKafkaRequest(
-        this.workTypeKafkaClient.send(
-          'work-type.find-work-types-by-department-id',
-          departmentId,
+        this.kafkaProxy.send(this.workTypeKafkaClient, 
+          'work-type.find-work-types-by-department-id', departmentId,
         ),
       );
       this.logger.log(

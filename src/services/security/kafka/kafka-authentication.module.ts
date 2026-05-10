@@ -21,6 +21,7 @@ const kafkaProviders = [
   }),
   // Roles Kafka Client
   provideContextualKafkaClient(environments.GATEWAY_ROLES_KAFKA_CLIENT, {
+    options: { consumer: { replyTopic: 'authentication_topic.reply' } },
     client: {
       brokers: [environments.KAFKA_BROKER_URL],
       clientId: environments.GATEWAY_ROLES_KAFKA_CLIENT_ID,
@@ -36,6 +37,7 @@ const kafkaProviders = [
   }),
   // Categories Kafka Client
   provideContextualKafkaClient(environments.GATEWAY_CATEGORIES_KAFKA_CLIENT, {
+    options: { consumer: { replyTopic: 'authentication_topic.reply' } },
     client: {
       brokers: [environments.KAFKA_BROKER_URL],
       clientId: environments.GATEWAY_CATEGORIES_KAFKA_CLIENT_ID,
@@ -51,6 +53,7 @@ const kafkaProviders = [
   }),
   // Permissions Kafka Client
   provideContextualKafkaClient(environments.GATEWAY_PERMISSIONS_KAFKA_CLIENT, {
+    options: { consumer: { replyTopic: 'authentication_topic.reply' } },
     client: {
       brokers: [environments.KAFKA_BROKER_URL],
       clientId: environments.GATEWAY_PERMISSIONS_KAFKA_CLIENT_ID,
@@ -66,6 +69,7 @@ const kafkaProviders = [
   }),
   // Rol-Permission Kafka Client
   provideContextualKafkaClient(environments.GATEWAY_ROL_PERMISSION_KAFKA_CLIENT, {
+    options: { consumer: { replyTopic: 'authentication_topic.reply' } },
     client: {
       brokers: [environments.KAFKA_BROKER_URL],
       clientId: environments.GATEWAY_ROL_PERMISSION_KAFKA_CLIENT_ID,
@@ -81,6 +85,7 @@ const kafkaProviders = [
   }),
   // Users Kafka Client
   provideContextualKafkaClient(environments.GATEWAY_USERS_KAFKA_CLIENT, {
+    options: { consumer: { replyTopic: 'authentication_topic.reply' } },
     client: {
       brokers: [environments.KAFKA_BROKER_URL],
       clientId: environments.GATEWAY_USERS_KAFKA_CLIENT_ID,
@@ -96,6 +101,7 @@ const kafkaProviders = [
   }),
   // Employees Kafka Client
   provideContextualKafkaClient(environments.GATEWAY_EMPLOYEES_KAFKA_CLIENT, {
+    options: { consumer: { replyTopic: 'authentication_topic.reply' } },
     client: {
       brokers: [environments.KAFKA_BROKER_URL],
       clientId: environments.GATEWAY_EMPLOYEES_KAFKA_CLIENT_ID,
@@ -111,6 +117,7 @@ const kafkaProviders = [
   }),
   // Auth Kafka Client
   provideContextualKafkaClient(environments.GATEWAY_AUTH_KAFKA_CLIENT, {
+    options: { consumer: { replyTopic: 'authentication_topic.reply' } },
     client: {
       brokers: [environments.KAFKA_BROKER_URL],
       clientId: environments.GATEWAY_AUTH_KAFKA_CLIENT_ID,
@@ -126,6 +133,7 @@ const kafkaProviders = [
   }),
   // Audit Kafka Client
   provideContextualKafkaClient('GATEWAY_AUDIT_KAFKA_CLIENT', {
+    options: { consumer: { replyTopic: 'authentication_topic.reply' } },
     client: {
       brokers: [environments.KAFKA_BROKER_URL],
       clientId: 'audit-gateway-client',

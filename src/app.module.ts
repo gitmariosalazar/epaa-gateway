@@ -38,10 +38,12 @@ import { ConnectionFactoryModule } from './services/connections/modules/factory/
 import { AuditContextInterceptor } from './shared/interceptors/audit-context.interceptor';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { RealtimeModule } from './shared/realtime';
+import { KafkaProxyModule } from './shared/kafka/kafka-proxy.module';
 
 @Module({
   imports: [
     HomeModule,
+    KafkaProxyModule,
     RealtimeModule,   // ← WebSocket global: RealtimeService disponible en TODA la app
     QRCodeKafkaModule,
     QRCodeGatewayModule,

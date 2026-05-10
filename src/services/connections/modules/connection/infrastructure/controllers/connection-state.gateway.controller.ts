@@ -4,15 +4,15 @@ import {
   Get,
   Inject,
   Logger,
-  OnModuleInit,
   Param,
   ParseIntPipe,
   Post,
   Query,
   Req,
-  UseGuards,
+  UseGuards
 } from '@nestjs/common';
 import { ClientKafka, RpcException } from '@nestjs/microservices';
+import { KafkaProxyService } from '../../../../../../shared/kafka/kafka-proxy.service';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { environments } from '../../../../../../settings/environments/environments';
 import { ApiResponse } from '../../../../../../shared/errors/responses/ApiResponse';
@@ -34,7 +34,7 @@ import {
 @ApiTags('Connections — State Management')
 @ApiBearerAuth()
 @UseGuards(AuthGuard)
-export class ConnectionStateGatewayController implements OnModuleInit {
+export class ConnectionStateGatewayController {
   private readonly logger: Logger = new Logger(
     ConnectionStateGatewayController.name,
   );
@@ -42,26 +42,8 @@ export class ConnectionStateGatewayController implements OnModuleInit {
   constructor(
     @Inject(environments.CONNECTION_KAFKA_CLIENT)
     private readonly connectionKafkaClient: ClientKafka,
+    private readonly kafkaProxy: KafkaProxyService,
   ) {}
-
-  async onModuleInit() {
-    this.connectionKafkaClient.subscribeToResponseOf(
-      'connections.change-connection-state',
-    );
-    this.connectionKafkaClient.subscribeToResponseOf(
-      'connections.get-connection-state-history',
-    );
-    this.connectionKafkaClient.subscribeToResponseOf(
-      'connections.get-connections-by-state',
-    );
-    this.connectionKafkaClient.subscribeToResponseOf(
-      'connections.get-state-summary-dashboard',
-    );
-    this.connectionKafkaClient.subscribeToResponseOf(
-      'connections.bulk-change-connection-state',
-    );
-    this.logger.log('ConnectionStateGatewayController initialized');
-  }
 
   // ── State Summary Dashboard ────────────────────────────────────────────────
 
@@ -77,9 +59,8 @@ export class ConnectionStateGatewayController implements OnModuleInit {
     try {
       this.logger.log('Fetching connection state summary dashboard');
       const response: StateSummaryResponse[] = await sendKafkaRequest(
-        this.connectionKafkaClient.send(
-          'connections.get-state-summary-dashboard',
-          {},
+        this.kafkaProxy.send(this.connectionKafkaClient, 
+          'connections.get-state-summary-dashboard', {},
         ),
       );
       return new ApiResponse(
@@ -110,9 +91,8 @@ export class ConnectionStateGatewayController implements OnModuleInit {
     try {
       this.logger.log(`Fetching connections in state ${stateId}`);
       const response: ConnectionsByStateResponse[] = await sendKafkaRequest(
-        this.connectionKafkaClient.send(
-          'connections.get-connections-by-state',
-          {
+        this.kafkaProxy.send(this.connectionKafkaClient, 
+          'connections.get-connections-by-state', {
             stateId,
             sector: sector ? Number(sector) : undefined,
             limit: limit ? Number(limit) : 100,
@@ -147,9 +127,8 @@ export class ConnectionStateGatewayController implements OnModuleInit {
     try {
       this.logger.log(`Fetching state history for connection: ${connectionId}`);
       const response: ConnectionStateHistoryResponse[] = await sendKafkaRequest(
-        this.connectionKafkaClient.send(
-          'connections.get-connection-state-history',
-          {
+        this.kafkaProxy.send(this.connectionKafkaClient, 
+          'connections.get-connection-state-history', {
             connectionId,
             limit: limit ? Number(limit) : 50,
             offset: offset ? Number(offset) : 0,
@@ -183,9 +162,8 @@ export class ConnectionStateGatewayController implements OnModuleInit {
         `Changing state of connection ${body.connectionId} to state ${body.newStateId}`,
       );
       const response: ConnectionStateResponse = await sendKafkaRequest(
-        this.connectionKafkaClient.send(
-          'connections.change-connection-state',
-          body,
+        this.kafkaProxy.send(this.connectionKafkaClient, 
+          'connections.change-connection-state', body,
         ),
       );
       return new ApiResponse(
@@ -215,9 +193,8 @@ export class ConnectionStateGatewayController implements OnModuleInit {
         `Bulk changing state of ${body.connectionIds.length} connections to state ${body.newStateId}`,
       );
       const response: BulkStateChangeResponse = await sendKafkaRequest(
-        this.connectionKafkaClient.send(
-          'connections.bulk-change-connection-state',
-          body,
+        this.kafkaProxy.send(this.connectionKafkaClient, 
+          'connections.bulk-change-connection-state', body,
         ),
       );
       return new ApiResponse(

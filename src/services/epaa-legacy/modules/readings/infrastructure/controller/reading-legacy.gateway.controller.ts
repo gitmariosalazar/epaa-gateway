@@ -4,15 +4,15 @@ import {
   Get,
   Inject,
   Logger,
-  OnModuleInit,
   Param,
   Post,
   Put,
   Query,
   Req,
-  UseGuards,
+  UseGuards
 } from '@nestjs/common';
 import { ClientKafka, RpcException } from '@nestjs/microservices';
+import { KafkaProxyService } from '../../../../../../shared/kafka/kafka-proxy.service';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CreateReadingLegacyRequest } from '../../domain/schemas/dto/request/create.reading-legacy.request';
 import { environments } from '../../../../../../settings/environments/environments';
@@ -28,57 +28,13 @@ import { CalculateReadingValueParams } from '../../domain/schemas/dto/request/ca
 @ApiTags('Readings - Legacy')
 //@ApiBearerAuth()
 //@UseGuards(AuthGuard)
-export class ReadingLegacyGatewayController implements OnModuleInit {
+export class ReadingLegacyGatewayController {
   private readonly logger = new Logger(ReadingLegacyGatewayController.name);
   constructor(
     @Inject(environments.EPAA_LEGACY_READINGS_KAFKA_CLIENT)
     private readonly readingClient: ClientKafka,
+    private readonly kafkaProxy: KafkaProxyService,
   ) {}
-  async onModuleInit() {
-    const messagePatterns: string[] = [
-      'epaa-legacy.reading.create-reading-legacy',
-      'epaa-legacy.reading.find-current-reading',
-      'epaa-legacy.reading.update-current-reading',
-      'epaa-legacy.reading.calculate-reading-value',
-    ];
-
-    messagePatterns.forEach((pattern) => {
-      this.readingClient.subscribeToResponseOf(pattern);
-    });
-    await this.readingClient.connect();
-  }
-
-  @Post('create-reading-legacy')
-  @ApiOperation({
-    summary: 'Method POST - Create Reading (Legacy)',
-    description: 'The endpoint allows you to create a Reading (Legacy)',
-  })
-  async createReading(
-    @Req() request: Request,
-    @Body() reading: CreateReadingLegacyRequest,
-  ): Promise<ApiResponse> {
-    try {
-      this.logger.log(
-        `Sending createReading request: ${JSON.stringify(reading)}`,
-      );
-      const response: ReadingResponse = await sendKafkaRequest(
-        this.readingClient.send(
-          'epaa-legacy.reading.create-reading-legacy',
-          reading,
-        ),
-      );
-      return new ApiResponse(
-        `Reading created successfully!`,
-        response,
-        request.url,
-      );
-    } catch (error) {
-      const err = error as Error;
-      this.logger.error(`Error in createReading: ${err.message}`, err.stack);
-      throw new RpcException(err as string | object);
-    }
-  }
-
   @Get('find-current-reading')
   @ApiOperation({
     summary: 'Method GET - Find Current Reading (Legacy)',
@@ -94,9 +50,8 @@ export class ReadingLegacyGatewayController implements OnModuleInit {
       );
 
       const response: ReadingResponse = await sendKafkaRequest(
-        this.readingClient.send(
-          'epaa-legacy.reading.find-current-reading',
-          params,
+        this.kafkaProxy.send(this.readingClient, 
+          'epaa-legacy.reading.find-current-reading', params,
         ),
       );
 
@@ -132,7 +87,7 @@ export class ReadingLegacyGatewayController implements OnModuleInit {
         `Sending updateCurrentReading request: ${JSON.stringify(readingRequest)}`,
       );
       const response: ReadingResponse = await sendKafkaRequest(
-        this.readingClient.send('epaa-legacy.reading.update-current-reading', {
+        this.kafkaProxy.send(this.readingClient, 'epaa-legacy.reading.update-current-reading', {
           params: params,
           request: readingRequest,
         }),
@@ -173,9 +128,8 @@ export class ReadingLegacyGatewayController implements OnModuleInit {
       };
 
       const response: number = await sendKafkaRequest(
-        this.readingClient.send(
-          'epaa-legacy.reading.calculate-reading-value',
-          params,
+        this.kafkaProxy.send(this.readingClient, 
+          'epaa-legacy.reading.calculate-reading-value', params,
         ),
       );
 

@@ -5,15 +5,15 @@ import {
   Get,
   Inject,
   Logger,
-  OnModuleInit,
   Param,
   ParseIntPipe,
   Post,
   Put,
   Req,
-  UseGuards,
+  UseGuards
 } from '@nestjs/common';
 import { ClientKafka, RpcException } from '@nestjs/microservices';
+import { KafkaProxyService } from '../../../../../../shared/kafka/kafka-proxy.service';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { environments } from '../../../../../../settings/environments/environments';
 import { CreateRolPermissionRequest } from '../../domain/schemas/dto/request/create.rol-permission.request';
@@ -26,29 +26,13 @@ import { RolPermissionResponse } from '../../domain/schemas/dto/response/rol-per
 @ApiTags('Rol-Permission')
 @ApiBearerAuth()
 @UseGuards(AuthGuard)
-export class RolPermissionGatewayController implements OnModuleInit {
+export class RolPermissionGatewayController {
   private readonly logger = new Logger(RolPermissionGatewayController.name);
   constructor(
     @Inject(environments.GATEWAY_ROL_PERMISSION_KAFKA_CLIENT)
     private readonly clientKafka: ClientKafka,
+    private readonly kafkaProxy: KafkaProxyService,
   ) {}
-
-  async onModuleInit() {
-    const requestPatterns = [
-      'authentication.rol_permission.create_rol_permission',
-      'authentication.rol_permission.delete_rol_permission',
-      'authentication.rol_permission.update_rol_permission',
-      'authentication.rol_permission.get_rol_permission_by_id',
-      'authentication.rol_permission.get_all_rol_permissions',
-      'authentication.rol_permission.verify_rol_permission_exists',
-    ];
-
-    requestPatterns.forEach((pattern) => {
-      this.clientKafka.subscribeToResponseOf(pattern);
-    });
-
-    await this.clientKafka.connect();
-  }
 
   @Post('create-rol-permission')
   @ApiOperation({
@@ -62,9 +46,8 @@ export class RolPermissionGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const response: RolPermissionResponse = await sendKafkaRequest(
-        this.clientKafka.send(
-          'authentication.rol_permission.create_rol_permission',
-          rolPermission,
+        this.kafkaProxy.send(this.clientKafka, 
+          'authentication.rol_permission.create_rol_permission', rolPermission,
         ),
       );
 
@@ -96,9 +79,8 @@ export class RolPermissionGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const response: RolPermissionResponse = await sendKafkaRequest(
-        this.clientKafka.send(
-          'authentication.rol_permission.update_rol_permission',
-          {
+        this.kafkaProxy.send(this.clientKafka, 
+          'authentication.rol_permission.update_rol_permission', {
             rolPermissionId,
             rolPermission,
           },
@@ -132,9 +114,8 @@ export class RolPermissionGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const response: boolean = await sendKafkaRequest(
-        this.clientKafka.send(
-          'authentication.rol_permission.delete_rol_permission',
-          rolPermissionId,
+        this.kafkaProxy.send(this.clientKafka, 
+          'authentication.rol_permission.delete_rol_permission', rolPermissionId,
         ),
       );
 
@@ -165,9 +146,8 @@ export class RolPermissionGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const response: RolPermissionResponse = await sendKafkaRequest(
-        this.clientKafka.send(
-          'authentication.rol_permission.get_rol_permission_by_id',
-          rolPermissionId,
+        this.kafkaProxy.send(this.clientKafka, 
+          'authentication.rol_permission.get_rol_permission_by_id', rolPermissionId,
         ),
       );
 
@@ -197,9 +177,8 @@ export class RolPermissionGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const response: RolPermissionResponse[] = await sendKafkaRequest(
-        this.clientKafka.send(
-          'authentication.rol_permission.get_all_rol_permissions',
-          { limit: 100, offset: 0 },
+        this.kafkaProxy.send(this.clientKafka, 
+          'authentication.rol_permission.get_all_rol_permissions', { limit: 100, offset: 0 },
         ),
       );
 
@@ -231,9 +210,8 @@ export class RolPermissionGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const response: boolean = await sendKafkaRequest(
-        this.clientKafka.send(
-          'authentication.rol_permission.verify_rol_permission_exists',
-          { rolId, permissionId },
+        this.kafkaProxy.send(this.clientKafka, 
+          'authentication.rol_permission.verify_rol_permission_exists', { rolId, permissionId },
         ),
       );
 

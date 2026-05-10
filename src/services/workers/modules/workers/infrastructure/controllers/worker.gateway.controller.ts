@@ -3,12 +3,12 @@ import {
   Get,
   Inject,
   Logger,
-  OnModuleInit,
   Query,
   Req,
-  UseGuards,
+  UseGuards
 } from '@nestjs/common';
 import { ClientKafka, RpcException } from '@nestjs/microservices';
+import { KafkaProxyService } from '../../../../../../shared/kafka/kafka-proxy.service';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { environments } from '../../../../../../settings/environments/environments';
 import { ApiResponse } from '../../../../../../shared/errors/responses/ApiResponse';
@@ -19,27 +19,20 @@ import { AuthGuard } from '../../../../../../auth/guard/auth.guard';
 @ApiTags('Worker Gateway Controller')
 @ApiBearerAuth()
 @UseGuards(AuthGuard)
-export class WorkerGatewayController implements OnModuleInit {
+export class WorkerGatewayController {
   private readonly logger = new Logger(WorkerGatewayController.name);
   // Define your endpoints and methods here
   constructor(
     @Inject(environments.GATEWAY_WORKERS_KAFKA_CLIENT)
     private readonly workerKafkaClient: ClientKafka,
+    private readonly kafkaProxy: KafkaProxyService,
   ) {}
-
-  async onModuleInit() {
-    this.workerKafkaClient.subscribeToResponseOf('workers.find-all-workers');
-    this.workerKafkaClient.subscribeToResponseOf(
-      'workers.find-all-workers-paginated',
-    );
-    await this.workerKafkaClient.connect();
-  }
 
   @Get('find-all-workers')
   async findAllWorkers(@Req() request: Request): Promise<ApiResponse> {
     try {
       const response = await sendKafkaRequest(
-        this.workerKafkaClient.send('workers.find-all-workers', {}),
+        this.kafkaProxy.send(this.workerKafkaClient, 'workers.find-all-workers', {}),
       );
       return new ApiResponse(
         'Workers retrieved successfully',
@@ -62,7 +55,7 @@ export class WorkerGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const response = await sendKafkaRequest(
-        this.workerKafkaClient.send('workers.find-all-workers-paginated', {
+        this.kafkaProxy.send(this.workerKafkaClient, 'workers.find-all-workers-paginated', {
           limit,
           offset,
           query,

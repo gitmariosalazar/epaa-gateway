@@ -5,17 +5,17 @@ import {
   Get,
   Inject,
   Logger,
-  OnModuleInit,
   Param,
   Post,
   Put,
   Query,
   Req,
-  UseGuards,
+  UseGuards
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { environments } from '../../../../../../settings/environments/environments';
 import { ClientKafka, RpcException } from '@nestjs/microservices';
+import { KafkaProxyService } from '../../../../../../shared/kafka/kafka-proxy.service';
 import { ApiResponse } from '../../../../../../shared/errors/responses/ApiResponse';
 import { sendKafkaRequest } from '../../../../../../shared/utils/kafka/send.kafka.request';
 import { CreatePropertyRequest } from '../../domain/schemas/dto/request/create.property.request';
@@ -26,49 +26,16 @@ import { AuthGuard } from '../../../../../../auth/guard/auth.guard';
 @ApiTags('Properties Gateway')
 @ApiBearerAuth()
 @UseGuards(AuthGuard)
-export class PropertyGatewayController implements OnModuleInit {
+export class PropertyGatewayController {
   private readonly logger: Logger = new Logger(PropertyGatewayController.name);
 
   constructor(
     @Inject(environments.PROPERTY_KAFKA_CLIENT)
     private readonly propertyKafkaClient: ClientKafka,
+    private readonly kafkaProxy: KafkaProxyService,
   ) {}
 
-  onModuleInit() {
-    this.logger.log('PropertyGatewayController initialized');
-    this.propertyKafkaClient.subscribeToResponseOf(
-      'properties.create-property',
-    );
-    this.propertyKafkaClient.subscribeToResponseOf(
-      'properties.update-property',
-    );
-    this.propertyKafkaClient.subscribeToResponseOf(
-      'properties.get-property-by-id',
-    );
-    this.propertyKafkaClient.subscribeToResponseOf(
-      'properties.get-all-properties',
-    );
-    this.propertyKafkaClient.subscribeToResponseOf(
-      'properties.delete-property',
-    );
-    this.propertyKafkaClient.subscribeToResponseOf(
-      'properties.verify-property-exists',
-    );
-    this.propertyKafkaClient.subscribeToResponseOf(
-      'properties.get-properties-by-owner',
-    );
-
-    this.propertyKafkaClient.subscribeToResponseOf(
-      'properties.get-properties-by-type',
-    );
-    this.logger.log(
-      'Response patterns:',
-      this.propertyKafkaClient['responsePatterns'],
-    );
-
-    this.propertyKafkaClient.connect();
-  }
-
+  
   @Post('create-property')
   @ApiOperation({
     summary: 'Method POST - Create a new property',
@@ -84,7 +51,7 @@ export class PropertyGatewayController implements OnModuleInit {
         `Received request to create property: ${JSON.stringify(property)}`,
       );
       const response = await sendKafkaRequest(
-        this.propertyKafkaClient.send('properties.create-property', property),
+        this.kafkaProxy.send(this.propertyKafkaClient, 'properties.create-property', property),
       );
       return new ApiResponse(
         `Property created successfully!`,
@@ -114,7 +81,7 @@ export class PropertyGatewayController implements OnModuleInit {
         `Received request to update property: ${JSON.stringify(property)}`,
       );
       const response = await sendKafkaRequest(
-        this.propertyKafkaClient.send('properties.update-property', {
+        this.kafkaProxy.send(this.propertyKafkaClient, 'properties.update-property', {
           propertyCadastralKey,
           property,
         }),
@@ -146,7 +113,7 @@ export class PropertyGatewayController implements OnModuleInit {
         `Received request to delete property: ${propertyCadastralKey}`,
       );
       const response = await sendKafkaRequest(
-        this.propertyKafkaClient.send('properties.delete-property', {
+        this.kafkaProxy.send(this.propertyKafkaClient, 'properties.delete-property', {
           propertyCadastralKey,
         }),
       );
@@ -177,9 +144,8 @@ export class PropertyGatewayController implements OnModuleInit {
         `Received request to get property by cadastral key: ${propertyCadastralKey}`,
       );
       const response = await sendKafkaRequest(
-        this.propertyKafkaClient.send(
-          'properties.get-property-by-id',
-          propertyCadastralKey,
+        this.kafkaProxy.send(this.propertyKafkaClient, 
+          'properties.get-property-by-id', propertyCadastralKey,
         ),
       );
       return new ApiResponse(
@@ -213,7 +179,7 @@ export class PropertyGatewayController implements OnModuleInit {
         `Received request to get all properties with limit=${limit} and offset=${offset}`,
       );
       const response = await sendKafkaRequest(
-        this.propertyKafkaClient.send('properties.get-all-properties', {
+        this.kafkaProxy.send(this.propertyKafkaClient, 'properties.get-all-properties', {
           limit,
           offset,
         }),
@@ -245,9 +211,8 @@ export class PropertyGatewayController implements OnModuleInit {
         `Received request to verify if property exists: ${propertyCadastralKey}`,
       );
       const response = await sendKafkaRequest(
-        this.propertyKafkaClient.send(
-          'properties.verify-property-exists',
-          propertyCadastralKey,
+        this.kafkaProxy.send(this.propertyKafkaClient, 
+          'properties.verify-property-exists', propertyCadastralKey,
         ),
       );
       return new ApiResponse(
@@ -282,7 +247,7 @@ export class PropertyGatewayController implements OnModuleInit {
         `Received request to get properties by owner with clientId=${clientId}, limit=${limit} and offset=${offset}`,
       );
       const response = await sendKafkaRequest(
-        this.propertyKafkaClient.send('properties.get-properties-by-owner', {
+        this.kafkaProxy.send(this.propertyKafkaClient, 'properties.get-properties-by-owner', {
           clientId,
           limit,
           offset,
@@ -313,7 +278,7 @@ export class PropertyGatewayController implements OnModuleInit {
     try {
       this.logger.log(`Received request to get properties by type`);
       const response = await sendKafkaRequest(
-        this.propertyKafkaClient.send('properties.get-properties-by-type', {}),
+        this.kafkaProxy.send(this.propertyKafkaClient, 'properties.get-properties-by-type', {}),
       );
       return new ApiResponse(
         `Properties by type retrieved successfully!`,

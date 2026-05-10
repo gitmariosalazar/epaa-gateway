@@ -3,12 +3,13 @@ import {
   Get,
   Inject,
   Logger,
-  OnModuleInit,
+
   Param,
   Query,
   Req,
 } from '@nestjs/common';
 import { ClientKafka, RpcException } from '@nestjs/microservices';
+import { KafkaProxyService } from '../../../../../../shared/kafka/kafka-proxy.service';
 import { environments } from '../../../../../../settings/environments/environments';
 import { TrashRateReportParams } from '../../domain/schemas/dto/request/trash-rate-report.params';
 import {
@@ -32,37 +33,16 @@ import { ApiResponse } from '../../../../../../shared/errors/responses/ApiRespon
  * "did not subscribe to the corresponding reply topic" error.
  */
 @Controller('trash-rate-report')
-export class TrashRateReportGatewayController implements OnModuleInit {
+export class TrashRateReportGatewayController {
   private readonly logger = new Logger(TrashRateReportGatewayController.name);
 
   constructor(
     @Inject(environments.TRASH_RATE_KAFKA_CLIENT)
     private readonly trashRateClient: ClientKafka,
+    private readonly kafkaProxy: KafkaProxyService,
   ) {}
 
-  async onModuleInit(): Promise<void> {
-    const replyTopics: string[] = [
-      'trash-rate-audit-report',
-      'credit-notes',
-      'missing-valor-records',
-      'monthly-summary',
-      'top-debtors',
-      'trash-dashboard-kpi',
-      'client-trash-detail',
-      'trash-rate-kpi',
-      'collector-performance-kpi',
-      'daily-collector-detail',
-    ];
 
-    replyTopics.forEach((topic) =>
-      this.trashRateClient.subscribeToResponseOf(topic),
-    );
-
-    await this.trashRateClient.connect();
-    this.logger.log(
-      'TrashRateReportGatewayController initialized and connected to Kafka',
-    );
-  }
 
   @Get('trash-rate-audit-report')
   async getTrashRateAuditReport(
@@ -86,7 +66,7 @@ export class TrashRateReportGatewayController implements OnModuleInit {
         },
       };
       const response: TrashRateAuditRowResponse[] = await sendKafkaRequest(
-        this.trashRateClient.send('trash-rate-audit-report', payload),
+        this.kafkaProxy.send(this.trashRateClient,'trash-rate-audit-report', payload),
       );
       return new ApiResponse(
         `Trash rate audit report retrieved successfully!`,
@@ -118,7 +98,7 @@ export class TrashRateReportGatewayController implements OnModuleInit {
         offset: params.offset ?? 0,
       };
       const response: TrashRateAuditRowResponse[] = await sendKafkaRequest(
-        this.trashRateClient.send('credit-notes', payload),
+        this.kafkaProxy.send(this.trashRateClient,'credit-notes', payload),
       );
       return new ApiResponse(
         `Credit notes retrieved successfully!`,
@@ -142,7 +122,7 @@ export class TrashRateReportGatewayController implements OnModuleInit {
         `Sending getMissingValorRecords request: ${JSON.stringify(params)}`,
       );
       const response: TrashRateAuditRowResponse[] = await sendKafkaRequest(
-        this.trashRateClient.send('missing-valor-records', params),
+        this.kafkaProxy.send(this.trashRateClient,'missing-valor-records', params),
       );
       return new ApiResponse(
         `Missing valor records retrieved successfully!`,
@@ -169,7 +149,7 @@ export class TrashRateReportGatewayController implements OnModuleInit {
         `Sending getMonthlySummary request: ${JSON.stringify(params)}`,
       );
       const response: TrashRateAuditRowResponse[] = await sendKafkaRequest(
-        this.trashRateClient.send('monthly-summary', params),
+        this.kafkaProxy.send(this.trashRateClient,'monthly-summary', params),
       );
       return new ApiResponse(
         `Monthly summary retrieved successfully!`,
@@ -196,7 +176,7 @@ export class TrashRateReportGatewayController implements OnModuleInit {
         `Sending getTopDebtors request: ${JSON.stringify(params)}`,
       );
       const response: TrashRateAuditRowResponse[] = await sendKafkaRequest(
-        this.trashRateClient.send('top-debtors', params),
+        this.kafkaProxy.send(this.trashRateClient,'top-debtors', params),
       );
       return new ApiResponse(
         `Top debtors retrieved successfully!`,
@@ -220,7 +200,7 @@ export class TrashRateReportGatewayController implements OnModuleInit {
         `Sending getTrashDashboardKpi request: ${JSON.stringify(params)}`,
       );
       const response: TrashRateAuditRowResponse[] = await sendKafkaRequest(
-        this.trashRateClient.send('trash-dashboard-kpi', params),
+        this.kafkaProxy.send(this.trashRateClient,'trash-dashboard-kpi', params),
       );
       return new ApiResponse(
         `Trash dashboard KPI retrieved successfully!`,
@@ -247,7 +227,7 @@ export class TrashRateReportGatewayController implements OnModuleInit {
         `Sending getClientTrashDetail request: ${JSON.stringify(searchParams)}`,
       );
       const response: TrashRateAuditRowResponse[] = await sendKafkaRequest(
-        this.trashRateClient.send('client-trash-detail', { searchParams }),
+        this.kafkaProxy.send(this.trashRateClient,'client-trash-detail', { searchParams }),
       );
       return new ApiResponse(
         `Client trash detail retrieved successfully!`,
@@ -274,7 +254,7 @@ export class TrashRateReportGatewayController implements OnModuleInit {
         `Sending getTrashRateKPI request: ${JSON.stringify(params)}`,
       );
       const response: TrashRateKPIResponse[] = await sendKafkaRequest(
-        this.trashRateClient.send('trash-rate-kpi', params),
+        this.kafkaProxy.send(this.trashRateClient,'trash-rate-kpi', params),
       );
       return new ApiResponse(
         `Trash rate KPI retrieved successfully!`,
@@ -299,7 +279,7 @@ export class TrashRateReportGatewayController implements OnModuleInit {
       );
       const response: CollectorPerformanceKPIResponse[] =
         await sendKafkaRequest(
-          this.trashRateClient.send('collector-performance-kpi', params),
+          this.kafkaProxy.send(this.trashRateClient,'collector-performance-kpi', params),
         );
       return new ApiResponse(
         `Collector performance KPI retrieved successfully!`,
@@ -326,7 +306,7 @@ export class TrashRateReportGatewayController implements OnModuleInit {
         `Sending getDailyCollectorDetail request: ${JSON.stringify(params)}`,
       );
       const response: DailyCollectorDetailResponse[] = await sendKafkaRequest(
-        this.trashRateClient.send('daily-collector-detail', params),
+        this.kafkaProxy.send(this.trashRateClient,'daily-collector-detail', params),
       );
       return new ApiResponse(
         `Daily collector detail retrieved successfully!`,

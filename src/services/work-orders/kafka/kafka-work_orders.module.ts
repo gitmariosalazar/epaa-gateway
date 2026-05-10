@@ -10,6 +10,7 @@ import { environments } from '../../../settings/environments/environments';
         name: environments.GATEWAY_WORK_ORDER_KAFKA_CLIENT,
         transport: Transport.KAFKA,
         options: {
+          replyTopic: 'work_orders_topic.reply',
           client: {
             brokers: [environments.KAFKA_BROKER_URL],
             clientId: environments.GATEWAY_WORK_ORDER_KAFKA_CLIENT_ID,
@@ -31,6 +32,7 @@ import { environments } from '../../../settings/environments/environments';
         name: environments.GATEWAY_WORK_ORDER_OBSERVATION_KAFKA_CLIENT,
         transport: Transport.KAFKA,
         options: {
+          replyTopic: 'work_orders_topic.reply',
           client: {
             brokers: [environments.KAFKA_BROKER_URL],
             clientId: environments.GATEWAY_WORK_ORDER_OBSERVATION_KAFKA_CLIENT_ID,
@@ -52,6 +54,7 @@ import { environments } from '../../../settings/environments/environments';
         name: environments.GATEWAY_WORK_TYPE_KAFKA_CLIENT,
         transport: Transport.KAFKA,
         options: {
+          replyTopic: 'work_orders_topic.reply',
           client: {
             brokers: [environments.KAFKA_BROKER_URL],
             clientId: environments.GATEWAY_WORK_TYPE_KAFKA_CLIENT_ID,
@@ -73,6 +76,7 @@ import { environments } from '../../../settings/environments/environments';
         name: environments.GATEWAY_WORK_ORDER_HISTORY_KAFKA_CLIENT,
         transport: Transport.KAFKA,
         options: {
+          replyTopic: 'work_orders_topic.reply',
           client: {
             brokers: [environments.KAFKA_BROKER_URL],
             clientId: environments.GATEWAY_WORK_ORDER_HISTORY_KAFKA_CLIENT_ID,
@@ -93,6 +97,7 @@ import { environments } from '../../../settings/environments/environments';
         name: environments.GATEWAY_DETAIL_WORK_ORDER_MATERIAL_KAFKA_CLIENT,
         transport: Transport.KAFKA,
         options: {
+          replyTopic: 'work_orders_topic.reply',
           client: {
             brokers: [environments.KAFKA_BROKER_URL],
             clientId: environments.GATEWAY_DETAIL_WORK_ORDER_MATERIAL_KAFKA_CLIENT_ID,
@@ -114,6 +119,7 @@ import { environments } from '../../../settings/environments/environments';
         name: environments.GATEWAY_WORK_ORDER_WORKER_ASSIGNMENT_KAFKA_CLIENT,
         transport: Transport.KAFKA,
         options: {
+          replyTopic: 'work_orders_topic.reply',
           client: {
             brokers: [environments.KAFKA_BROKER_URL],
             clientId: environments.GATEWAY_WORK_ORDER_WORKER_ASSIGNMENT_KAFKA_CLIENT_ID,
@@ -135,6 +141,7 @@ import { environments } from '../../../settings/environments/environments';
         name: environments.GATEWAY_WORK_ORDER_ATTACHMENTS_KAFKA_CLIENT,
         transport: Transport.KAFKA,
         options: {
+          replyTopic: 'work_orders_topic.reply',
           client: {
             brokers: [environments.KAFKA_BROKER_URL],
             clientId: environments.GATEWAY_WORK_ORDER_ATTACHMENTS_KAFKA_CLIENT_ID,

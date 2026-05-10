@@ -4,15 +4,15 @@ import {
   Get,
   Inject,
   Logger,
-  OnModuleInit,
   Param,
   Post,
   Req,
-  UseGuards,
+  UseGuards
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { environments } from '../../../../../../settings/environments/environments';
 import { ClientKafka, RpcException } from '@nestjs/microservices';
+import { KafkaProxyService } from '../../../../../../shared/kafka/kafka-proxy.service';
 import { ApiResponse } from '../../../../../../shared/errors/responses/ApiResponse';
 import { CreateWorkOrderWorkerAssignmentRequest } from '../../domain/schemas/dto/request/create-work-order-worker-assignment.request';
 import { sendKafkaRequest } from '../../../../../../shared/utils/kafka/send.kafka.request';
@@ -23,7 +23,6 @@ import { AuthGuard } from '../../../../../../auth/guard/auth.guard';
 @ApiBearerAuth()
 @UseGuards(AuthGuard)
 export class WorkOrderWorkerAssignmentGatewayController
-  implements OnModuleInit
 {
   private readonly logger = new Logger(
     WorkOrderWorkerAssignmentGatewayController.name,
@@ -31,21 +30,8 @@ export class WorkOrderWorkerAssignmentGatewayController
   constructor(
     @Inject(environments.GATEWAY_WORK_ORDER_WORKER_ASSIGNMENT_KAFKA_CLIENT)
     private readonly workOrderWorkerAssignmentKafkaClient: ClientKafka,
+    private readonly kafkaProxy: KafkaProxyService,
   ) {}
-
-  async onModuleInit() {
-    const requestPatterns = [
-      'assignment-worker.add_worker_assignment_to_work_order_list',
-      'assignment-worker.find_worker_assignment_by_worker_id',
-      'assignment-worker.find_worker_assignments_by_work_order_id',
-    ];
-
-    requestPatterns.forEach((pattern) => {
-      this.workOrderWorkerAssignmentKafkaClient.subscribeToResponseOf(pattern);
-    });
-
-    await this.workOrderWorkerAssignmentKafkaClient.connect();
-  }
 
   @Post('add-work-order-worker-assignments')
   @ApiOperation({
@@ -73,9 +59,8 @@ export class WorkOrderWorkerAssignmentGatewayController
   ): Promise<ApiResponse> {
     try {
       const response = await sendKafkaRequest(
-        this.workOrderWorkerAssignmentKafkaClient.send(
-          'assignment-worker.add_worker_assignment_to_work_order_list',
-          workerAssignments,
+        this.kafkaProxy.send(this.workOrderWorkerAssignmentKafkaClient, 
+          'assignment-worker.add_worker_assignment_to_work_order_list', workerAssignments,
         ),
       );
       return new ApiResponse('', response, request.url);
@@ -101,9 +86,8 @@ export class WorkOrderWorkerAssignmentGatewayController
   ): Promise<ApiResponse> {
     try {
       const response = await sendKafkaRequest(
-        this.workOrderWorkerAssignmentKafkaClient.send(
-          'assignment-worker.find_worker_assignment_by_worker_id',
-          workerId,
+        this.kafkaProxy.send(this.workOrderWorkerAssignmentKafkaClient, 
+          'assignment-worker.find_worker_assignment_by_worker_id', workerId,
         ),
       );
       return new ApiResponse('', response, request.url);
@@ -129,9 +113,8 @@ export class WorkOrderWorkerAssignmentGatewayController
   ): Promise<ApiResponse> {
     try {
       const response = await sendKafkaRequest(
-        this.workOrderWorkerAssignmentKafkaClient.send(
-          'assignment-worker.find_worker_assignments_by_work_order_id',
-          workOrderId,
+        this.kafkaProxy.send(this.workOrderWorkerAssignmentKafkaClient, 
+          'assignment-worker.find_worker_assignments_by_work_order_id', workOrderId,
         ),
       );
       return new ApiResponse('', response, request.url);

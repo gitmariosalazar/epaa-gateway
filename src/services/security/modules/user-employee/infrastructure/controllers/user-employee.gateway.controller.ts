@@ -5,17 +5,17 @@ import {
   Get,
   Inject,
   Logger,
-  OnModuleInit,
   Param,
   ParseIntPipe,
   Post,
   Put,
   Query,
   Req,
-  UseGuards,
+  UseGuards
 } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { ClientKafka } from '@nestjs/microservices';
+import { KafkaProxyService } from '../../../../../../shared/kafka/kafka-proxy.service';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { environments } from '../../../../../../settings/environments/environments';
 import { ApiResponse } from '../../../../../../shared/errors/responses/ApiResponse';
@@ -31,42 +31,15 @@ import { UserEmployeeResponse } from '../../domain/schemas/dto/response/user-emp
 @ApiTags('User-Employee-Gateway')
 @ApiBearerAuth()
 @UseGuards(AuthGuard)
-export class UserEmployeeGatewayController implements OnModuleInit {
+export class UserEmployeeGatewayController {
   private readonly logger = new Logger(UserEmployeeGatewayController.name);
   constructor(
     @Inject(environments.GATEWAY_EMPLOYEES_KAFKA_CLIENT)
     private readonly clientKafka: ClientKafka,
+    private readonly kafkaProxy: KafkaProxyService,
   ) {}
 
-  onModuleInit() {
-    const requestPatterns = [
-      'authentication.user-employee.find_by_id',
-      'authentication.user-employee.find_by_user_id',
-      'authentication.user-employee.find_by_id_card',
-      'authentication.user-employee.search_by_name',
-      'authentication.user-employee.exists_by_user_id',
-      'authentication.user-employee.exists_by_id_card',
-      'authentication.user-employee.create',
-      'authentication.user-employee.update',
-      'authentication.user-employee.soft_delete',
-      'authentication.user-employee.restore',
-      'authentication.user-employee.assign_zones',
-      'authentication.user-employee.change_status',
-      'authentication.user-employee.change_supervisor',
-      'authentication.user-employee.find_all_active',
-      'authentication.user-employee.find_by_position',
-      'authentication.user-employee.find_by_zone',
-      'authentication.user-employee.find_by_supervisor',
-      'authentication.user-employee.find_all_employees',
-    ];
-
-    requestPatterns.forEach((pattern) => {
-      this.clientKafka.subscribeToResponseOf(pattern);
-    });
-
-    return this.clientKafka.connect();
-  }
-
+  
   // =============================================
   // Búsquedas básicas
   // =============================================
@@ -83,9 +56,8 @@ export class UserEmployeeGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const response: UserEmployeeResponse = await sendKafkaRequest(
-        this.clientKafka.send(
-          'authentication.user-employee.find_by_id',
-          employeeId,
+        this.kafkaProxy.send(this.clientKafka, 
+          'authentication.user-employee.find_by_id', employeeId,
         ),
       );
 
@@ -111,9 +83,8 @@ export class UserEmployeeGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const response: UserEmployeeResponse = await sendKafkaRequest(
-        this.clientKafka.send(
-          'authentication.user-employee.find_by_user_id',
-          userId,
+        this.kafkaProxy.send(this.clientKafka, 
+          'authentication.user-employee.find_by_user_id', userId,
         ),
       );
 
@@ -139,9 +110,8 @@ export class UserEmployeeGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const response: UserEmployeeResponse = await sendKafkaRequest(
-        this.clientKafka.send(
-          'authentication.user-employee.find_by_id_card',
-          idCard,
+        this.kafkaProxy.send(this.clientKafka, 
+          'authentication.user-employee.find_by_id_card', idCard,
         ),
       );
 
@@ -174,9 +144,8 @@ export class UserEmployeeGatewayController implements OnModuleInit {
       }
 
       const response: UserEmployeeResponse[] = await sendKafkaRequest(
-        this.clientKafka.send(
-          'authentication.user-employee.search_by_name',
-          searchTerm.trim(),
+        this.kafkaProxy.send(this.clientKafka, 
+          'authentication.user-employee.search_by_name', searchTerm.trim(),
         ),
       );
 
@@ -207,9 +176,8 @@ export class UserEmployeeGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const exists: boolean = await sendKafkaRequest(
-        this.clientKafka.send(
-          'authentication.user-employee.exists_by_user_id',
-          userId,
+        this.kafkaProxy.send(this.clientKafka, 
+          'authentication.user-employee.exists_by_user_id', userId,
         ),
       );
 
@@ -236,9 +204,8 @@ export class UserEmployeeGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const exists: boolean = await sendKafkaRequest(
-        this.clientKafka.send(
-          'authentication.user-employee.exists_by_id_card',
-          idCard,
+        this.kafkaProxy.send(this.clientKafka, 
+          'authentication.user-employee.exists_by_id_card', idCard,
         ),
       );
 
@@ -268,7 +235,7 @@ export class UserEmployeeGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const response: UserEmployeeResponse = await sendKafkaRequest(
-        this.clientKafka.send('authentication.user-employee.create', request),
+        this.kafkaProxy.send(this.clientKafka, 'authentication.user-employee.create', request),
       );
 
       return new ApiResponse(
@@ -295,7 +262,7 @@ export class UserEmployeeGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const response: UserEmployeeResponse = await sendKafkaRequest(
-        this.clientKafka.send('authentication.user-employee.update', {
+        this.kafkaProxy.send(this.clientKafka, 'authentication.user-employee.update', {
           employeeId,
           updates,
         }),
@@ -324,9 +291,8 @@ export class UserEmployeeGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const response: void = await sendKafkaRequest(
-        this.clientKafka.send(
-          'authentication.user-employee.soft_delete',
-          employeeId,
+        this.kafkaProxy.send(this.clientKafka, 
+          'authentication.user-employee.soft_delete', employeeId,
         ),
       );
 
@@ -356,9 +322,8 @@ export class UserEmployeeGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const response: UserEmployeeResponse = await sendKafkaRequest(
-        this.clientKafka.send(
-          'authentication.user-employee.restore',
-          employeeId,
+        this.kafkaProxy.send(this.clientKafka, 
+          'authentication.user-employee.restore', employeeId,
         ),
       );
 
@@ -390,7 +355,7 @@ export class UserEmployeeGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const response: void = await sendKafkaRequest(
-        this.clientKafka.send('authentication.user-employee.assign_zones', {
+        this.kafkaProxy.send(this.clientKafka, 'authentication.user-employee.assign_zones', {
           employeeId,
           zoneIds: payload.zoneIds,
         }),
@@ -416,7 +381,7 @@ export class UserEmployeeGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const response: UserEmployeeResponse = await sendKafkaRequest(
-        this.clientKafka.send('authentication.user-employee.change_status', {
+        this.kafkaProxy.send(this.clientKafka, 'authentication.user-employee.change_status', {
           employeeId,
           newStatusId: payload.newStatusId,
         }),
@@ -449,9 +414,8 @@ export class UserEmployeeGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const response: UserEmployeeResponse = await sendKafkaRequest(
-        this.clientKafka.send(
-          'authentication.user-employee.change_supervisor',
-          {
+        this.kafkaProxy.send(this.clientKafka, 
+          'authentication.user-employee.change_supervisor', {
             employeeId,
             supervisorId: payload.supervisorId,
           },
@@ -485,9 +449,8 @@ export class UserEmployeeGatewayController implements OnModuleInit {
   async findAllActive(@Req() request: Request): Promise<ApiResponse> {
     try {
       const response: UserEmployeeResponse[] = await sendKafkaRequest(
-        this.clientKafka.send(
-          'authentication.user-employee.find_all_active',
-          {},
+        this.kafkaProxy.send(this.clientKafka, 
+          'authentication.user-employee.find_all_active', {},
         ),
       );
 
@@ -517,9 +480,8 @@ export class UserEmployeeGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const response: UserEmployeeResponse[] = await sendKafkaRequest(
-        this.clientKafka.send(
-          'authentication.user-employee.find_by_position',
-          positionId,
+        this.kafkaProxy.send(this.clientKafka, 
+          'authentication.user-employee.find_by_position', positionId,
         ),
       );
 
@@ -549,9 +511,8 @@ export class UserEmployeeGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const response: UserEmployeeResponse[] = await sendKafkaRequest(
-        this.clientKafka.send(
-          'authentication.user-employee.find_by_zone',
-          zoneId,
+        this.kafkaProxy.send(this.clientKafka, 
+          'authentication.user-employee.find_by_zone', zoneId,
         ),
       );
 
@@ -581,9 +542,8 @@ export class UserEmployeeGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const response: UserEmployeeResponse[] = await sendKafkaRequest(
-        this.clientKafka.send(
-          'authentication.user-employee.find_by_supervisor',
-          supervisorId,
+        this.kafkaProxy.send(this.clientKafka, 
+          'authentication.user-employee.find_by_supervisor', supervisorId,
         ),
       );
 
@@ -614,9 +574,8 @@ export class UserEmployeeGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const response: UserEmployeeResponse[] = await sendKafkaRequest(
-        this.clientKafka.send(
-          'authentication.user-employee.find_all_employees',
-          { limit, offset },
+        this.kafkaProxy.send(this.clientKafka, 
+          'authentication.user-employee.find_all_employees', { limit, offset },
         ),
       );
 

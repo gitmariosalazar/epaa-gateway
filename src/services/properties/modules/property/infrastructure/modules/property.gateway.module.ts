@@ -10,6 +10,7 @@ import { environments } from "../../../../../../settings/environments/environmen
         name: environments.PROPERTY_KAFKA_CLIENT!,
         transport: Transport.KAFKA,
         options: {
+          replyTopic: 'property_topic.reply',
           client: {
             brokers: [`${environments.KAFKA_BROKER_URL}`],
           },

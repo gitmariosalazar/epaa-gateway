@@ -3,13 +3,13 @@ import {
   Get,
   Inject,
   Logger,
-  OnModuleInit,
   Param,
   ParseIntPipe,
   Req,
-  UseGuards,
+  UseGuards
 } from '@nestjs/common';
 import { ClientKafka, RpcException } from '@nestjs/microservices';
+import { KafkaProxyService } from '../../../../../../shared/kafka/kafka-proxy.service';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { environments } from '../../../../../../settings/environments/environments';
 import { ApiResponse } from '../../../../../../shared/errors/responses/ApiResponse';
@@ -21,7 +21,7 @@ import { ReadingImagesResponse } from '../../domain/schemas/dto/response/reading
 @ApiTags('Reading Images')
 @ApiBearerAuth()
 @UseGuards(AuthGuard)
-export class ReadingImagesGatewayController implements OnModuleInit {
+export class ReadingImagesGatewayController {
   private readonly logger: Logger = new Logger(
     ReadingImagesGatewayController.name,
   );
@@ -29,25 +29,8 @@ export class ReadingImagesGatewayController implements OnModuleInit {
   constructor(
     @Inject(environments.READINGS_KAFKA_CLIENT)
     private readonly readingClient: ClientKafka,
+    private readonly kafkaProxy: KafkaProxyService,
   ) {}
-
-  async onModuleInit() {
-    this.readingClient.subscribeToResponseOf(
-      'reading.find-reading-images-by-month',
-    );
-    this.readingClient.subscribeToResponseOf(
-      'reading.find-reading-images-by-month-and-sector',
-    );
-    this.readingClient.subscribeToResponseOf(
-      'reading.find-readings-image-by-cadastral-key',
-    );
-    this.readingClient.subscribeToResponseOf('reading.find-all-reading-images');
-
-    this.logger.log(
-      'ReadingImagesGatewayController initialized and connected to Kafka',
-    );
-    await this.readingClient.connect();
-  }
 
   @Get('find-reading-images-by-month/:month')
   @ApiOperation({
@@ -60,7 +43,7 @@ export class ReadingImagesGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const response: ReadingImagesResponse[] = await sendKafkaRequest(
-        this.readingClient.send('reading.find-reading-images-by-month', {
+        this.kafkaProxy.send(this.readingClient, 'reading.find-reading-images-by-month', {
           month,
         }),
       );
@@ -92,9 +75,8 @@ export class ReadingImagesGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const response: ReadingImagesResponse[] = await sendKafkaRequest(
-        this.readingClient.send(
-          'reading.find-reading-images-by-month-and-sector',
-          { month, sector },
+        this.kafkaProxy.send(this.readingClient, 
+          'reading.find-reading-images-by-month-and-sector', { month, sector },
         ),
       );
       return new ApiResponse(
@@ -124,9 +106,8 @@ export class ReadingImagesGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const response: ReadingImagesResponse[] = await sendKafkaRequest(
-        this.readingClient.send(
-          'reading.find-readings-image-by-cadastral-key',
-          cadastralKey,
+        this.kafkaProxy.send(this.readingClient, 
+          'reading.find-readings-image-by-cadastral-key', cadastralKey,
         ),
       );
       return new ApiResponse(
@@ -152,7 +133,7 @@ export class ReadingImagesGatewayController implements OnModuleInit {
   async findAllReadingImages(@Req() request: Request): Promise<ApiResponse> {
     try {
       const response: ReadingImagesResponse[] = await sendKafkaRequest(
-        this.readingClient.send('reading.find-all-reading-images', {}),
+        this.kafkaProxy.send(this.readingClient, 'reading.find-all-reading-images', {}),
       );
       return new ApiResponse(
         `All readings images found successfully!`,

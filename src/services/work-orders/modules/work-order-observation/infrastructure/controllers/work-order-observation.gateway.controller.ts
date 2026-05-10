@@ -5,18 +5,18 @@ import {
   Get,
   Inject,
   Logger,
-  OnModuleInit,
   Param,
   ParseIntPipe,
   Post,
   Put,
   Query,
   Req,
-  UseGuards,
+  UseGuards
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { environments } from '../../../../../../settings/environments/environments';
 import { ClientKafka, RpcException } from '@nestjs/microservices';
+import { KafkaProxyService } from '../../../../../../shared/kafka/kafka-proxy.service';
 import { ApiResponse } from '../../../../../../shared/errors/responses/ApiResponse';
 import { sendKafkaRequest } from '../../../../../../shared/utils/kafka/send.kafka.request';
 import { CreateWorkOrderObservationRequest } from '../../domain/schemas/dto/request/create.work-order-observation.request';
@@ -28,7 +28,7 @@ import { AuthGuard } from '../../../../../../auth/guard/auth.guard';
 @ApiTags('Work Order Observations')
 @ApiBearerAuth()
 @UseGuards(AuthGuard)
-export class WorkOrderObservationGatewayController implements OnModuleInit {
+export class WorkOrderObservationGatewayController {
   private readonly logger = new Logger(
     WorkOrderObservationGatewayController.name,
   );
@@ -36,29 +36,8 @@ export class WorkOrderObservationGatewayController implements OnModuleInit {
   constructor(
     @Inject(environments.GATEWAY_WORK_ORDER_OBSERVATION_KAFKA_CLIENT)
     private readonly workOrderObservationKafkaClient: ClientKafka,
+    private readonly kafkaProxy: KafkaProxyService,
   ) {}
-
-  async onModuleInit() {
-    this.workOrderObservationKafkaClient.subscribeToResponseOf(
-      'work-orders-observations.create-work-order-observation',
-    );
-    this.workOrderObservationKafkaClient.subscribeToResponseOf(
-      'work-orders-observations.update-work-order-observation',
-    );
-    this.workOrderObservationKafkaClient.subscribeToResponseOf(
-      'work-orders-observations.get-work-order-observation-by-id',
-    );
-    this.workOrderObservationKafkaClient.subscribeToResponseOf(
-      'work-orders-observations.get-work-order-observations-by-work-order-id',
-    );
-    this.workOrderObservationKafkaClient.subscribeToResponseOf(
-      'work-orders-observations.get-all-work-order-observations',
-    );
-    this.logger.log(
-      'WorkOrderObservationController initialized and subscribed to Kafka topics.',
-    );
-    await this.workOrderObservationKafkaClient.connect();
-  }
 
   @Post('create-work-order-observation')
   @ApiOperation({
@@ -71,9 +50,8 @@ export class WorkOrderObservationGatewayController implements OnModuleInit {
   ) {
     try {
       const response = await sendKafkaRequest(
-        this.workOrderObservationKafkaClient.send(
-          'work-orders-observations.create-work-order-observation',
-          workOrderObservation,
+        this.kafkaProxy.send(this.workOrderObservationKafkaClient, 
+          'work-orders-observations.create-work-order-observation', workOrderObservation,
         ),
       );
       return new ApiResponse(
@@ -105,9 +83,8 @@ export class WorkOrderObservationGatewayController implements OnModuleInit {
   ) {
     try {
       const response = await sendKafkaRequest(
-        this.workOrderObservationKafkaClient.send(
-          'work-orders-observations.update-work-order-observation',
-          { workOrderObservationId, workOrderObservation },
+        this.kafkaProxy.send(this.workOrderObservationKafkaClient, 
+          'work-orders-observations.update-work-order-observation', { workOrderObservationId, workOrderObservation },
         ),
       );
       return new ApiResponse(
@@ -137,9 +114,8 @@ export class WorkOrderObservationGatewayController implements OnModuleInit {
   ) {
     try {
       const response = await sendKafkaRequest(
-        this.workOrderObservationKafkaClient.send(
-          'work-orders-observations.get-work-order-observation-by-id',
-          workOrderObservationId,
+        this.kafkaProxy.send(this.workOrderObservationKafkaClient, 
+          'work-orders-observations.get-work-order-observation-by-id', workOrderObservationId,
         ),
       );
       return new ApiResponse(
@@ -169,9 +145,8 @@ export class WorkOrderObservationGatewayController implements OnModuleInit {
   ) {
     try {
       const response = await sendKafkaRequest(
-        this.workOrderObservationKafkaClient.send(
-          'work-orders-observations.get-work-order-observations-by-work-order-id',
-          workOrderId,
+        this.kafkaProxy.send(this.workOrderObservationKafkaClient, 
+          'work-orders-observations.get-work-order-observations-by-work-order-id', workOrderId,
         ),
       );
       return new ApiResponse(
@@ -197,9 +172,8 @@ export class WorkOrderObservationGatewayController implements OnModuleInit {
   async getAllWorkOrderObservations(@Req() request: Request) {
     try {
       const response = await sendKafkaRequest(
-        this.workOrderObservationKafkaClient.send(
-          'work-orders-observations.get-all-work-order-observations',
-          {},
+        this.kafkaProxy.send(this.workOrderObservationKafkaClient, 
+          'work-orders-observations.get-all-work-order-observations', {},
         ),
       );
       return new ApiResponse(

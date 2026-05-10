@@ -5,18 +5,18 @@ import {
   Get,
   Inject,
   Logger,
-  OnModuleInit,
   Param,
   ParseIntPipe,
   Post,
   Put,
   Query,
   Req,
-  UseGuards,
+  UseGuards
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { environments } from '../../../../../../settings/environments/environments';
 import { ClientKafka, RpcException } from '@nestjs/microservices';
+import { KafkaProxyService } from '../../../../../../shared/kafka/kafka-proxy.service';
 import { ApiResponse } from '../../../../../../shared/errors/responses/ApiResponse';
 import { sendKafkaRequest } from '../../../../../../shared/utils/kafka/send.kafka.request';
 import { CreateObservationConnectionRequest } from '../../domain/schemas/dto/request/create.observation-connection.request';
@@ -35,6 +35,7 @@ export class ObservationConnectionGatewayController {
   constructor(
     @Inject(environments.CONNECTION_KAFKA_CLIENT)
     private readonly kafkaClient: ClientKafka,
+    private readonly kafkaProxy: KafkaProxyService,
   ) {}
   @Post('create-observation-connection')
   @ApiOperation({ summary: 'Create a new observation connection' })
@@ -44,9 +45,8 @@ export class ObservationConnectionGatewayController {
   ): Promise<ApiResponse> {
     try {
       const response: ObservationConnectionResponse = await sendKafkaRequest(
-        this.kafkaClient.send(
-          'observation-connection.create-observation-connection',
-          observation,
+        this.kafkaProxy.send(this.kafkaClient, 
+          'observation-connection.create-observation-connection', observation,
         ),
       );
       return new ApiResponse(
@@ -67,9 +67,8 @@ export class ObservationConnectionGatewayController {
   ): Promise<ApiResponse> {
     try {
       const response: ObservationConnectionResponse[] = await sendKafkaRequest(
-        this.kafkaClient.send(
-          'observation-connection.get-all-observation-connections',
-          {},
+        this.kafkaProxy.send(this.kafkaClient, 
+          'observation-connection.get-all-observation-connections', {},
         ),
       );
       return new ApiResponse(
@@ -91,9 +90,8 @@ export class ObservationConnectionGatewayController {
   ): Promise<ApiResponse> {
     try {
       const response: ObservationConnectionResponse[] = await sendKafkaRequest(
-        this.kafkaClient.send(
-          'observation-connection.get-observation-connections-by-observation-id',
-          { observationId },
+        this.kafkaProxy.send(this.kafkaClient, 
+          'observation-connection.get-observation-connections-by-observation-id', { observationId },
         ),
       );
       return new ApiResponse(
@@ -118,9 +116,8 @@ export class ObservationConnectionGatewayController {
   ): Promise<ApiResponse> {
     try {
       const response: ObservationConnectionResponse[] = await sendKafkaRequest(
-        this.kafkaClient.send(
-          'observation-connection.get-observation-connections-by-connection-id',
-          { connectionId },
+        this.kafkaProxy.send(this.kafkaClient, 
+          'observation-connection.get-observation-connections-by-connection-id', { connectionId },
         ),
       );
       return new ApiResponse(

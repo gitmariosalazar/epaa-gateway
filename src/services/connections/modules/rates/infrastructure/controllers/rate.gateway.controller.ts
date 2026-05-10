@@ -5,18 +5,16 @@ import {
   Get,
   Inject,
   Logger,
-  OnModuleInit,
   Param,
   Post,
   Put,
   Query,
   Req,
-  UseGuards,
+  UseGuards
 } from '@nestjs/common';
-import { ClientKafka } from '@nestjs/microservices/client/client-kafka';
-import { ApiTags } from '@nestjs/swagger/dist/decorators/api-use-tags.decorator';
-import { RpcException } from '@nestjs/microservices';
-import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
+import { ClientKafka, RpcException } from '@nestjs/microservices';
+import { KafkaProxyService } from '../../../../../../shared/kafka/kafka-proxy.service';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { sendKafkaRequest } from '../../../../../../shared/utils/kafka/send.kafka.request';
 import { ApiResponse } from '../../../../../../shared/errors/responses/ApiResponse';
 import { environments } from '../../../../../../settings/environments/environments';
@@ -30,6 +28,7 @@ export class RateGatewayController {
   constructor(
     @Inject(environments.CONNECTION_KAFKA_CLIENT)
     private readonly kafkaClient: ClientKafka,
+    private readonly kafkaProxy: KafkaProxyService,
   ) {}
 
   @Get('get-all-rates')
@@ -40,7 +39,7 @@ export class RateGatewayController {
   async getAllRates(@Req() request: Request): Promise<ApiResponse> {
     try {
       const rates: RateResponse[] = await sendKafkaRequest(
-        this.kafkaClient.send('rates.get-all-current-rates', {}),
+        this.kafkaProxy.send(this.kafkaClient, 'rates.get-all-current-rates', {}),
       );
       return new ApiResponse(
         'Rates retrieved successfully',

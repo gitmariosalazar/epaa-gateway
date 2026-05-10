@@ -21,30 +21,19 @@ import { VerifyUserResponse } from '../../domain/schemas/dto/response/verify-use
 import { Response, Request as ExpressRequest } from 'express';
 import { parseExpirationToSeconds } from '../../../../../../shared/utils/jwt/time.util';
 import { AuthGuard } from '../../../../../../auth/guard/auth.guard';
+import { KafkaProxyService } from '../../../../../../shared/kafka/kafka-proxy.service';
+
 
 @Controller('auth')
-export class AuthGatewayController implements OnModuleInit {
+export class AuthGatewayController {
   private readonly logger = new Logger(AuthGatewayController.name);
   constructor(
     @Inject(environments.GATEWAY_AUTH_KAFKA_CLIENT)
     private readonly authKafkaClient: ClientKafka,
+    private readonly kafkaProxy: KafkaProxyService,
   ) {}
 
-  async onModuleInit() {
-    const requestPatterns = [
-      'authentication.auth.signin',
-      'authentication.auth.signup',
-      'authentication.auth.signout',
-      'authentication.auth.refresh',
-      'authentication.auth.verify',
-    ];
 
-    requestPatterns.forEach((pattern) => {
-      this.authKafkaClient.subscribeToResponseOf(pattern);
-    });
-
-    await this.authKafkaClient.connect();
-  }
 
   @Post('signin')
   @ApiOperation({
@@ -58,7 +47,7 @@ export class AuthGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const kafkaResponse: AuthResponse = await sendKafkaRequest(
-        this.authKafkaClient.send('authentication.auth.signin', payload),
+        this.kafkaProxy.send(this.authKafkaClient, 'authentication.auth.signin', payload),
       );
 
       const isBrowser =
@@ -113,7 +102,7 @@ export class AuthGatewayController implements OnModuleInit {
       // Notificar al microservicio para invalidar tokens y auditar LOGOUT
       if (user?.sub) {
         await sendKafkaRequest(
-          this.authKafkaClient.send('authentication.auth.signout', {
+          this.kafkaProxy.send(this.authKafkaClient, 'authentication.auth.signout', {
             userId: user.sub,
             refreshToken: payload?.refreshToken,
           }),
@@ -146,7 +135,7 @@ export class AuthGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const kafkaResponse: AuthResponse = await sendKafkaRequest(
-        this.authKafkaClient.send('authentication.auth.refresh', payload),
+        this.kafkaProxy.send(this.authKafkaClient, 'authentication.auth.refresh', payload),
       );
 
       return new ApiResponse(
@@ -172,7 +161,7 @@ export class AuthGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const kafkaResponse: VerifyUserResponse = await sendKafkaRequest(
-        this.authKafkaClient.send('authentication.auth.verify', payload),
+        this.kafkaProxy.send(this.authKafkaClient, 'authentication.auth.verify', payload),
       );
 
       return new ApiResponse(

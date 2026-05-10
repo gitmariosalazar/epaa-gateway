@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { environments } from '../../../settings/environments/environments';
-import { KafkaConnectionReplySubscriberService } from './kafka-reply-subscriber.service';
+
 
 @Module({
   imports: [
@@ -10,6 +10,7 @@ import { KafkaConnectionReplySubscriberService } from './kafka-reply-subscriber.
         name: environments.CONNECTION_KAFKA_CLIENT,
         transport: Transport.KAFKA,
         options: {
+          replyTopic: 'connection_topic.reply',
           client: {
             brokers: [environments.KAFKA_BROKER_URL],
             clientId: environments.CONNECTION_KAFKA_CLIENT_ID,
@@ -27,7 +28,7 @@ import { KafkaConnectionReplySubscriberService } from './kafka-reply-subscriber.
     ]),
   ],
   controllers: [],
-  providers: [KafkaConnectionReplySubscriberService],
-  exports: [ClientsModule, KafkaConnectionReplySubscriberService],
+  providers: [],
+  exports: [ClientsModule],
 })
 export class KafkaConnectionsModule {}

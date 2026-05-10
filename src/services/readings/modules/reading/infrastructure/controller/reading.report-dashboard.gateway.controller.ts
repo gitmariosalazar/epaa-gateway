@@ -3,14 +3,14 @@ import {
   Get,
   Inject,
   Logger,
-  OnModuleInit,
   Param,
   ParseIntPipe,
   Query,
   Req,
-  UseGuards,
+  UseGuards
 } from '@nestjs/common';
 import { ClientKafka, RpcException } from '@nestjs/microservices';
+import { KafkaProxyService } from '../../../../../../shared/kafka/kafka-proxy.service';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { environments } from '../../../../../../settings/environments/environments';
 import { ApiResponse } from '../../../../../../shared/errors/responses/ApiResponse';
@@ -32,35 +32,15 @@ import {
 @ApiTags('Readings-Report-Dashboard')
 @ApiBearerAuth()
 @UseGuards(AuthGuard)
-export class ReadingReportDashboardGatewayController implements OnModuleInit {
+export class ReadingReportDashboardGatewayController {
   private readonly logger: Logger = new Logger(
     ReadingReportDashboardGatewayController.name,
   );
   constructor(
     @Inject(environments.READINGS_KAFKA_CLIENT)
     private readonly readingClient: ClientKafka,
+    private readonly kafkaProxy: KafkaProxyService,
   ) {}
-
-  async onModuleInit() {
-    this.readingClient.subscribeToResponseOf('reading.dashboard.metrics');
-    this.readingClient.subscribeToResponseOf('reading.report.yearly');
-    this.readingClient.subscribeToResponseOf('reading.report.daily');
-    this.readingClient.subscribeToResponseOf(
-      'reading.report.connection.last-10',
-    );
-    this.readingClient.subscribeToResponseOf('reading.report.stats.global');
-    this.readingClient.subscribeToResponseOf('reading.report.stats.daily');
-    this.readingClient.subscribeToResponseOf('reading.report.stats.sector');
-    this.readingClient.subscribeToResponseOf('reading.report.stats.novelty');
-    this.readingClient.subscribeToResponseOf('reading.report.advanced-monthly');
-
-    this.logger.log(
-      'Response patterns:',
-      this.readingClient['responsePatterns'],
-    );
-    this.logger.log('ReadingController initialized and connected to Kafka');
-    await this.readingClient.connect();
-  }
 
   @Get('report/dashboard')
   @ApiOperation({
@@ -73,7 +53,7 @@ export class ReadingReportDashboardGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const response: DashboardMetrics = await sendKafkaRequest(
-        this.readingClient.send('reading.dashboard.metrics', date),
+        this.kafkaProxy.send(this.readingClient, 'reading.dashboard.metrics', date),
       );
       return new ApiResponse(
         `Dashboard metrics found successfully!`,
@@ -102,7 +82,7 @@ export class ReadingReportDashboardGatewayController implements OnModuleInit {
     try {
       console.log(`date`, date);
       const response: DailyReadingsReport[] = await sendKafkaRequest(
-        this.readingClient.send('reading.report.daily', date),
+        this.kafkaProxy.send(this.readingClient, 'reading.report.daily', date),
       );
       return new ApiResponse(
         `Daily readings report found successfully!`,
@@ -130,7 +110,7 @@ export class ReadingReportDashboardGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const response: YearlyReadingsReport[] = await sendKafkaRequest(
-        this.readingClient.send('reading.report.yearly', year),
+        this.kafkaProxy.send(this.readingClient, 'reading.report.yearly', year),
       );
       return new ApiResponse(
         `Yearly readings report found successfully!`,
@@ -160,7 +140,7 @@ export class ReadingReportDashboardGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const response: ConnectionLastReadingsReport[] = await sendKafkaRequest(
-        this.readingClient.send('reading.report.connection.last-10', {
+        this.kafkaProxy.send(this.readingClient, 'reading.report.connection.last-10', {
           cadastralKey,
           limit,
         }),
@@ -191,7 +171,7 @@ export class ReadingReportDashboardGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const response: GlobalStatsReport[] = await sendKafkaRequest(
-        this.readingClient.send('reading.report.stats.global', month),
+        this.kafkaProxy.send(this.readingClient, 'reading.report.stats.global', month),
       );
       return new ApiResponse(
         `Global stats report found successfully!`,
@@ -219,7 +199,7 @@ export class ReadingReportDashboardGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const response: DailyStatsReport[] = await sendKafkaRequest(
-        this.readingClient.send('reading.report.stats.daily', month),
+        this.kafkaProxy.send(this.readingClient, 'reading.report.stats.daily', month),
       );
       return new ApiResponse(
         `Daily stats report found successfully!`,
@@ -247,7 +227,7 @@ export class ReadingReportDashboardGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const response: SectorStatsReport[] = await sendKafkaRequest(
-        this.readingClient.send('reading.report.stats.sector', month),
+        this.kafkaProxy.send(this.readingClient, 'reading.report.stats.sector', month),
       );
       return new ApiResponse(
         `Sector stats report found successfully!`,
@@ -275,7 +255,7 @@ export class ReadingReportDashboardGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const response: NoveltyStatsReport[] = await sendKafkaRequest(
-        this.readingClient.send('reading.report.stats.novelty', month),
+        this.kafkaProxy.send(this.readingClient, 'reading.report.stats.novelty', month),
       );
       return new ApiResponse(
         `Novelty stats report found successfully!`,
@@ -303,7 +283,7 @@ export class ReadingReportDashboardGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const response: AdvancedReportReadingsResponse[] = await sendKafkaRequest(
-        this.readingClient.send('reading.report.advanced-monthly', month),
+        this.kafkaProxy.send(this.readingClient, 'reading.report.advanced-monthly', month),
       );
       return new ApiResponse(
         `Advanced report readings found successfully!`,

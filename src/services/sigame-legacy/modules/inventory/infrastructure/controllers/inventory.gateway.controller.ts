@@ -17,52 +17,21 @@ import { environments } from '../../../../../../settings/environments/environmen
 import { sendKafkaRequest } from '../../../../../../shared/utils/kafka/send.kafka.request';
 import { ApiResponse } from '../../../../../../shared/errors/responses/ApiResponse';
 import { AuthGuard } from '../../../../../../auth/guard/auth.guard';
+import { KafkaProxyService } from '../../../../../../shared/kafka/kafka-proxy.service';
+
 
 @Controller('inventory')
 @ApiTags('Inventory - Legacy')
 @ApiBearerAuth()
 @UseGuards(AuthGuard)
-export class InventoryGatewayController implements OnModuleInit {
+export class InventoryGatewayController {
   private readonly logger = new Logger(InventoryGatewayController.name);
   constructor(
     @Inject(environments.INVENTORY_KAFKA_CLIENT)
     private readonly inventoryClient: ClientKafka,
+    private readonly kafkaProxy: KafkaProxyService,
   ) {}
-  async onModuleInit() {
-    this.inventoryClient.subscribeToResponseOf('inventory.get-inventory-by-id');
-    this.inventoryClient.subscribeToResponseOf('inventory.get-all-inventories');
-    this.inventoryClient.subscribeToResponseOf(
-      'inventory.get-inventories-below-min-stock',
-    );
-    this.inventoryClient.subscribeToResponseOf(
-      'inventory.get-inventories-by-account-code',
-    );
-    this.inventoryClient.subscribeToResponseOf(
-      'inventory.get-inventories-by-company-code',
-    );
-    this.inventoryClient.subscribeToResponseOf(
-      'inventory.get-inventories-by-status',
-    );
-    this.inventoryClient.subscribeToResponseOf(
-      'inventory.get-inventories-by-item-type',
-    );
-    this.inventoryClient.subscribeToResponseOf(
-      'inventory.get-inventories-by-unit-of-measure',
-    );
-    this.inventoryClient.subscribeToResponseOf(
-      'inventory.get-inventories-like-item-name',
-    );
-    this.inventoryClient.subscribeToResponseOf(
-      'inventory.get-inventories-like-item-code',
-    );
-    this.inventoryClient.subscribeToResponseOf(
-      'inventory.find-all-inventories-paginated',
-    );
-    this.logger.log(
-      'InventoryGatewayController initialized and connected to Kafka',
-    );
-    await this.inventoryClient.connect();
-  }
+
 
   @Get('get-inventory/:inventoryId')
   @ApiOperation({
@@ -78,7 +47,7 @@ export class InventoryGatewayController implements OnModuleInit {
         `Sending getInventoryById request: ${JSON.stringify(inventoryId)}`,
       );
       const response = await sendKafkaRequest(
-        this.inventoryClient.send('inventory.get-inventory-by-id', inventoryId),
+        this.kafkaProxy.send(this.inventoryClient, 'inventory.get-inventory-by-id', inventoryId),
       );
       return new ApiResponse(
         `Inventory with ID ${inventoryId} retrieved successfully!`,
@@ -108,7 +77,7 @@ export class InventoryGatewayController implements OnModuleInit {
         `Sending getAllInventories request: limit=${limit}, offset=${offset}`,
       );
       const response = await sendKafkaRequest(
-        this.inventoryClient.send('inventory.get-all-inventories', {
+        this.kafkaProxy.send(this.inventoryClient, 'inventory.get-all-inventories', {
           limit,
           offset,
         }),
@@ -140,7 +109,8 @@ export class InventoryGatewayController implements OnModuleInit {
     try {
       this.logger.log(`Sending getInventoriesBelowMinStock request`);
       const response = await sendKafkaRequest(
-        this.inventoryClient.send(
+        this.kafkaProxy.send(
+          this.inventoryClient,
           'inventory.get-inventories-below-min-stock',
           {},
         ),
@@ -175,7 +145,8 @@ export class InventoryGatewayController implements OnModuleInit {
         `Sending getInventoriesByAccountCode request: ${accountCode}`,
       );
       const response = await sendKafkaRequest(
-        this.inventoryClient.send(
+        this.kafkaProxy.send(
+          this.inventoryClient,
           'inventory.get-inventories-by-account-code',
           accountCode,
         ),
@@ -210,7 +181,8 @@ export class InventoryGatewayController implements OnModuleInit {
         `Sending getInventoriesByCompanyCode request: ${companyCode}`,
       );
       const response = await sendKafkaRequest(
-        this.inventoryClient.send(
+        this.kafkaProxy.send(
+          this.inventoryClient,
           'inventory.get-inventories-by-company-code',
           companyCode,
         ),
@@ -243,7 +215,8 @@ export class InventoryGatewayController implements OnModuleInit {
     try {
       this.logger.log(`Sending getInventoriesByStatus request: ${status}`);
       const response = await sendKafkaRequest(
-        this.inventoryClient.send(
+        this.kafkaProxy.send(
+          this.inventoryClient,
           'inventory.get-inventories-by-status',
           status,
         ),
@@ -276,7 +249,8 @@ export class InventoryGatewayController implements OnModuleInit {
     try {
       this.logger.log(`Sending getInventoriesByItemType request: ${itemType}`);
       const response = await sendKafkaRequest(
-        this.inventoryClient.send(
+        this.kafkaProxy.send(
+          this.inventoryClient,
           'inventory.get-inventories-by-item-type',
           itemType,
         ),
@@ -311,7 +285,8 @@ export class InventoryGatewayController implements OnModuleInit {
         `Sending getInventoriesByUnitOfMeasure request: ${unitOfMeasure}`,
       );
       const response = await sendKafkaRequest(
-        this.inventoryClient.send(
+        this.kafkaProxy.send(
+          this.inventoryClient,
           'inventory.get-inventories-by-unit-of-measure',
           unitOfMeasure,
         ),
@@ -346,7 +321,8 @@ export class InventoryGatewayController implements OnModuleInit {
         `Sending getInventoriesLikeItemName request: ${itemName}`,
       );
       const response = await sendKafkaRequest(
-        this.inventoryClient.send(
+        this.kafkaProxy.send(
+          this.inventoryClient,
           'inventory.get-inventories-like-item-name',
           itemName,
         ),
@@ -381,7 +357,8 @@ export class InventoryGatewayController implements OnModuleInit {
         `Sending getInventoriesLikeItemCode request: ${itemCode}`,
       );
       const response = await sendKafkaRequest(
-        this.inventoryClient.send(
+        this.kafkaProxy.send(
+          this.inventoryClient,
           'inventory.get-inventories-like-item-code',
           itemCode,
         ),
@@ -433,7 +410,7 @@ export class InventoryGatewayController implements OnModuleInit {
         `Sending findAllInventoriesPaginated request: limit=${limit}, offset=${offset}, query=${query}`,
       );
       const response = await sendKafkaRequest(
-        this.inventoryClient.send('inventory.find-all-inventories-paginated', {
+        this.kafkaProxy.send(this.inventoryClient, 'inventory.find-all-inventories-paginated', {
           limit,
           offset,
           query,

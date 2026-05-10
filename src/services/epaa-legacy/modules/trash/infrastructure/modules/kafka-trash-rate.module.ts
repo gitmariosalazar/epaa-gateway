@@ -17,6 +17,7 @@ import { environments } from '../../../../../../settings/environments/environmen
         name: environments.TRASH_RATE_KAFKA_CLIENT,
         transport: Transport.KAFKA,
         options: {
+          replyTopic: 'connection_topic.reply',
           client: {
             brokers: [environments.KAFKA_BROKER_URL],
             clientId: environments.TRASH_RATE_KAFKA_CLIENT_ID,

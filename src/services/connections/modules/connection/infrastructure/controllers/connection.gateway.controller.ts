@@ -5,17 +5,17 @@ import {
   Get,
   Inject,
   Logger,
-  OnModuleInit,
   Param,
   Post,
   Put,
   Query,
   Req,
-  UseGuards,
+  UseGuards
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { environments } from '../../../../../../settings/environments/environments';
 import { ClientKafka, RpcException } from '@nestjs/microservices';
+import { KafkaProxyService } from '../../../../../../shared/kafka/kafka-proxy.service';
 import { ApiResponse } from '../../../../../../shared/errors/responses/ApiResponse';
 import { sendKafkaRequest } from '../../../../../../shared/utils/kafka/send.kafka.request';
 import { CreateConnectionRequest } from '../../domain/schemas/dto/request/create.connection.request';
@@ -37,6 +37,7 @@ export class ConnectionGatewayController {
   constructor(
     @Inject(environments.CONNECTION_KAFKA_CLIENT)
     private readonly connectionKafkaClient: ClientKafka,
+    private readonly kafkaProxy: KafkaProxyService,
   ) {}
 
   @Get('dashboard/advancement-stats')
@@ -51,9 +52,8 @@ export class ConnectionGatewayController {
     try {
       this.logger.log(`Received request to get advancement dashboard stats`);
       const response: any = await sendKafkaRequest(
-        this.connectionKafkaClient.send(
-          'connections.get-advance-dashboard-stats',
-          {},
+        this.kafkaProxy.send(this.connectionKafkaClient, 
+          'connections.get-advance-dashboard-stats', {},
         ),
       );
       return new ApiResponse(
@@ -81,9 +81,8 @@ export class ConnectionGatewayController {
         `Received request to create connection: ${JSON.stringify(connection)}`,
       );
       const response: ConnectionResponse = await sendKafkaRequest(
-        this.connectionKafkaClient.send(
-          'connections.create-connection',
-          connection,
+        this.kafkaProxy.send(this.connectionKafkaClient, 
+          'connections.create-connection', connection,
         ),
       );
       return new ApiResponse(
@@ -112,7 +111,7 @@ export class ConnectionGatewayController {
         `Received request to update connection ${connectionId}: ${JSON.stringify(connection)}`,
       );
       const response: ConnectionResponse = await sendKafkaRequest(
-        this.connectionKafkaClient.send('connections.update-connection', {
+        this.kafkaProxy.send(this.connectionKafkaClient, 'connections.update-connection', {
           connectionId,
           connection,
         }),
@@ -141,9 +140,8 @@ export class ConnectionGatewayController {
         `Received request to get connection by ID: ${connectionId}`,
       );
       const response: ConnectionResponse = await sendKafkaRequest(
-        this.connectionKafkaClient.send(
-          'connections.get-connection-by-id',
-          connectionId,
+        this.kafkaProxy.send(this.connectionKafkaClient, 
+          'connections.get-connection-by-id', connectionId,
         ),
       );
       return new ApiResponse(
@@ -172,9 +170,8 @@ export class ConnectionGatewayController {
         `Received request to find connections by sector: ${sector} with limit=${limit} and offset=${offset}`,
       );
       const response: ConnectionResponse[] = await sendKafkaRequest(
-        this.connectionKafkaClient.send(
-          'connections.find-connections-by-sector',
-          {
+        this.kafkaProxy.send(this.connectionKafkaClient, 
+          'connections.find-connections-by-sector', {
             sector,
             limit,
             offset,
@@ -208,9 +205,8 @@ export class ConnectionGatewayController {
         `Received request to find connections by client ID: ${clientId} with limit=${limit} and offset=${offset}`,
       );
       const response: ConnectionResponse[] = await sendKafkaRequest(
-        this.connectionKafkaClient.send(
-          'connections.find-connections-by-client-id',
-          {
+        this.kafkaProxy.send(this.connectionKafkaClient, 
+          'connections.find-connections-by-client-id', {
             clientId,
             limit,
             offset,
@@ -243,7 +239,7 @@ export class ConnectionGatewayController {
         `Received request to get all connections with limit=${limit} and offset=${offset}`,
       );
       const response: ConnectionResponse[] = await sendKafkaRequest(
-        this.connectionKafkaClient.send('connections.get-all-connections', {
+        this.kafkaProxy.send(this.connectionKafkaClient, 'connections.get-all-connections', {
           limit,
           offset,
         }),
@@ -270,9 +266,8 @@ export class ConnectionGatewayController {
     try {
       this.logger.log(`Received request to delete connection: ${connectionId}`);
       const response: boolean = await sendKafkaRequest(
-        this.connectionKafkaClient.send(
-          'connections.delete-connection',
-          connectionId,
+        this.kafkaProxy.send(this.connectionKafkaClient, 
+          'connections.delete-connection', connectionId,
         ),
       );
       this.logger.log(
@@ -303,9 +298,8 @@ export class ConnectionGatewayController {
         `Received request to verify if connection exists: ${connectionId}`,
       );
       const response: boolean = await sendKafkaRequest(
-        this.connectionKafkaClient.send(
-          'connections.verify-connection-exists',
-          connectionId,
+        this.kafkaProxy.send(this.connectionKafkaClient, 
+          'connections.verify-connection-exists', connectionId,
         ),
       );
       this.logger.log(
@@ -336,9 +330,8 @@ export class ConnectionGatewayController {
         `Received request to find connection and property by cadastral key: ${propertyCadastralKey}`,
       );
       const response: ConnectionAndPropertyResponse = await sendKafkaRequest(
-        this.connectionKafkaClient.send(
-          'connections.find-connection-by-property-cadastral-key',
-          propertyCadastralKey,
+        this.kafkaProxy.send(this.connectionKafkaClient, 
+          'connections.find-connection-by-property-cadastral-key', propertyCadastralKey,
         ),
       );
       this.logger.log(
@@ -369,9 +362,8 @@ export class ConnectionGatewayController {
         `Received request to find connection with property by cadastral key: ${cadastralKey}`,
       );
       const response: ConnectionAndPropertyResponse = await sendKafkaRequest(
-        this.connectionKafkaClient.send(
-          'connections.find-connection-with-property-by-cadastral-key',
-          cadastralKey,
+        this.kafkaProxy.send(this.connectionKafkaClient, 
+          'connections.find-connection-with-property-by-cadastral-key', cadastralKey,
         ),
       );
       this.logger.log(
@@ -404,9 +396,8 @@ export class ConnectionGatewayController {
         `Received request to get all connections with property with limit=${limit} and offset=${offset} and query=${query}`,
       );
       const response: ConnectionAndPropertyResponse[] = await sendKafkaRequest(
-        this.connectionKafkaClient.send(
-          'connections.get-all-connections-with-property',
-          {
+        this.kafkaProxy.send(this.connectionKafkaClient, 
+          'connections.get-all-connections-with-property', {
             limit,
             offset,
             query,
@@ -440,9 +431,8 @@ export class ConnectionGatewayController {
         `Received request to get connections paginated with limit=${limit}, offset=${offset}, query=${query}`,
       );
       const response: ConnectionResponse[] = await sendKafkaRequest(
-        this.connectionKafkaClient.send(
-          'connections.get-connections-paginated',
-          {
+        this.kafkaProxy.send(this.connectionKafkaClient, 
+          'connections.get-connections-paginated', {
             limit,
             offset,
             query,

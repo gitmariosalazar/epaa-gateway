@@ -9,6 +9,7 @@ import { environments } from '../../../settings/environments/environments';
         name: environments.GATEWAY_WORKERS_KAFKA_CLIENT,
         transport: Transport.KAFKA,
         options: {
+          replyTopic: 'workers_topic.reply',
           client: {
             brokers: [environments.KAFKA_BROKER_URL],
             clientId: environments.GATEWAY_WORKERS_KAFKA_CLIENT_ID,

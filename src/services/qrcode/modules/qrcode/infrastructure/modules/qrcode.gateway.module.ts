@@ -10,6 +10,7 @@ import { environments } from "../../../../../../settings/environments/environmen
         name: environments.QRCODE_KAFKA_CLIENT!,
         transport: Transport.KAFKA,
         options: {
+          replyTopic: 'qrcode_topic.reply',
           client: {
             brokers: [`${environments.KAFKA_BROKER_URL}`],
           },

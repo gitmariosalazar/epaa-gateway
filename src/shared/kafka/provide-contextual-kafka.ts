@@ -13,7 +13,16 @@ export function provideContextualKafkaClient(
   return {
     provide: token,
     useFactory: () => {
-      const client = new ContextualClientKafka(options as any);
+      // If no replyTopic is provided, we try to guess it or use a default
+      // to avoid the "not subscribed to reply topic" error.
+      const kafkaOptions = options as any;
+      if (!kafkaOptions.replyTopic) {
+        // Default to a topic based on the token if possible
+        const guessedTopic = token.toLowerCase().replace('_kafka_client', '') + '_topic.reply';
+        kafkaOptions.replyTopic = guessedTopic;
+      }
+      
+      const client = new ContextualClientKafka(kafkaOptions);
       // We must map it because ContextualClientKafka doesn't automatically subscribe 
       // when created manually like ClientsModule does.
       return client;

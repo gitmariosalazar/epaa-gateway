@@ -4,13 +4,13 @@ import {
   Get,
   Inject,
   Logger,
-  OnModuleInit,
   Param,
   Post,
   Req,
-  UseGuards,
+  UseGuards
 } from '@nestjs/common';
 import { ClientKafka, RpcException } from '@nestjs/microservices';
+import { KafkaProxyService } from '../../../../../../shared/kafka/kafka-proxy.service';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CreateQRCodeRequest } from '../../domain/schemas/dto/request/create.qrcode.request';
 import { environments } from '../../../../../../settings/environments/environments';
@@ -22,28 +22,13 @@ import { AuthGuard } from '../../../../../../auth/guard/auth.guard';
 @ApiTags('QRCode')
 @ApiBearerAuth()
 @UseGuards(AuthGuard)
-export class QRCodeGatewayController implements OnModuleInit {
+export class QRCodeGatewayController {
   private readonly looger: Logger = new Logger(QRCodeGatewayController.name);
   constructor(
     @Inject(environments.QRCODE_KAFKA_CLIENT)
     private readonly qrcodeClient: ClientKafka,
+    private readonly kafkaProxy: KafkaProxyService,
   ) {}
-
-  async onModuleInit() {
-    this.qrcodeClient.subscribeToResponseOf('qrcode.create');
-    this.qrcodeClient.subscribeToResponseOf(
-      'qrcode.find-qrcode-by-acometidaId',
-    );
-    this.looger.log(
-      'Response patterns:',
-      this.qrcodeClient['responsePatterns'],
-    );
-
-    this.looger.log(
-      'QRCodeGatewayController initialized and connected to Kafka',
-    );
-    await this.qrcodeClient.connect();
-  }
 
   @Post('create-qrcode')
   @ApiOperation({
@@ -58,7 +43,7 @@ export class QRCodeGatewayController implements OnModuleInit {
     try {
       this.looger.log('Creating a new QRCode', qrcodeRequest);
       const response = await sendKafkaRequest(
-        this.qrcodeClient.send('qrcode.create', qrcodeRequest),
+        this.kafkaProxy.send(this.qrcodeClient, 'qrcode.create', qrcodeRequest),
       );
 
       return new ApiResponse(
@@ -85,9 +70,8 @@ export class QRCodeGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const response = await sendKafkaRequest(
-        this.qrcodeClient.send(
-          'qrcode.find-qrcode-by-acometidaId',
-          acometidaId,
+        this.kafkaProxy.send(this.qrcodeClient, 
+          'qrcode.find-qrcode-by-acometidaId', acometidaId,
         ),
       );
       return new ApiResponse(

@@ -5,17 +5,17 @@ import {
   Get,
   Inject,
   Logger,
-  OnModuleInit,
   Param,
   ParseIntPipe,
   Post,
   Put,
   Query,
   Req,
-  UseGuards,
+  UseGuards
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { ClientKafka, RpcException } from '@nestjs/microservices';
+import { KafkaProxyService } from '../../../../../../shared/kafka/kafka-proxy.service';
 import { environments } from '../../../../../../settings/environments/environments';
 import { CreateRolRequest } from '../../domain/schemas/dto/request/create.rol.request';
 import { ApiResponse } from '../../../../../../shared/errors/responses/ApiResponse';
@@ -28,27 +28,16 @@ import { RolResponse } from '../../domain/schemas/dto/response/rol.response';
 @ApiTags('Roles - Gateway Authentication Service')
 @ApiBearerAuth()
 @UseGuards(AuthGuard)
-export class RolGatewayController implements OnModuleInit {
+export class RolGatewayController {
   private readonly logger = new Logger(RolGatewayController.name);
 
   constructor(
     @Inject(environments.GATEWAY_ROLES_KAFKA_CLIENT)
     private readonly kafkaClient: ClientKafka,
+    private readonly kafkaProxy: KafkaProxyService,
   ) {}
 
-  onModuleInit() {
-    const requestPatterns = [
-      'authentication.roles.get_rol_by_id',
-      'authentication.roles.get_all_rols',
-      'authentication.roles.create_rol',
-      'authentication.roles.update_rol',
-    ];
-
-    requestPatterns.forEach((pattern) => {
-      this.kafkaClient.subscribeToResponseOf(pattern);
-    });
-  }
-
+  
   @Post('create-rol')
   @ApiOperation({
     summary: 'Create a new role',
@@ -61,7 +50,7 @@ export class RolGatewayController implements OnModuleInit {
     this.logger.log('Sending create rol request to authentication service');
     try {
       const response: RolResponse = await sendKafkaRequest(
-        this.kafkaClient.send('authentication.roles.create_rol', rolData),
+        this.kafkaProxy.send(this.kafkaClient, 'authentication.roles.create_rol', rolData),
       );
 
       return new ApiResponse(
@@ -90,7 +79,7 @@ export class RolGatewayController implements OnModuleInit {
     try {
       const payload = { rolId, rolData };
       const response: RolResponse = await sendKafkaRequest(
-        this.kafkaClient.send('authentication.roles.update_rol', payload),
+        this.kafkaProxy.send(this.kafkaClient, 'authentication.roles.update_rol', payload),
       );
 
       return new ApiResponse(
@@ -117,7 +106,7 @@ export class RolGatewayController implements OnModuleInit {
     this.logger.log('Sending get rol by ID request to authentication service');
     try {
       const response: RolResponse = await sendKafkaRequest(
-        this.kafkaClient.send('authentication.roles.get_rol_by_id', rolId),
+        this.kafkaProxy.send(this.kafkaClient, 'authentication.roles.get_rol_by_id', rolId),
       );
 
       return new ApiResponse(
@@ -146,7 +135,7 @@ export class RolGatewayController implements OnModuleInit {
     try {
       const payload = { limit, offset };
       const response: RolResponse[] = await sendKafkaRequest(
-        this.kafkaClient.send('authentication.roles.get_all_rols', payload),
+        this.kafkaProxy.send(this.kafkaClient, 'authentication.roles.get_all_rols', payload),
       );
 
       return new ApiResponse(

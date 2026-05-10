@@ -17,6 +17,7 @@ import { ReadingAuditGatewayController } from '../controller/reading-audit.gatew
         name: environments.READINGS_KAFKA_CLIENT!,
         transport: Transport.KAFKA,
         options: {
+          replyTopic: 'readings_topic.reply',
           client: {
             brokers: [environments.KAFKA_BROKER_URL],
             clientId: environments.READINGS_KAFKA_CLIENT_ID,

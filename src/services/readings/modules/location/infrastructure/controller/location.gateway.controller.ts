@@ -4,14 +4,14 @@ import {
   Get,
   Inject,
   Logger,
-  OnModuleInit,
   Param,
   ParseIntPipe,
   Post,
   Req,
-  UseGuards,
+  UseGuards
 } from '@nestjs/common';
 import { ClientKafka, RpcException } from '@nestjs/microservices';
+import { KafkaProxyService } from '../../../../../../shared/kafka/kafka-proxy.service';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CreateLocationRequest } from '../../domain/schemas/dto/request/create.location.request';
 import { environments } from '../../../../../../settings/environments/environments';
@@ -24,28 +24,13 @@ import { LocationResponse } from '../../domain/schemas/dto/response/location.res
 @ApiTags('Location Gateway')
 //  @ApiBearerAuth()
 //@UseGuards(AuthGuard)
-export class LocationGatewayController implements OnModuleInit {
+export class LocationGatewayController {
   private readonly logger = new Logger(LocationGatewayController.name);
   constructor(
     @Inject(environments.LOCATION_KAFKA_CLIENT)
     private readonly kafkaClient: ClientKafka,
+    private readonly kafkaProxy: KafkaProxyService,
   ) {}
-
-  async onModuleInit() {
-    this.kafkaClient.subscribeToResponseOf(
-      'location.get-locations-by-connection-id',
-    );
-    this.kafkaClient.subscribeToResponseOf(
-      'location.verify-location-by-connection-id',
-    );
-    this.kafkaClient.subscribeToResponseOf('location.create-location');
-    this.kafkaClient.subscribeToResponseOf('location.get-location-by-id');
-    this.logger.log('Response patterns:', this.kafkaClient['responsePatterns']);
-    this.logger.log(
-      'LocationGatewayController initialized and connected to Kafka',
-    );
-    await this.kafkaClient.connect();
-  }
 
   @Post('create-location')
   @ApiOperation({
@@ -58,7 +43,7 @@ export class LocationGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const response: LocationResponse = await sendKafkaRequest(
-        this.kafkaClient.send('location.create-location', location),
+        this.kafkaProxy.send(this.kafkaClient, 'location.create-location', location),
       );
       return new ApiResponse(
         `Location created successfully!`,
@@ -84,9 +69,8 @@ export class LocationGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const response: LocationResponse[] = await sendKafkaRequest(
-        this.kafkaClient.send(
-          'location.get-locations-by-connection-id',
-          connectionId,
+        this.kafkaProxy.send(this.kafkaClient, 
+          'location.get-locations-by-connection-id', connectionId,
         ),
       );
       return new ApiResponse(
@@ -116,9 +100,8 @@ export class LocationGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const response: boolean = await sendKafkaRequest(
-        this.kafkaClient.send(
-          'location.verify-location-by-connection-id',
-          connectionId,
+        this.kafkaProxy.send(this.kafkaClient, 
+          'location.verify-location-by-connection-id', connectionId,
         ),
       );
       return new ApiResponse(
@@ -144,7 +127,7 @@ export class LocationGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const response: LocationResponse = await sendKafkaRequest(
-        this.kafkaClient.send('location.get-location-by-id', locationId),
+        this.kafkaProxy.send(this.kafkaClient, 'location.get-location-by-id', locationId),
       );
       return new ApiResponse(
         `Location with ID ${locationId} retrieved successfully!`,

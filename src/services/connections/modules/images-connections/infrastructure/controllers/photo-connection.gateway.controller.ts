@@ -4,15 +4,15 @@ import {
   Get,
   Inject,
   Logger,
-  OnModuleInit,
   Param,
   Post,
   Req,
   UploadedFiles,
   UseGuards,
-  UseInterceptors,
+  UseInterceptors
 } from '@nestjs/common';
 import { ClientKafka, RpcException } from '@nestjs/microservices';
+import { KafkaProxyService } from '../../../../../../shared/kafka/kafka-proxy.service';
 import { ApiTags, ApiConsumes, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
 import { CreatePhotoConnectionRequest } from '../../domain/schemas/dto/request/create.photo-connection.request';
 import { FilesInterceptor } from '@nestjs/platform-express';
@@ -34,6 +34,7 @@ export class PhotoConnectionGatewayController {
   constructor(
     @Inject(environments.CONNECTION_KAFKA_CLIENT)
     private readonly photoConnectionClient: ClientKafka,
+    private readonly kafkaProxy: KafkaProxyService,
   ) {}
 
   @Post('create-photo-connection')
@@ -115,9 +116,8 @@ export class PhotoConnectionGatewayController {
       const responses: PhotoConnectionResponse[] = [];
       for (const dto of photoConnectionDtos) {
         const response: PhotoConnectionResponse = await sendKafkaRequest(
-          this.photoConnectionClient.send(
-            'photo-connection.create-photo-connection',
-            dto,
+          this.kafkaProxy.send(this.photoConnectionClient, 
+            'photo-connection.create-photo-connection', dto,
           ),
         );
         responses.push(response);
@@ -143,9 +143,8 @@ export class PhotoConnectionGatewayController {
       if (!cadastralKey) throw new Error('Cadastral key is required.');
 
       const response: PhotoConnectionResponse[] = await sendKafkaRequest(
-        this.photoConnectionClient.send(
-          'photo-connection.get-photo-connections-by-cadastral-key',
-          { cadastralKey },
+        this.kafkaProxy.send(this.photoConnectionClient, 
+          'photo-connection.get-photo-connections-by-cadastral-key', { cadastralKey },
         ),
       );
 

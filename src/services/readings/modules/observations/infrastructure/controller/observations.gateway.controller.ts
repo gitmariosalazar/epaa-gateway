@@ -3,12 +3,12 @@ import {
   Get,
   Inject,
   Logger,
-  OnModuleInit,
   Param,
   Req,
-  UseGuards,
+  UseGuards
 } from '@nestjs/common';
 import { ClientKafka, RpcException } from '@nestjs/microservices';
+import { KafkaProxyService } from '../../../../../../shared/kafka/kafka-proxy.service';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { environments } from '../../../../../../settings/environments/environments';
 import { ApiResponse } from '../../../../../../shared/errors/responses/ApiResponse';
@@ -20,37 +20,15 @@ import { ObservationDetailsResponse } from '../../domain/schemas/dto/response/ob
 @ApiTags('Observations')
 //@ApiBearerAuth()
 //@UseGuards(AuthGuard)
-export class ObservationsGatewayController implements OnModuleInit {
+export class ObservationsGatewayController {
   private readonly logger: Logger = new Logger(
     ObservationsGatewayController.name,
   );
   constructor(
     @Inject(environments.OBSERVATION_KAFKA_CLIENT)
     private readonly observationsClient: ClientKafka,
+    private readonly kafkaProxy: KafkaProxyService,
   ) {}
-
-  async onModuleInit() {
-    this.observationsClient.subscribeToResponseOf(
-      'observation-reading.create-observation-reading',
-    );
-    this.observationsClient.subscribeToResponseOf(
-      'observation-reading.get-observations-by-reading-id',
-    );
-    this.observationsClient.subscribeToResponseOf(
-      'observation-reading.get-observation-details-by-cadastral-key',
-    );
-    this.observationsClient.subscribeToResponseOf(
-      'observation-reading.get-observations',
-    );
-    this.logger.log(
-      'Response patterns:',
-      this.observationsClient['responsePatterns'],
-    );
-    this.logger.log(
-      'ObservationsGatewayController initialized and connected to Kafka',
-    );
-    await this.observationsClient.connect();
-  }
 
   @Get('get-observation-details-by-cadastral-key/:cadastralKey')
   async getObservationDetailsByCadastralKey(
@@ -59,9 +37,8 @@ export class ObservationsGatewayController implements OnModuleInit {
   ): Promise<ApiResponse> {
     try {
       const response: ObservationDetailsResponse = await sendKafkaRequest(
-        this.observationsClient.send(
-          'observation-reading.get-observation-details-by-cadastral-key',
-          { cadastralKey },
+        this.kafkaProxy.send(this.observationsClient, 
+          'observation-reading.get-observation-details-by-cadastral-key', { cadastralKey },
         ),
       );
       return new ApiResponse(
@@ -82,9 +59,8 @@ export class ObservationsGatewayController implements OnModuleInit {
   async getObservations(@Req() request: Request): Promise<ApiResponse> {
     try {
       const response: ObservationDetailsResponse[] = await sendKafkaRequest(
-        this.observationsClient.send(
-          'observation-reading.get-observations',
-          {},
+        this.kafkaProxy.send(this.observationsClient, 
+          'observation-reading.get-observations', {},
         ),
       );
       return new ApiResponse(
