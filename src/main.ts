@@ -3,7 +3,7 @@ import { AppModule } from './app.module';
 
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
-import { Logger } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { environments } from './settings/environments/environments';
 import { RpcCustomExceptionFilter } from './shared/errors/exception/GlobalExceptionHandler';
@@ -14,6 +14,18 @@ async function bootstrap() {
 
   app.use(cookieParser());
   app.use(morgan('dev'));
+
+  // Gateway: solo transforma tipos automáticamente (string→number, etc.).
+  // whitelist/forbidNonWhitelisted NO aplican aquí: el gateway es un proxy,
+  // la validación de negocio la realiza cada microservicio con sus propias reglas.
+  app.useGlobalPipes(
+    new ValidationPipe({
+      transform: true,             // coerción automática de tipos (UUID, number, etc.)
+      transformOptions: {
+        enableImplicitConversion: true, // convierte query params string → number automáticamente
+      },
+    }),
+  );
 
   app.enableCors({
     origin: true,

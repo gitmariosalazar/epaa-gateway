@@ -5,27 +5,30 @@ import { provideContextualKafkaClient } from '../../../shared/kafka/provide-cont
 
 const kafkaProviders = [
   // Authentication Kafka Client
-  provideContextualKafkaClient(environments.GATEWAY_AUTHENTICATION_KAFKA_CLIENT, {
-    client: {
-      brokers: [environments.KAFKA_BROKER_URL],
-      clientId: environments.GATEWAY_AUTHENTICATION_KAFKA_CLIENT_ID,
-            retry: { retries: 25, initialRetryTime: 1000 },
+  provideContextualKafkaClient(
+    environments.GATEWAY_AUTHENTICATION_KAFKA_CLIENT,
+    {
+      client: {
+        brokers: [environments.KAFKA_BROKER_URL],
+        clientId: environments.GATEWAY_AUTHENTICATION_KAFKA_CLIENT_ID,
+        retry: { retries: 25, initialRetryTime: 1000 },
+      },
+      consumer: {
+        groupId: environments.GATEWAY_AUTHENTICATION_KAFKA_GROUP_ID,
+        sessionTimeout: 30000,
+        heartbeatInterval: 10000,
+        rebalanceTimeout: 60000,
+        subscribe: { fromBeginning: true },
+        replyTopic: 'authentication_topic.reply',
+      },
     },
-    consumer: {
-      groupId: environments.GATEWAY_AUTHENTICATION_KAFKA_GROUP_ID,
-      sessionTimeout: 30000,
-      heartbeatInterval: 10000,
-      rebalanceTimeout: 60000,
-      subscribe: { fromBeginning: true },
-    },
-  }),
+  ),
   // Roles Kafka Client
   provideContextualKafkaClient(environments.GATEWAY_ROLES_KAFKA_CLIENT, {
-    options: { consumer: { replyTopic: 'authentication_topic.reply' } },
     client: {
       brokers: [environments.KAFKA_BROKER_URL],
       clientId: environments.GATEWAY_ROLES_KAFKA_CLIENT_ID,
-            retry: { retries: 25, initialRetryTime: 1000 },
+      retry: { retries: 25, initialRetryTime: 1000 },
     },
     consumer: {
       groupId: environments.GATEWAY_ROLES_KAFKA_GROUP_ID,
@@ -33,15 +36,15 @@ const kafkaProviders = [
       heartbeatInterval: 10000,
       rebalanceTimeout: 60000,
       subscribe: { fromBeginning: true },
+      replyTopic: 'authentication_topic.reply',
     },
   }),
   // Categories Kafka Client
   provideContextualKafkaClient(environments.GATEWAY_CATEGORIES_KAFKA_CLIENT, {
-    options: { consumer: { replyTopic: 'authentication_topic.reply' } },
     client: {
       brokers: [environments.KAFKA_BROKER_URL],
       clientId: environments.GATEWAY_CATEGORIES_KAFKA_CLIENT_ID,
-            retry: { retries: 25, initialRetryTime: 1000 },
+      retry: { retries: 25, initialRetryTime: 1000 },
     },
     consumer: {
       groupId: environments.GATEWAY_CATEGORIES_KAFKA_GROUP_ID,
@@ -49,15 +52,15 @@ const kafkaProviders = [
       heartbeatInterval: 10000,
       rebalanceTimeout: 60000,
       subscribe: { fromBeginning: true },
+      replyTopic: 'authentication_topic.reply',
     },
   }),
   // Permissions Kafka Client
   provideContextualKafkaClient(environments.GATEWAY_PERMISSIONS_KAFKA_CLIENT, {
-    options: { consumer: { replyTopic: 'authentication_topic.reply' } },
     client: {
       brokers: [environments.KAFKA_BROKER_URL],
       clientId: environments.GATEWAY_PERMISSIONS_KAFKA_CLIENT_ID,
-            retry: { retries: 25, initialRetryTime: 1000 },
+      retry: { retries: 25, initialRetryTime: 1000 },
     },
     consumer: {
       groupId: environments.GATEWAY_PERMISSIONS_KAFKA_GROUP_ID,
@@ -65,31 +68,34 @@ const kafkaProviders = [
       heartbeatInterval: 10000,
       rebalanceTimeout: 60000,
       subscribe: { fromBeginning: true },
+      replyTopic: 'authentication_topic.reply',
     },
   }),
   // Rol-Permission Kafka Client
-  provideContextualKafkaClient(environments.GATEWAY_ROL_PERMISSION_KAFKA_CLIENT, {
-    options: { consumer: { replyTopic: 'authentication_topic.reply' } },
-    client: {
-      brokers: [environments.KAFKA_BROKER_URL],
-      clientId: environments.GATEWAY_ROL_PERMISSION_KAFKA_CLIENT_ID,
-            retry: { retries: 25, initialRetryTime: 1000 },
+  provideContextualKafkaClient(
+    environments.GATEWAY_ROL_PERMISSION_KAFKA_CLIENT,
+    {
+      client: {
+        brokers: [environments.KAFKA_BROKER_URL],
+        clientId: environments.GATEWAY_ROL_PERMISSION_KAFKA_CLIENT_ID,
+        retry: { retries: 25, initialRetryTime: 1000 },
+      },
+      consumer: {
+        groupId: environments.GATEWAY_ROL_PERMISSION_KAFKA_GROUP_ID,
+        sessionTimeout: 30000,
+        heartbeatInterval: 10000,
+        rebalanceTimeout: 60000,
+        subscribe: { fromBeginning: true },
+        replyTopic: 'authentication_topic.reply',
+      },
     },
-    consumer: {
-      groupId: environments.GATEWAY_ROL_PERMISSION_KAFKA_GROUP_ID,
-      sessionTimeout: 30000,
-      heartbeatInterval: 10000,
-      rebalanceTimeout: 60000,
-      subscribe: { fromBeginning: true },
-    },
-  }),
+  ),
   // Users Kafka Client
   provideContextualKafkaClient(environments.GATEWAY_USERS_KAFKA_CLIENT, {
-    options: { consumer: { replyTopic: 'authentication_topic.reply' } },
     client: {
       brokers: [environments.KAFKA_BROKER_URL],
       clientId: environments.GATEWAY_USERS_KAFKA_CLIENT_ID,
-            retry: { retries: 25, initialRetryTime: 1000 },
+      retry: { retries: 25, initialRetryTime: 1000 },
     },
     consumer: {
       groupId: environments.GATEWAY_USERS_KAFKA_GROUP_ID,
@@ -97,15 +103,15 @@ const kafkaProviders = [
       heartbeatInterval: 10000,
       rebalanceTimeout: 60000,
       subscribe: { fromBeginning: true },
+      replyTopic: 'authentication_topic.reply',
     },
   }),
   // Employees Kafka Client
   provideContextualKafkaClient(environments.GATEWAY_EMPLOYEES_KAFKA_CLIENT, {
-    options: { consumer: { replyTopic: 'authentication_topic.reply' } },
     client: {
       brokers: [environments.KAFKA_BROKER_URL],
       clientId: environments.GATEWAY_EMPLOYEES_KAFKA_CLIENT_ID,
-            retry: { retries: 25, initialRetryTime: 1000 },
+      retry: { retries: 25, initialRetryTime: 1000 },
     },
     consumer: {
       groupId: environments.GATEWAY_EMPLOYEES_KAFKA_GROUP_ID,
@@ -113,15 +119,15 @@ const kafkaProviders = [
       heartbeatInterval: 10000,
       rebalanceTimeout: 60000,
       subscribe: { fromBeginning: true },
+      replyTopic: 'authentication_topic.reply',
     },
   }),
   // Auth Kafka Client
   provideContextualKafkaClient(environments.GATEWAY_AUTH_KAFKA_CLIENT, {
-    options: { consumer: { replyTopic: 'authentication_topic.reply' } },
     client: {
       brokers: [environments.KAFKA_BROKER_URL],
       clientId: environments.GATEWAY_AUTH_KAFKA_CLIENT_ID,
-            retry: { retries: 25, initialRetryTime: 1000 },
+      retry: { retries: 25, initialRetryTime: 1000 },
     },
     consumer: {
       groupId: environments.GATEWAY_AUTH_KAFKA_GROUP_ID,
@@ -129,15 +135,15 @@ const kafkaProviders = [
       heartbeatInterval: 10000,
       rebalanceTimeout: 60000,
       subscribe: { fromBeginning: true },
+      replyTopic: 'authentication_topic.reply',
     },
   }),
   // Audit Kafka Client
   provideContextualKafkaClient('GATEWAY_AUDIT_KAFKA_CLIENT', {
-    options: { consumer: { replyTopic: 'authentication_topic.reply' } },
     client: {
       brokers: [environments.KAFKA_BROKER_URL],
       clientId: 'audit-gateway-client',
-            retry: { retries: 25, initialRetryTime: 1000 },
+      retry: { retries: 25, initialRetryTime: 1000 },
     },
     consumer: {
       groupId: 'audit-gateway-group',
@@ -145,6 +151,7 @@ const kafkaProviders = [
       heartbeatInterval: 10000,
       rebalanceTimeout: 60000,
       subscribe: { fromBeginning: true },
+      replyTopic: 'authentication_topic.reply',
     },
   }),
 ];
@@ -153,6 +160,6 @@ const kafkaProviders = [
   imports: [],
   controllers: [],
   providers: [...kafkaProviders],
-  exports: [...kafkaProviders.map(p => p.provide)],
+  exports: [...kafkaProviders.map((p) => p.provide)],
 })
 export class KafkaAuthenticationModule {}

@@ -3,7 +3,7 @@ import { ContextualClientKafka } from './contextual-client-kafka';
 
 /**
  * Utility to provide a ContextualClientKafka for a given token and options.
- * This ensures that all Kafka messages sent from the gateway automatically 
+ * This ensures that all Kafka messages sent from the gateway automatically
  * include the user's identity in the Kafka headers.
  */
 export function provideContextualKafkaClient(
@@ -13,18 +13,34 @@ export function provideContextualKafkaClient(
   return {
     provide: token,
     useFactory: () => {
-      // If no replyTopic is provided, we try to guess it or use a default
-      // to avoid the "not subscribed to reply topic" error.
       const kafkaOptions = options as any;
-      if (!kafkaOptions.replyTopic) {
-        // Default to a topic based on the token if possible
-        const guessedTopic = token.toLowerCase().replace('_kafka_client', '') + '_topic.reply';
-        kafkaOptions.replyTopic = guessedTopic;
-      }
-      
-      const client = new ContextualClientKafka(kafkaOptions);
-      // We must map it because ContextualClientKafka doesn't automatically subscribe 
-      // when created manually like ClientsModule does.
+
+      // Extract replyTopic if present and ensure it's in the right place
+      const replyTopic =
+        kafkaOptions.replyTopic ||
+        kafkaOptions.options?.consumer?.replyTopic ||
+        kafkaOptions.consumer?.replyTopic ||
+        token.toLowerCase().replace('_kafka_client', '') + '_topic.reply';
+
+      // Build proper ClientKafka options
+      const clientKafkaOptions = {
+        client: kafkaOptions.client,
+        consumer: {
+          ...kafkaOptions.consumer,
+          replyTopic, // replyTopic goes in consumer
+        },
+        run: kafkaOptions.run,
+      };
+
+      const client = new ContextualClientKafka(clientKafkaOptions);
+
+      // CRITICAL: subscribeToResponseOf MUST be called before the first connect().
+      // The replyTopic is derived from the topic name (e.g. 'authentication_topic.reply').
+      // When connect() is later called (in onModuleInit), the consumer will
+      // automatically subscribe to this reply topic.
+      const baseTopic = replyTopic.replace('.reply', '');
+      client.subscribeToResponseOf(baseTopic);
+
       return client;
     },
   };

@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { UUID } from 'crypto';
 
 export class UpdateWorkOrderRequest {
   @ApiProperty({
@@ -23,7 +24,7 @@ export class UpdateWorkOrderRequest {
   })
   priorityId: number;
   @ApiProperty({
-    example: 'client-789',
+    example: '1003938477',
     description: 'ID of the client associated with the work order',
     type: String,
     required: false,
@@ -72,26 +73,26 @@ export class UpdateWorkOrderRequest {
   })
   location: string;
   @ApiProperty({
-    example: 1,
+    example: 'e3400d18-86e1-4eee-9a8b-3e7eaf812a95',
     description: 'ID of the user who created the work order',
-    type: Number,
+    type: String,
     required: true,
   })
-  createdUserId: number;
+  createdUserId: UUID;
   @ApiProperty({
-    example: 1,
+    example: 'e3400d18-86e1-4eee-9a8b-3e7eaf812a95',
     description: 'ID of the user assigned to the work order',
-    type: Number,
+    type: String,
     required: false,
   })
-  assignedUserId?: number;
+  assignedUserId?: UUID | null;
   @ApiProperty({
-    example: 1,
+    example: 'e3400d18-86e1-4eee-9a8b-3e7eaf812a95',
     description: 'ID of the user who completed the work order',
-    type: Number,
+    type: String,
     required: false,
   })
-  completedUserId?: number;
+  completedUserId?: UUID | null;
   @ApiProperty({
     example: '40.7128° N, 74.0060° W',
     description: 'Geographical coordinates for the work order location',
@@ -119,14 +120,14 @@ export class UpdateWorkOrderRequest {
     priorityId: number,
     description: string,
     location: string,
-    createdUserId: number,
+    createdUserId: UUID,
     clientId?: string,
     creationDate?: Date,
     assignationDate?: Date,
     completionDate?: Date,
     status?: number,
-    assignedUserId?: number,
-    completedUserId?: number,
+    assignedUserId?: UUID | null,
+    completedUserId?: UUID | null,
     coordinates?: string,
     metadata?: string,
     cadastralKey?: string,

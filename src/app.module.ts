@@ -34,17 +34,18 @@ import { JwtModule } from '@nestjs/jwt';
 import { AuthGuard } from './auth/guard/auth.guard';
 import { LocationGlobalGatewayModule } from './services/location/modules/location/infrastructure/modules/location-global.gateway.module';
 import { EpaaLegacyFactoryModule } from './services/epaa-legacy/modules/factory/epaa-legacy.factory.module';
-import { ConnectionFactoryModule } from './services/connections/modules/factory/epaa-legacy.factory.module';
+import { ConnectionFactoryModule } from './services/connections/modules/factory/connection.factory.module';
 import { AuditContextInterceptor } from './shared/interceptors/audit-context.interceptor';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { RealtimeModule } from './shared/realtime';
 import { KafkaProxyModule } from './shared/kafka/kafka-proxy.module';
+import { NotificationGatewayModule } from './services/notifications/modules/infrastructure/notification.gateway.module';
 
 @Module({
   imports: [
     HomeModule,
     KafkaProxyModule,
-    RealtimeModule,   // ← WebSocket global: RealtimeService disponible en TODA la app
+    RealtimeModule, // ← WebSocket global: RealtimeService disponible en TODA la app
     QRCodeKafkaModule,
     QRCodeGatewayModule,
     ReadingGatewayModule,
@@ -78,6 +79,7 @@ import { KafkaProxyModule } from './shared/kafka/kafka-proxy.module';
     LocationGlobalGatewayModule,
     EpaaLegacyFactoryModule,
     ConnectionFactoryModule,
+    NotificationGatewayModule,
     JwtModule.register({
       global: true,
       secret: process.env.JWT_SECRET,

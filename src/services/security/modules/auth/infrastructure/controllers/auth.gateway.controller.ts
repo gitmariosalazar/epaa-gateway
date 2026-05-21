@@ -3,7 +3,6 @@ import {
   Controller,
   Inject,
   Logger,
-  OnModuleInit,
   Post,
   Req,
   Res,
@@ -23,7 +22,6 @@ import { parseExpirationToSeconds } from '../../../../../../shared/utils/jwt/tim
 import { AuthGuard } from '../../../../../../auth/guard/auth.guard';
 import { KafkaProxyService } from '../../../../../../shared/kafka/kafka-proxy.service';
 
-
 @Controller('auth')
 export class AuthGatewayController {
   private readonly logger = new Logger(AuthGatewayController.name);
@@ -32,8 +30,6 @@ export class AuthGatewayController {
     private readonly authKafkaClient: ClientKafka,
     private readonly kafkaProxy: KafkaProxyService,
   ) {}
-
-
 
   @Post('signin')
   @ApiOperation({
@@ -46,9 +42,25 @@ export class AuthGatewayController {
     @Res({ passthrough: true }) res: Response,
   ): Promise<ApiResponse> {
     try {
-      const kafkaResponse: AuthResponse = await sendKafkaRequest(
-        this.kafkaProxy.send(this.authKafkaClient, 'authentication.auth.signin', payload),
+      this.logger.log(
+        `Signing in user: ${payload.username_or_email} - ${payload.password ? 'with password' : 'without password'}`,
       );
+      const kafkaResponse: AuthResponse = await sendKafkaRequest(
+        this.kafkaProxy.send(
+          this.authKafkaClient,
+          'authentication.auth.signin',
+          payload,
+        ),
+      );
+
+      // Defensa: si el microservicio devuelve null (usuario no encontrado,
+      // timeout interno, etc.) lanzamos 401 explícito en vez de un TypeError.
+      if (!kafkaResponse) {
+        throw new RpcException({
+          statusCode: 401,
+          message: 'Invalid credentials. Please try again!',
+        });
+      }
 
       const isBrowser =
         request.headers['user-agent']?.includes('Mozilla') ?? false;
@@ -102,10 +114,14 @@ export class AuthGatewayController {
       // Notificar al microservicio para invalidar tokens y auditar LOGOUT
       if (user?.sub) {
         await sendKafkaRequest(
-          this.kafkaProxy.send(this.authKafkaClient, 'authentication.auth.signout', {
-            userId: user.sub,
-            refreshToken: payload?.refreshToken,
-          }),
+          this.kafkaProxy.send(
+            this.authKafkaClient,
+            'authentication.auth.signout',
+            {
+              userId: user.sub,
+              refreshToken: payload?.refreshToken,
+            },
+          ),
         );
       }
 
@@ -135,7 +151,11 @@ export class AuthGatewayController {
   ): Promise<ApiResponse> {
     try {
       const kafkaResponse: AuthResponse = await sendKafkaRequest(
-        this.kafkaProxy.send(this.authKafkaClient, 'authentication.auth.refresh', payload),
+        this.kafkaProxy.send(
+          this.authKafkaClient,
+          'authentication.auth.refresh',
+          payload,
+        ),
       );
 
       return new ApiResponse(
@@ -153,7 +173,8 @@ export class AuthGatewayController {
   @Post('verify')
   @ApiOperation({
     summary: 'Verify user existence',
-    description: 'Checks whether a user with the given username or email exists in the system before proceeding with login',
+    description:
+      'Checks whether a user with the given username or email exists in the system before proceeding with login',
   })
   async verifyUser(
     @Req() request: ExpressRequest,
@@ -161,7 +182,11 @@ export class AuthGatewayController {
   ): Promise<ApiResponse> {
     try {
       const kafkaResponse: VerifyUserResponse = await sendKafkaRequest(
-        this.kafkaProxy.send(this.authKafkaClient, 'authentication.auth.verify', payload),
+        this.kafkaProxy.send(
+          this.authKafkaClient,
+          'authentication.auth.verify',
+          payload,
+        ),
       );
 
       return new ApiResponse(

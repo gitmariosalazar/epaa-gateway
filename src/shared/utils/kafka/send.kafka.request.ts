@@ -4,10 +4,15 @@ import { statusCode } from '../../../settings/environments/status-code';
 
 export async function sendKafkaRequest<T>(
   observable$,
-  timeoutMs = 60000 * 5, // 5 minutos (ajusta según tu entorno)
+  timeoutMs: number = 60000 * 5, // 5 minutos (ajusta según tu entorno)
 ): Promise<T> {
   try {
-    return await firstValueFrom(observable$.pipe(timeout(timeoutMs)));
+    // Validar que timeoutMs sea un número positivo válido
+    const validTimeout = Math.max(
+      1000,
+      Number.isFinite(timeoutMs) ? Math.abs(timeoutMs) : 300000,
+    );
+    return await firstValueFrom(observable$.pipe(timeout(validTimeout)));
   } catch (error) {
     if (error instanceof TimeoutError) {
       throw new RpcException({
