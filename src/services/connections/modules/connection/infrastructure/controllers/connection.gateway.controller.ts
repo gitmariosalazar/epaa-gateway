@@ -10,7 +10,7 @@ import {
   Put,
   Query,
   Req,
-  UseGuards
+  UseGuards,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { environments } from '../../../../../../settings/environments/environments';
@@ -23,6 +23,7 @@ import { AuthGuard } from '../../../../../../auth/guard/auth.guard';
 import {
   ConnectionAndPropertyResponse,
   ConnectionResponse,
+  PropertyWithClientResponse,
 } from '../../domain/schemas/dto/response/connection.response';
 
 @Controller('connections')
@@ -52,8 +53,10 @@ export class ConnectionGatewayController {
     try {
       this.logger.log(`Received request to get advancement dashboard stats`);
       const response: any = await sendKafkaRequest(
-        this.kafkaProxy.send(this.connectionKafkaClient, 
-          'connections.get-advance-dashboard-stats', {},
+        this.kafkaProxy.send(
+          this.connectionKafkaClient,
+          'connections.get-advance-dashboard-stats',
+          {},
         ),
       );
       return new ApiResponse(
@@ -81,8 +84,10 @@ export class ConnectionGatewayController {
         `Received request to create connection: ${JSON.stringify(connection)}`,
       );
       const response: ConnectionResponse = await sendKafkaRequest(
-        this.kafkaProxy.send(this.connectionKafkaClient, 
-          'connections.create-connection', connection,
+        this.kafkaProxy.send(
+          this.connectionKafkaClient,
+          'connections.create-connection',
+          connection,
         ),
       );
       return new ApiResponse(
@@ -111,10 +116,14 @@ export class ConnectionGatewayController {
         `Received request to update connection ${connectionId}: ${JSON.stringify(connection)}`,
       );
       const response: ConnectionResponse = await sendKafkaRequest(
-        this.kafkaProxy.send(this.connectionKafkaClient, 'connections.update-connection', {
-          connectionId,
-          connection,
-        }),
+        this.kafkaProxy.send(
+          this.connectionKafkaClient,
+          'connections.update-connection',
+          {
+            connectionId,
+            connection,
+          },
+        ),
       );
       return new ApiResponse(
         `Connection updated successfully!`,
@@ -140,8 +149,10 @@ export class ConnectionGatewayController {
         `Received request to get connection by ID: ${connectionId}`,
       );
       const response: ConnectionResponse = await sendKafkaRequest(
-        this.kafkaProxy.send(this.connectionKafkaClient, 
-          'connections.get-connection-by-id', connectionId,
+        this.kafkaProxy.send(
+          this.connectionKafkaClient,
+          'connections.get-connection-by-id',
+          connectionId,
         ),
       );
       return new ApiResponse(
@@ -170,8 +181,10 @@ export class ConnectionGatewayController {
         `Received request to find connections by sector: ${sector} with limit=${limit} and offset=${offset}`,
       );
       const response: ConnectionResponse[] = await sendKafkaRequest(
-        this.kafkaProxy.send(this.connectionKafkaClient, 
-          'connections.find-connections-by-sector', {
+        this.kafkaProxy.send(
+          this.connectionKafkaClient,
+          'connections.find-connections-by-sector',
+          {
             sector,
             limit,
             offset,
@@ -205,8 +218,10 @@ export class ConnectionGatewayController {
         `Received request to find connections by client ID: ${clientId} with limit=${limit} and offset=${offset}`,
       );
       const response: ConnectionResponse[] = await sendKafkaRequest(
-        this.kafkaProxy.send(this.connectionKafkaClient, 
-          'connections.find-connections-by-client-id', {
+        this.kafkaProxy.send(
+          this.connectionKafkaClient,
+          'connections.find-connections-by-client-id',
+          {
             clientId,
             limit,
             offset,
@@ -239,10 +254,14 @@ export class ConnectionGatewayController {
         `Received request to get all connections with limit=${limit} and offset=${offset}`,
       );
       const response: ConnectionResponse[] = await sendKafkaRequest(
-        this.kafkaProxy.send(this.connectionKafkaClient, 'connections.get-all-connections', {
-          limit,
-          offset,
-        }),
+        this.kafkaProxy.send(
+          this.connectionKafkaClient,
+          'connections.get-all-connections',
+          {
+            limit,
+            offset,
+          },
+        ),
       );
       return new ApiResponse(
         `Connections retrieved successfully!`,
@@ -266,8 +285,10 @@ export class ConnectionGatewayController {
     try {
       this.logger.log(`Received request to delete connection: ${connectionId}`);
       const response: boolean = await sendKafkaRequest(
-        this.kafkaProxy.send(this.connectionKafkaClient, 
-          'connections.delete-connection', connectionId,
+        this.kafkaProxy.send(
+          this.connectionKafkaClient,
+          'connections.delete-connection',
+          connectionId,
         ),
       );
       this.logger.log(
@@ -298,8 +319,10 @@ export class ConnectionGatewayController {
         `Received request to verify if connection exists: ${connectionId}`,
       );
       const response: boolean = await sendKafkaRequest(
-        this.kafkaProxy.send(this.connectionKafkaClient, 
-          'connections.verify-connection-exists', connectionId,
+        this.kafkaProxy.send(
+          this.connectionKafkaClient,
+          'connections.verify-connection-exists',
+          connectionId,
         ),
       );
       this.logger.log(
@@ -315,7 +338,7 @@ export class ConnectionGatewayController {
     }
   }
 
-  @Get('find-connection-by-property-cadastral-key/:propertyCadastralKey')
+  @Get('find-connection-by-property-cadastral-key/:cadastralKey')
   @ApiOperation({
     summary: 'Method GET - Find connection and property by cadastral key',
     description:
@@ -323,15 +346,52 @@ export class ConnectionGatewayController {
   })
   async getConnectionByPropertyCadastralKey(
     @Req() request: Request,
-    @Param('propertyCadastralKey') propertyCadastralKey: string,
+    @Param('cadastralKey') cadastralKey: string,
   ): Promise<ApiResponse> {
     try {
       this.logger.log(
-        `Received request to find connection and property by cadastral key: ${propertyCadastralKey}`,
+        `Received request to find connection and property by cadastral key: ${cadastralKey}`,
       );
       const response: ConnectionAndPropertyResponse = await sendKafkaRequest(
-        this.kafkaProxy.send(this.connectionKafkaClient, 
-          'connections.find-connection-by-property-cadastral-key', propertyCadastralKey,
+        this.kafkaProxy.send(
+          this.connectionKafkaClient,
+          'connections.find-connection-by-property-cadastral-key',
+          cadastralKey,
+        ),
+      );
+      this.logger.log(
+        `Connection and property retrieved successfully: ${JSON.stringify(response)}`,
+      );
+      return new ApiResponse(
+        `Connection and property retrieved successfully!`,
+        response,
+        request.url,
+      );
+    } catch (error) {
+      throw new RpcException(error as string | object);
+    }
+  }
+
+  @Get('find-connection-by-cadastral-key-or-card-id/:searchValue')
+  @ApiOperation({
+    summary:
+      'Method GET - Find connection and property by cadastral key or card ID',
+    description:
+      'The endpoint allows you to find a connection and its associated property using either the cadastral key or the card ID',
+  })
+  async getConnectionByCadastralKeyOrCardId(
+    @Req() request: Request,
+    @Param('searchValue') searchValue: string,
+  ): Promise<ApiResponse> {
+    try {
+      this.logger.log(
+        `Received request to find connection and property by cadastral key or card ID: ${searchValue}`,
+      );
+      const response: ConnectionAndPropertyResponse[] = await sendKafkaRequest(
+        this.kafkaProxy.send(
+          this.connectionKafkaClient,
+          'connections.find-connection-by-cadastral-key-or-card-id',
+          searchValue,
         ),
       );
       this.logger.log(
@@ -362,8 +422,10 @@ export class ConnectionGatewayController {
         `Received request to find connection with property by cadastral key: ${cadastralKey}`,
       );
       const response: ConnectionAndPropertyResponse = await sendKafkaRequest(
-        this.kafkaProxy.send(this.connectionKafkaClient, 
-          'connections.find-connection-with-property-by-cadastral-key', cadastralKey,
+        this.kafkaProxy.send(
+          this.connectionKafkaClient,
+          'connections.find-connection-with-property-by-cadastral-key',
+          cadastralKey,
         ),
       );
       this.logger.log(
@@ -396,8 +458,10 @@ export class ConnectionGatewayController {
         `Received request to get all connections with property with limit=${limit} and offset=${offset} and query=${query}`,
       );
       const response: ConnectionAndPropertyResponse[] = await sendKafkaRequest(
-        this.kafkaProxy.send(this.connectionKafkaClient, 
-          'connections.get-all-connections-with-property', {
+        this.kafkaProxy.send(
+          this.connectionKafkaClient,
+          'connections.get-all-connections-with-property',
+          {
             limit,
             offset,
             query,
@@ -431,8 +495,10 @@ export class ConnectionGatewayController {
         `Received request to get connections paginated with limit=${limit}, offset=${offset}, query=${query}`,
       );
       const response: ConnectionResponse[] = await sendKafkaRequest(
-        this.kafkaProxy.send(this.connectionKafkaClient, 
-          'connections.get-connections-paginated', {
+        this.kafkaProxy.send(
+          this.connectionKafkaClient,
+          'connections.get-connections-paginated',
+          {
             limit,
             offset,
             query,
@@ -441,6 +507,46 @@ export class ConnectionGatewayController {
       );
       return new ApiResponse(
         `Connections retrieved successfully!`,
+        response,
+        request.url,
+      );
+    } catch (error) {
+      throw new RpcException(error as string | object);
+    }
+  }
+
+  @Get(
+    'find-property-with-client-by-cadastral-key-or-card-id-or-like-name/:searchValue',
+  )
+  @ApiOperation({
+    summary:
+      'Method GET - Find property with client by cadastral key, card ID or like name',
+    description:
+      'The endpoint allows you to find a property along with its associated client using either the cadastral key, card ID or a like name search',
+  })
+  async findPropertyWithClientByCadastralKeyOrCardIdOrLikeName(
+    @Req() request: Request,
+    @Param('searchValue') searchValue: string,
+    @Query('limit') limit?: number,
+    @Query('offset') offset?: number,
+  ): Promise<ApiResponse> {
+    try {
+      this.logger.log(
+        `Received request to find property with client by cadastral key, card ID or like name: ${searchValue} with limit=${limit} and offset=${offset}`,
+      );
+      const response: PropertyWithClientResponse[] = await sendKafkaRequest(
+        this.kafkaProxy.send(
+          this.connectionKafkaClient,
+          'connections.find-property-with-client-by-cadastral-key-or-card-id-or-like-name',
+          {
+            searchValue,
+            limit,
+            offset,
+          },
+        ),
+      );
+      return new ApiResponse(
+        `Property with client retrieved successfully!`,
         response,
         request.url,
       );

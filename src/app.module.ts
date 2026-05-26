@@ -40,6 +40,7 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
 import { RealtimeModule } from './shared/realtime';
 import { KafkaProxyModule } from './shared/kafka/kafka-proxy.module';
 import { NotificationGatewayModule } from './services/notifications/modules/infrastructure/notification.gateway.module';
+import { DocumentsFactoryModule } from './services/documents/factory/documents-factory.module';
 
 @Module({
   imports: [
@@ -80,6 +81,7 @@ import { NotificationGatewayModule } from './services/notifications/modules/infr
     EpaaLegacyFactoryModule,
     ConnectionFactoryModule,
     NotificationGatewayModule,
+    DocumentsFactoryModule,
     JwtModule.register({
       global: true,
       secret: process.env.JWT_SECRET,

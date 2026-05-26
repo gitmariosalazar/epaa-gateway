@@ -66,6 +66,7 @@ export class KafkaProxyService {
     'trash-rate-kpi': 'epaa_database_legacy_topic',
     'collector-performance-kpi': 'epaa_database_legacy_topic',
     'daily-collector-detail': 'epaa_database_legacy_topic',
+    documents: 'documents_topic',
   };
 
   /**
