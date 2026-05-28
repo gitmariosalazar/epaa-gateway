@@ -39,4 +39,9 @@ export class AppController {
       throw new RpcException(error);
     }
   }
+
+  @Get('actuator/gateway/routes')
+  getActuatorRoutes(): Promise<any[]> {
+    return Promise.resolve([]);
+  }
 }
