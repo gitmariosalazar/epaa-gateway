@@ -25,11 +25,10 @@ import { environments } from '../../../../../../settings/environments/environmen
 import { AuthGuard } from '../../../../../../auth/guard/auth.guard';
 import { KafkaProxyService } from '../../../../../../shared/kafka/kafka-proxy.service';
 
-
 @Controller('Customers')
 @ApiTags('Customers')
-@ApiBearerAuth()
-@UseGuards(AuthGuard)
+//@ApiBearerAuth()
+//@UseGuards(AuthGuard)
 export class CustomerGatewayController {
   private readonly logger: Logger = new Logger(CustomerGatewayController.name);
   constructor(
@@ -50,7 +49,11 @@ export class CustomerGatewayController {
   ): Promise<ApiResponse> {
     try {
       const response = await sendKafkaRequest(
-        this.kafkaProxy.send(this.customerClient, 'customers.create-customer', customer),
+        this.kafkaProxy.send(
+          this.customerClient,
+          'customers.create-customer',
+          customer,
+        ),
       );
       return new ApiResponse(
         `Customer created successfully!`,
@@ -102,7 +105,11 @@ export class CustomerGatewayController {
   ): Promise<ApiResponse> {
     try {
       const response = await sendKafkaRequest(
-        this.kafkaProxy.send(this.customerClient, 'customers.delete-customer', customerId),
+        this.kafkaProxy.send(
+          this.customerClient,
+          'customers.delete-customer',
+          customerId,
+        ),
       );
       return new ApiResponse(
         `Customer with ID ${customerId} deleted successfully!`,
@@ -126,7 +133,11 @@ export class CustomerGatewayController {
   ): Promise<ApiResponse> {
     try {
       const response = await sendKafkaRequest(
-        this.kafkaProxy.send(this.customerClient, 'customers.get-customer-by-id', customerId),
+        this.kafkaProxy.send(
+          this.customerClient,
+          'customers.get-customer-by-id',
+          customerId,
+        ),
       );
       return new ApiResponse(
         `Customer with ID ${customerId} retrieved successfully!`,
@@ -151,10 +162,14 @@ export class CustomerGatewayController {
   ): Promise<ApiResponse> {
     try {
       const response = await sendKafkaRequest(
-        this.kafkaProxy.send(this.customerClient, 'customers.get-all-customers', {
-          limit: Number(limit),
-          offset: Number(offset),
-        }),
+        this.kafkaProxy.send(
+          this.customerClient,
+          'customers.get-all-customers',
+          {
+            limit: Number(limit),
+            offset: Number(offset),
+          },
+        ),
       );
 
       return new ApiResponse(
@@ -208,10 +223,14 @@ export class CustomerGatewayController {
   ): Promise<ApiResponse> {
     try {
       const response = await sendKafkaRequest(
-        this.kafkaProxy.send(this.customerClient, 'customers.get-general-customers', {
-          limit: Number(limit),
-          offset: Number(offset),
-        }),
+        this.kafkaProxy.send(
+          this.customerClient,
+          'customers.get-general-customers',
+          {
+            limit: Number(limit),
+            offset: Number(offset),
+          },
+        ),
       );
 
       return new ApiResponse(

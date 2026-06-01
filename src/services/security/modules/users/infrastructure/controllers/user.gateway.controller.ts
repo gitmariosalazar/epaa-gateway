@@ -14,7 +14,7 @@ import {
   Put,
   Query,
   Req,
-  UseGuards
+  UseGuards,
 } from '@nestjs/common';
 import { KafkaProxyService } from '../../../../../../shared/kafka/kafka-proxy.service';
 import { ApiResponse } from '../../../../../../shared/errors/responses/ApiResponse';
@@ -24,6 +24,7 @@ import { ChangePasswordUserRequest } from '../../domain/schemas/dto/request/chan
 import { UpdateUserRequest } from '../../domain/schemas/dto/request/update.user.request';
 import { AuthGuard } from '../../../../../../auth/guard/auth.guard';
 import {
+  CustomerWithRolesAndPermissionsResponse,
   UserResponse,
   UserResponseWithPermissionsResponse,
   UserResponseWithRolesAndPermissionsResponse,
@@ -37,6 +38,7 @@ import {
   AssignPermissionToUserRequest,
   RemovePermissionFromUserRequest,
 } from '../../domain/schemas/dto/request/assign-permission-to-user.request';
+import { AllowedUserTypes } from '../../../../../../auth/decorator/allowed-user-types.decorator';
 
 @Controller('users-gateway')
 @ApiTags('Users-Gateway')
@@ -50,8 +52,6 @@ export class UserGatewayController {
     private readonly kafkaProxy: KafkaProxyService,
   ) {}
 
-
-
   @Post('create-user')
   @ApiOperation({
     summary: 'Create a new user',
@@ -63,7 +63,11 @@ export class UserGatewayController {
   ): Promise<ApiResponse> {
     try {
       const response: UserResponse = await sendKafkaRequest(
-        this.kafkaProxy.send(this.clientKafka, 'authentication.user.create_user', userData),
+        this.kafkaProxy.send(
+          this.clientKafka,
+          'authentication.user.create_user',
+          userData,
+        ),
       );
 
       return new ApiResponse(
@@ -92,8 +96,10 @@ export class UserGatewayController {
     try {
       const response: UserResponseWithRolesAndPermissionsResponse =
         await sendKafkaRequest(
-          this.kafkaProxy.send(this.clientKafka, 
-            'authentication.user.find_by_username_or_email', {
+          this.kafkaProxy.send(
+            this.clientKafka,
+            'authentication.user.find_by_username_or_email',
+            {
               username,
               email,
             },
@@ -127,10 +133,14 @@ export class UserGatewayController {
   ): Promise<ApiResponse> {
     try {
       const response: UserResponse = await sendKafkaRequest(
-        this.kafkaProxy.send(this.clientKafka, 'authentication.user.update_user', {
-          userId,
-          updates,
-        }),
+        this.kafkaProxy.send(
+          this.clientKafka,
+          'authentication.user.update_user',
+          {
+            userId,
+            updates,
+          },
+        ),
       );
 
       return new ApiResponse(
@@ -156,7 +166,11 @@ export class UserGatewayController {
   ): Promise<ApiResponse> {
     try {
       const response: UserResponse = await sendKafkaRequest(
-        this.kafkaProxy.send(this.clientKafka, 'authentication.user.find_by_id', userId),
+        this.kafkaProxy.send(
+          this.clientKafka,
+          'authentication.user.find_by_id',
+          userId,
+        ),
       );
 
       return new ApiResponse(
@@ -184,8 +198,10 @@ export class UserGatewayController {
   ): Promise<ApiResponse> {
     try {
       const response: boolean = await sendKafkaRequest(
-        this.kafkaProxy.send(this.clientKafka, 
-          'authentication.user.exists_by_username_or_email', { username, email },
+        this.kafkaProxy.send(
+          this.clientKafka,
+          'authentication.user.exists_by_username_or_email',
+          { username, email },
         ),
       );
 
@@ -216,8 +232,10 @@ export class UserGatewayController {
   ): Promise<ApiResponse> {
     try {
       const response: boolean = await sendKafkaRequest(
-        this.kafkaProxy.send(this.clientKafka, 
-          'authentication.user.exists_by_username', username,
+        this.kafkaProxy.send(
+          this.clientKafka,
+          'authentication.user.exists_by_username',
+          username,
         ),
       );
 
@@ -248,7 +266,11 @@ export class UserGatewayController {
   ): Promise<ApiResponse> {
     try {
       const response: boolean = await sendKafkaRequest(
-        this.kafkaProxy.send(this.clientKafka, 'authentication.user.exists_by_email', email),
+        this.kafkaProxy.send(
+          this.clientKafka,
+          'authentication.user.exists_by_email',
+          email,
+        ),
       );
 
       return new ApiResponse(
@@ -278,7 +300,11 @@ export class UserGatewayController {
   ): Promise<ApiResponse> {
     try {
       const response: UserResponse = await sendKafkaRequest(
-        this.kafkaProxy.send(this.clientKafka, 'authentication.user.find_by_username', username),
+        this.kafkaProxy.send(
+          this.clientKafka,
+          'authentication.user.find_by_username',
+          username,
+        ),
       );
 
       return new ApiResponse(
@@ -306,7 +332,11 @@ export class UserGatewayController {
   ): Promise<ApiResponse> {
     try {
       const response: UserResponse = await sendKafkaRequest(
-        this.kafkaProxy.send(this.clientKafka, 'authentication.user.find_by_email', email),
+        this.kafkaProxy.send(
+          this.clientKafka,
+          'authentication.user.find_by_email',
+          email,
+        ),
       );
 
       return new ApiResponse(
@@ -338,10 +368,14 @@ export class UserGatewayController {
   ): Promise<ApiResponse> {
     try {
       const response: UserResponse = await sendKafkaRequest(
-        this.kafkaProxy.send(this.clientKafka, 'authentication.user.update_password', {
-          userId,
-          changePassword,
-        }),
+        this.kafkaProxy.send(
+          this.clientKafka,
+          'authentication.user.update_password',
+          {
+            userId,
+            changePassword,
+          },
+        ),
       );
 
       return new ApiResponse(
@@ -371,8 +405,10 @@ export class UserGatewayController {
   ): Promise<ApiResponse> {
     try {
       const response: UserResponse = await sendKafkaRequest(
-        this.kafkaProxy.send(this.clientKafka, 
-          'authentication.user.find_by_refresh_token', token,
+        this.kafkaProxy.send(
+          this.clientKafka,
+          'authentication.user.find_by_refresh_token',
+          token,
         ),
       );
 
@@ -402,7 +438,11 @@ export class UserGatewayController {
   ): Promise<ApiResponse> {
     try {
       const response: void = await sendKafkaRequest(
-        this.kafkaProxy.send(this.clientKafka, 'authentication.user.soft_delete', userId),
+        this.kafkaProxy.send(
+          this.clientKafka,
+          'authentication.user.soft_delete',
+          userId,
+        ),
       );
 
       return new ApiResponse(
@@ -428,7 +468,11 @@ export class UserGatewayController {
   ): Promise<ApiResponse> {
     try {
       const response: UserResponse = await sendKafkaRequest(
-        this.kafkaProxy.send(this.clientKafka, 'authentication.user.restore', userId),
+        this.kafkaProxy.send(
+          this.clientKafka,
+          'authentication.user.restore',
+          userId,
+        ),
       );
 
       return new ApiResponse(
@@ -455,8 +499,10 @@ export class UserGatewayController {
   ): Promise<ApiResponse> {
     try {
       const response: void = await sendKafkaRequest(
-        this.kafkaProxy.send(this.clientKafka, 
-          'authentication.user.increment_failed_attempts', userId,
+        this.kafkaProxy.send(
+          this.clientKafka,
+          'authentication.user.increment_failed_attempts',
+          userId,
         ),
       );
 
@@ -487,8 +533,10 @@ export class UserGatewayController {
   ): Promise<ApiResponse> {
     try {
       const response: void = await sendKafkaRequest(
-        this.kafkaProxy.send(this.clientKafka, 
-          'authentication.user.reset_failed_attempts', userId,
+        this.kafkaProxy.send(
+          this.clientKafka,
+          'authentication.user.reset_failed_attempts',
+          userId,
         ),
       );
 
@@ -519,10 +567,14 @@ export class UserGatewayController {
   ): Promise<ApiResponse> {
     try {
       const response: UserResponse = await sendKafkaRequest(
-        this.kafkaProxy.send(this.clientKafka, 'authentication.user.verify_credentials', {
-          username,
-          password,
-        }),
+        this.kafkaProxy.send(
+          this.clientKafka,
+          'authentication.user.verify_credentials',
+          {
+            username,
+            password,
+          },
+        ),
       );
 
       return new ApiResponse(
@@ -553,10 +605,14 @@ export class UserGatewayController {
     try {
       const response: UserResponseWithRolesAndPermissionsResponse =
         await sendKafkaRequest(
-          this.kafkaProxy.send(this.clientKafka, 'authentication.user.find_all', {
-            limit,
-            offset,
-          }),
+          this.kafkaProxy.send(
+            this.clientKafka,
+            'authentication.user.find_all',
+            {
+              limit,
+              offset,
+            },
+          ),
         );
 
       return new ApiResponse(
@@ -571,6 +627,7 @@ export class UserGatewayController {
     }
   }
 
+  @AllowedUserTypes('customer', 'employee')
   @Get('get-profile/:usernameOrEmail')
   @ApiOperation({
     summary: 'Get user profile',
@@ -583,8 +640,10 @@ export class UserGatewayController {
     try {
       const response: UserResponseWithRolesAndPermissionsResponse =
         await sendKafkaRequest(
-          this.kafkaProxy.send(this.clientKafka, 
-            'authentication.user.get_profile', usernameOrEmail,
+          this.kafkaProxy.send(
+            this.clientKafka,
+            'authentication.user.get_profile',
+            usernameOrEmail,
           ),
         );
 
@@ -605,6 +664,44 @@ export class UserGatewayController {
     }
   }
 
+  @AllowedUserTypes('customer', 'employee')
+  @Get('get-customer-profile/:usernameOrEmail')
+  @ApiOperation({
+    summary: 'Get customer profile',
+    description:
+      'Retrieves a customer profile from the authentication service.',
+  })
+  async getCustomerProfile(
+    @Param('usernameOrEmail') usernameOrEmail: string,
+    @Req() request: Request,
+  ): Promise<ApiResponse> {
+    try {
+      const response: CustomerWithRolesAndPermissionsResponse =
+        await sendKafkaRequest(
+          this.kafkaProxy.send(
+            this.clientKafka,
+            'authentication.user.get_customer_profile',
+            usernameOrEmail,
+          ),
+        );
+
+      const { passwordHash, ...user } = response;
+
+      return new ApiResponse(
+        'Customer profile retrieved successfully',
+        user,
+        request.url,
+      );
+    } catch (error) {
+      const err = error as Error;
+      this.logger.error(
+        `Error retrieving customer profile: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
+    }
+  }
+
   @Post('assign-role-to-user')
   @ApiOperation({
     summary: 'Assign role to user',
@@ -616,8 +713,10 @@ export class UserGatewayController {
   ): Promise<ApiResponse> {
     try {
       const response: void = await sendKafkaRequest(
-        this.kafkaProxy.send(this.clientKafka, 
-          'authentication.user.assign_role_to_user', assignRoleToUserRequest,
+        this.kafkaProxy.send(
+          this.clientKafka,
+          'authentication.user.assign_role_to_user',
+          assignRoleToUserRequest,
         ),
       );
 
@@ -648,8 +747,10 @@ export class UserGatewayController {
   ): Promise<ApiResponse> {
     try {
       const response: void = await sendKafkaRequest(
-        this.kafkaProxy.send(this.clientKafka, 
-          'authentication.user.assign_permission_to_user', assignPermissionToUserRequest,
+        this.kafkaProxy.send(
+          this.clientKafka,
+          'authentication.user.assign_permission_to_user',
+          assignPermissionToUserRequest,
         ),
       );
 
@@ -682,8 +783,10 @@ export class UserGatewayController {
       const removeRoleFromUserRequest: RemoveRoleFromUserRequest =
         new RemoveRoleFromUserRequest(userId, roleId);
       const response: void = await sendKafkaRequest(
-        this.kafkaProxy.send(this.clientKafka, 
-          'authentication.user.remove_role_from_user', removeRoleFromUserRequest,
+        this.kafkaProxy.send(
+          this.clientKafka,
+          'authentication.user.remove_role_from_user',
+          removeRoleFromUserRequest,
         ),
       );
 
@@ -717,8 +820,10 @@ export class UserGatewayController {
       const removePermissionFromUserRequest: RemovePermissionFromUserRequest =
         new RemovePermissionFromUserRequest(userId, permissionId);
       const response: void = await sendKafkaRequest(
-        this.kafkaProxy.send(this.clientKafka, 
-          'authentication.user.remove_permission_from_user', removePermissionFromUserRequest,
+        this.kafkaProxy.send(
+          this.clientKafka,
+          'authentication.user.remove_permission_from_user',
+          removePermissionFromUserRequest,
         ),
       );
 
@@ -748,8 +853,10 @@ export class UserGatewayController {
   ): Promise<ApiResponse> {
     try {
       const response: UserResponseWithRolesResponse[] = await sendKafkaRequest(
-        this.kafkaProxy.send(this.clientKafka, 
-          'authentication.user.get_roles_by_user_id', userId,
+        this.kafkaProxy.send(
+          this.clientKafka,
+          'authentication.user.get_roles_by_user_id',
+          userId,
         ),
       );
 
@@ -780,8 +887,10 @@ export class UserGatewayController {
     try {
       const response: UserResponseWithPermissionsResponse[] =
         await sendKafkaRequest(
-          this.kafkaProxy.send(this.clientKafka, 
-            'authentication.user.get_permissions_by_user_id', userId,
+          this.kafkaProxy.send(
+            this.clientKafka,
+            'authentication.user.get_permissions_by_user_id',
+            userId,
           ),
         );
 
@@ -811,8 +920,10 @@ export class UserGatewayController {
   ): Promise<ApiResponse> {
     try {
       const response: UserResponse[] = await sendKafkaRequest(
-        this.kafkaProxy.send(this.clientKafka, 
-          'authentication.user.get_users_by_permission_id', permissionId,
+        this.kafkaProxy.send(
+          this.clientKafka,
+          'authentication.user.get_users_by_permission_id',
+          permissionId,
         ),
       );
 
@@ -842,8 +953,10 @@ export class UserGatewayController {
   ): Promise<ApiResponse> {
     try {
       const response: UserResponse[] = await sendKafkaRequest(
-        this.kafkaProxy.send(this.clientKafka, 
-          'authentication.user.get_users_by_role_id', roleId,
+        this.kafkaProxy.send(
+          this.clientKafka,
+          'authentication.user.get_users_by_role_id',
+          roleId,
         ),
       );
 

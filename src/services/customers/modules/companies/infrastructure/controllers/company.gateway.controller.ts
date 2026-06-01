@@ -10,7 +10,7 @@ import {
   Put,
   Query,
   Req,
-  UseGuards
+  UseGuards,
 } from '@nestjs/common';
 import { ClientKafka, RpcException } from '@nestjs/microservices';
 import { KafkaProxyService } from '../../../../../../shared/kafka/kafka-proxy.service';
@@ -24,8 +24,8 @@ import { AuthGuard } from '../../../../../../auth/guard/auth.guard';
 
 @Controller('Customers')
 @ApiTags('Customers')
-@ApiBearerAuth()
-@UseGuards(AuthGuard)
+//@ApiBearerAuth()
+//@UseGuards(AuthGuard)
 export class CompanyGatewayController {
   private readonly logger = new Logger(CompanyGatewayController.name);
   constructor(
@@ -49,7 +49,11 @@ export class CompanyGatewayController {
         `Received request to create company: ${JSON.stringify(company)}`,
       );
       const response = await sendKafkaRequest(
-        this.kafkaProxy.send(this.companyKafkaClient, 'companies.create-company', company),
+        this.kafkaProxy.send(
+          this.companyKafkaClient,
+          'companies.create-company',
+          company,
+        ),
       );
       this.logger.log(
         `Company created successfully: ${JSON.stringify(response)}`,
@@ -80,10 +84,14 @@ export class CompanyGatewayController {
         `Received request to update company: ${JSON.stringify(company)}`,
       );
       const response = await sendKafkaRequest(
-        this.kafkaProxy.send(this.companyKafkaClient, 'companies.update-company', {
-          companyRuc,
-          company,
-        }),
+        this.kafkaProxy.send(
+          this.companyKafkaClient,
+          'companies.update-company',
+          {
+            companyRuc,
+            company,
+          },
+        ),
       );
       this.logger.log(
         `Company updated successfully: ${JSON.stringify(response)}`,
@@ -111,8 +119,10 @@ export class CompanyGatewayController {
     try {
       this.logger.log(`Received request to get company by RUC: ${companyRuc}`);
       const response = await sendKafkaRequest(
-        this.kafkaProxy.send(this.companyKafkaClient, 
-          'companies.get-company-by-ruc', companyRuc,
+        this.kafkaProxy.send(
+          this.companyKafkaClient,
+          'companies.get-company-by-ruc',
+          companyRuc,
         ),
       );
       this.logger.log(
@@ -144,10 +154,14 @@ export class CompanyGatewayController {
         `Received request to get all companies with limit: ${limit}, offset: ${offset}`,
       );
       const response = await sendKafkaRequest(
-        this.kafkaProxy.send(this.companyKafkaClient, 'companies.get-all-companies', {
-          limit,
-          offset,
-        }),
+        this.kafkaProxy.send(
+          this.companyKafkaClient,
+          'companies.get-all-companies',
+          {
+            limit,
+            offset,
+          },
+        ),
       );
       return new ApiResponse(
         `Companies retrieved successfully!`,
@@ -174,7 +188,11 @@ export class CompanyGatewayController {
         `Received request to delete company with RUC: ${companyRuc}`,
       );
       const response = await sendKafkaRequest(
-        this.kafkaProxy.send(this.companyKafkaClient, 'companies.delete-company', companyRuc),
+        this.kafkaProxy.send(
+          this.companyKafkaClient,
+          'companies.delete-company',
+          companyRuc,
+        ),
       );
       this.logger.log(
         `Company deleted successfully: ${JSON.stringify(response)}`,
@@ -204,8 +222,10 @@ export class CompanyGatewayController {
         `Received request to verify if company exists with RUC: ${companyRuc}`,
       );
       const response = await sendKafkaRequest(
-        this.kafkaProxy.send(this.companyKafkaClient, 
-          'companies.verify-company-exists', companyRuc,
+        this.kafkaProxy.send(
+          this.companyKafkaClient,
+          'companies.verify-company-exists',
+          companyRuc,
         ),
       );
       this.logger.log(

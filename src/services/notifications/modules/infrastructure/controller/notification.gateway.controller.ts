@@ -1,17 +1,22 @@
 import {
+  Body,
   Controller,
   Get,
-  Patch,
-  Param,
-  Query,
   Inject,
   Logger,
+  Param,
   ParseUUIDPipe,
+  Patch,
+  Post,
+  Query,
+  Req,
 } from '@nestjs/common';
-import { ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
-import { ClientKafka } from '@nestjs/microservices';
+import { ApiBody, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ClientKafka, RpcException } from '@nestjs/microservices';
 import { KafkaProxyService } from '../../../../../shared/kafka/kafka-proxy.service';
 import { sendKafkaRequest } from '../../../../../shared/utils/kafka/send.kafka.request';
+import { ApiResponse } from '../../../../../shared/errors/responses/ApiResponse';
+import { SendNotificationRequest } from '../../domain/schemas/dto/request/send-notification.request';
 
 /**
  * NotificationGatewayController
@@ -105,5 +110,38 @@ export class NotificationGatewayController {
     return await sendKafkaRequest(
       this.kafkaProxy.send(this.kafkaClient, 'notifications.mark_all_as_read', userId),
     );
+  }
+
+  // ── Despacho de notificaciones ─────────────────────────────────────────────
+
+  @Post('send')
+  @ApiOperation({
+    summary: 'Enviar una notificación (público)',
+    description:
+      'Despacha una notificación a través de uno o varios canales (EMAIL, WHATSAPP, IN_APP, SMS, PUSH). ' +
+      'Para múltiples canales simultáneos separa con coma (ej: "EMAIL,WHATSAPP"). ' +
+      'El destinatario se pasa dentro de `metadata` (ej: { "to": "email@ejemplo.com" }).',
+  })
+  @ApiBody({ type: SendNotificationRequest })
+  async sendNotification(
+    @Req() request: Request,
+    @Body() body: SendNotificationRequest,
+  ): Promise<ApiResponse> {
+    try {
+      this.logger.log(
+        `[POST /notifications/send] userId: ${body.userId}, channel: ${body.channel ?? 'IN_APP'}, title: "${body.title}"`,
+      );
+      const response = await sendKafkaRequest(
+        this.kafkaProxy.send(this.kafkaClient, 'notifications.send', body),
+      );
+      this.logger.log(`[POST /notifications/send] dispatched — id(s): ${response}`);
+      return new ApiResponse(
+        'Notificación enviada correctamente',
+        { notificationIds: response },
+        request.url,
+      );
+    } catch (error) {
+      throw new RpcException(error as string | object);
+    }
   }
 }

@@ -27,6 +27,7 @@ import { CategoriesModule } from './services/security/modules/categories/infrast
 import { PermissionGatewayModule } from './services/security/modules/permissions/infrastructure/modules/permission.gateway.module';
 import { RolPermissionGatewayModule } from './services/security/modules/rol-permission/infrastructure/modules/rol-permission.gateway.module';
 import { UserGatewayModule } from './services/security/modules/users/infrastructure/modules/user.gateway.module';
+import { SecurityCustomerGatewayModule } from './services/security/modules/customer/infrastructure/modules/security-customer.gateway.module';
 import { AuditGatewayModule } from './services/security/modules/audit/infrastructure/modules/audit.gateway.module';
 import { UserEmployeeGatewayModule } from './services/security/modules/user-employee/infrastructure/modules/user-employee.gateway.module';
 import { AuthGatewayModule } from './services/security/modules/auth/infrastructure/modules/auth.gateway.module';
@@ -74,6 +75,7 @@ import { DocumentsFactoryModule } from './services/documents/factory/documents-f
     PermissionGatewayModule,
     RolPermissionGatewayModule,
     UserGatewayModule,
+    SecurityCustomerGatewayModule,
     AuditGatewayModule,
     UserEmployeeGatewayModule,
     AuthGatewayModule,

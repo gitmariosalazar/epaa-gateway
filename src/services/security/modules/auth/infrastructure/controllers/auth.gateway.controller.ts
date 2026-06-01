@@ -12,6 +12,7 @@ import { ClientKafka, RpcException } from '@nestjs/microservices';
 import { environments } from '../../../../../../settings/environments/environments';
 import { ApiOperation } from '@nestjs/swagger';
 import { AuthRequest } from '../../domain/schemas/dto/request/auth.request';
+import { ClientAuthRequest } from '../../domain/schemas/dto/request/client-auth.request';
 import { VerifyUserRequest } from '../../domain/schemas/dto/request/verify-user.request';
 import { ApiResponse } from '../../../../../../shared/errors/responses/ApiResponse';
 import { sendKafkaRequest } from '../../../../../../shared/utils/kafka/send.kafka.request';
@@ -20,6 +21,7 @@ import { VerifyUserResponse } from '../../domain/schemas/dto/response/verify-use
 import { Response, Request as ExpressRequest } from 'express';
 import { parseExpirationToSeconds } from '../../../../../../shared/utils/jwt/time.util';
 import { AuthGuard } from '../../../../../../auth/guard/auth.guard';
+import { AllowedUserTypes } from '../../../../../../auth/decorator/allowed-user-types.decorator';
 import { KafkaProxyService } from '../../../../../../shared/kafka/kafka-proxy.service';
 
 @Controller('auth')
@@ -88,6 +90,59 @@ export class AuthGatewayController {
     }
   }
 
+  @Post('client/signin')
+  @ApiOperation({
+    summary: 'Sign in client/customer',
+    description: 'Endpoint to sign in a customer/client',
+  })
+  async clientSignIn(
+    @Req() request: ExpressRequest,
+    @Body() payload: ClientAuthRequest,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<ApiResponse> {
+    try {
+      this.logger.log(`Signing in customer: ${payload.username_or_email}`);
+      const kafkaResponse: AuthResponse = await sendKafkaRequest(
+        this.kafkaProxy.send(
+          this.authKafkaClient,
+          'authentication.auth.client.signin',
+          payload,
+        ),
+      );
+
+      if (!kafkaResponse) {
+        throw new RpcException({
+          statusCode: 401,
+          message: 'Invalid credentials. Please try again!',
+        });
+      }
+
+      const isBrowser =
+        request.headers['user-agent']?.includes('Mozilla') ?? false;
+
+      if (isBrowser && kafkaResponse.accessToken) {
+        res.cookie('auth_token', kafkaResponse.accessToken, {
+          httpOnly: true,
+          secure: false, // environments.COOKIE_SECURE
+          sameSite: 'lax',
+          path: '/',
+          maxAge:
+            parseExpirationToSeconds(environments.JWT_ACCESS_EXPIRATION) * 1000,
+        });
+      }
+
+      return new ApiResponse(
+        'Sign In successfully!',
+        kafkaResponse,
+        request.url,
+      );
+    } catch (error) {
+      const err = error as Error;
+      this.logger.error(`Error signing in customer: ${err.message}`, err.stack);
+      throw new RpcException(err as string | object);
+    }
+  }
+
   @Post('signup')
   @ApiOperation({
     summary: 'Sign up user',
@@ -99,6 +154,7 @@ export class AuthGatewayController {
 
   @Post('signout')
   @UseGuards(AuthGuard)
+  @AllowedUserTypes('employee', 'customer')
   @ApiOperation({
     summary: 'Sign out user',
     description: 'Endpoint to sign out a user',

@@ -267,6 +267,36 @@ export class RequestGatewayController {
     }
   }
 
+  @Get(':clienteId/expedientes')
+  @ApiParam({ name: 'clienteId', type: String, required: true })
+  @ApiOperation({
+    summary: 'Expedientes de un cliente',
+    description:
+      'Retorna todos los expedientes asociados a un cliente específico.',
+  })
+  async getExpedientesByCliente(
+    @Param('clienteId') clienteId: string,
+    @Req() request: Request,
+  ): Promise<ApiResponse> {
+    try {
+      const response = await sendKafkaRequest(
+        this.kafkaProxy.send(
+          this.kafkaClient,
+          'requests.get_expedientes_by_cliente',
+          clienteId,
+        ),
+      );
+      return new ApiResponse(
+        'Expedientes obtenidos exitosamente',
+        response,
+        request.url,
+      );
+    } catch (error) {
+      const err = error instanceof RpcException ? error.getError() : error;
+      throw new RpcException(err as string | object);
+    }
+  }
+
   @Get(':solicitudId/historial')
   @ApiParam({ name: 'solicitudId', type: String, required: true })
   @ApiOperation({
@@ -441,6 +471,58 @@ export class RequestGatewayController {
       );
       return new ApiResponse(
         'Solicitud creada y enviada exitosamente',
+        response,
+        request.url,
+      );
+    } catch (error) {
+      const err = error instanceof RpcException ? error.getError() : error;
+      throw new RpcException(err as string | object);
+    }
+  }
+
+  // ── Tracking en tiempo real ────────────────────────────────────────────────
+
+  /**
+   * Retorna todas las solicitudes de un cliente enriquecidas con:
+   * - Fase actual del BPMN (currentStep, stepIndex 0-6)
+   * - Estado legible (estadoActualLabel)
+   * - Fecha formateada en español (fechaCreacion)
+   * - Métricas (diasEnProceso, documentos, pago, inspección, contrato, instalación)
+   * - Timeline completo (historial)
+   *
+   * Diseñado para alimentar directamente el wizard de seguimiento del frontend.
+   */
+  @Get(':clienteId/tracking')
+  @ApiParam({
+    name: 'clienteId',
+    type: String,
+    description: 'Cédula (10 dígitos) o RUC (13 dígitos) del cliente, o UUID del cliente_usuario',
+    example: '1234567890',
+  })
+  @ApiOperation({
+    summary: 'Tracking en tiempo real de solicitudes de un cliente',
+    description:
+      'Retorna el listado de todas las solicitudes del cliente enriquecidas con la fase actual del BPMN ' +
+      '(currentStep: solicitud | documentos | pago | inspeccion | contrato | instalacion | catastro | completado | anulada | rechazada), ' +
+      'stepIndex (0-6 para barra de progreso, -1 para estados terminales negativos), ' +
+      'métricas de tiempo, conteos de documentos, datos de pago, inspección, contrato, instalación y el ' +
+      'timeline completo de cambios de estado ordenado cronológicamente.',
+  })
+  async getTracking(
+    @Param('clienteId') clienteId: string,
+    @Req() request: Request,
+  ): Promise<ApiResponse> {
+    try {
+      this.logger.log(`[GET /requests/${clienteId}/tracking]`);
+      const response = await sendKafkaRequest(
+        this.kafkaProxy.send(
+          this.kafkaClient,
+          'requests.get_tracking',
+          clienteId,
+        ),
+      );
+      return new ApiResponse(
+        'Tracking de solicitudes obtenido exitosamente',
         response,
         request.url,
       );
