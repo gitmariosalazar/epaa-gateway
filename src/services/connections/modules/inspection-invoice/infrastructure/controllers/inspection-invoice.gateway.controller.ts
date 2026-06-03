@@ -227,6 +227,20 @@ export class InspectionInvoiceGatewayController {
   }
 
   @Put('update/:invoiceId')
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        paymentMethod: { type: 'string' },
+        paymentReference: { type: 'string' },
+        proofOfPayment: { type: 'string' },
+        collectorId: { type: 'string' },
+        file: { type: 'string', format: 'binary' },
+      },
+    },
+  })
   @ApiOperation({
     summary: 'Update an inspection invoice by ID',
     description:
@@ -234,20 +248,30 @@ export class InspectionInvoiceGatewayController {
   })
   async updateInspectionInvoice(
     @Param('invoiceId') invoiceId: string,
-    @Body() updateData: UpdateInspectionInvoiceRequest, // Replace with your actual DTO for updates
+    @Body() updateData: UpdateInspectionInvoiceRequest,
     @Req() request: Request,
+    @UploadedFile() file?: Express.Multer.File,
   ): Promise<ApiResponse> {
     try {
+      const payloadUpdateData: UpdateInspectionInvoiceRequest = {
+        ...updateData,
+        originalName: file?.originalname,
+        mimeType: file?.mimetype,
+        fileBase64: file
+          ? `data:${file.mimetype};base64,${file.buffer.toString('base64')}`
+          : undefined,
+      };
+
       this.logger.log(
         'Received request to update inspection invoice by ID: ' +
           invoiceId +
-          ' with data: ' +
-          JSON.stringify(updateData),
+          ' with file present: ' +
+          !!file,
       );
       const result = await sendKafkaRequest(
         this.kafkaProxy.send(this.kafkaClient, 'inspection-invoice.update', {
           invoiceId,
-          updateData,
+          updateData: payloadUpdateData,
         }),
       );
       this.logger.log(

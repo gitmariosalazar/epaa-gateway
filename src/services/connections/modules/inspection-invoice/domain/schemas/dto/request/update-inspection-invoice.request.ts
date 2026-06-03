@@ -71,4 +71,22 @@ export class UpdateInspectionInvoiceRequest {
     type: String,
   })
   collectorId?: UUID;
+
+  @ApiProperty({
+    description: 'The base64 representation of the proof of payment file',
+    type: String,
+  })
+  fileBase64?: string;
+
+  @ApiProperty({
+    description: 'The original name of the proof of payment file',
+    type: String,
+  })
+  originalName?: string;
+
+  @ApiProperty({
+    description: 'The mime type of the proof of payment file',
+    type: String,
+  })
+  mimeType?: string;
 }

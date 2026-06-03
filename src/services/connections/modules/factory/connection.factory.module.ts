@@ -11,6 +11,8 @@ import { PaymentConfirmationGatewayModule } from '../payment-confirmation/infras
 import { InspectionReportGatewayModule } from '../inspection-report/infrastructure/modules/inspection-report.gateway.module';
 import { ContractsGatewayModule } from '../contracts/infrastructure/modules/contracts.gateway.module';
 import { CadastralGatewayModule } from '../cadastral/infrastructure/modules/cadastral.gateway.module';
+import { InspectionOrderGatewayModule } from '../inspection-order/infrastructure/modules/inspection-order.gateway.module';
+import { InstallationOrderGatewayModule } from '../installation-order/infrastructure/modules/installation-order.gateway.module';
 
 @Module({
   imports: [
@@ -28,6 +30,9 @@ import { CadastralGatewayModule } from '../cadastral/infrastructure/modules/cada
     InspectionReportGatewayModule,
     ContractsGatewayModule,
     CadastralGatewayModule,
+    // Nuevos módulos del proceso BPMN (Fases 6-7, 12-13)
+    InspectionOrderGatewayModule,
+    InstallationOrderGatewayModule,
   ],
   controllers: [],
   providers: [],
