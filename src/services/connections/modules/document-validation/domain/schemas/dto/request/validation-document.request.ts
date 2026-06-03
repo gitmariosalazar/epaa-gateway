@@ -16,17 +16,18 @@ export class DocumentDecisionDto {
     description: 'UUID del documento a validar',
     type: String,
   })
-  @IsUUID()
+  @IsUUID('all')
   documentId!: string;
 
   @ApiProperty({
     example: 'APROBADO',
-    description: 'Resultado de la validación. RECHAZADO requiere observation.',
-    enum: ['APROBADO', 'RECHAZADO'],
+    description:
+      'Resultado de la validación. RECHAZADO requiere observation. PENDIENTE no aplica cambios.',
+    enum: ['APROBADO', 'RECHAZADO', 'PENDIENTE'],
     type: String,
   })
-  @IsEnum(['APROBADO', 'RECHAZADO'])
-  validationStatus!: 'APROBADO' | 'RECHAZADO';
+  @IsEnum(['APROBADO', 'RECHAZADO', 'PENDIENTE'])
+  validationStatus!: 'APROBADO' | 'RECHAZADO' | 'PENDIENTE';
 
   @ApiProperty({
     example: 'La cédula presenta inconsistencias en la fecha de expedición.',
@@ -68,7 +69,7 @@ export class ValidateDocumentsInnerDto {
     description: 'UUID del analista que realiza la validación',
     type: String,
   })
-  @IsUUID()
+  @IsString()
   validatorId!: string;
 }
 
@@ -79,7 +80,7 @@ export class ValidateDocumentsGatewayRequest {
     description: 'UUID de la solicitud cuyos documentos se están validando',
     type: String,
   })
-  @IsUUID()
+  @IsUUID('all')
   solicitudId!: string;
 
   @ApiProperty({

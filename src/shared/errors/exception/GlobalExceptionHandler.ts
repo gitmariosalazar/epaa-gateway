@@ -3,6 +3,7 @@ import {
   RpcExceptionFilter,
   ArgumentsHost,
   Logger,
+  HttpException,
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { RpcException } from '@nestjs/microservices';
@@ -12,6 +13,22 @@ import { statusCode } from '../../../settings/environments/status-code';
 @Catch() // Captura todos los errores, no solo RpcException
 export class RpcCustomExceptionFilter implements RpcExceptionFilter {
   private readonly logger = new Logger(RpcCustomExceptionFilter.name);
+
+  private toMessageArray(message: unknown): string[] {
+    if (Array.isArray(message)) {
+      return message.map((item) => String(item));
+    }
+
+    if (typeof message === 'string') {
+      return [message];
+    }
+
+    if (message !== null && message !== undefined) {
+      return [String(message)];
+    }
+
+    return ['An unknown error occurred'];
+  }
 
   catch(exception: any, host: ArgumentsHost): Observable<any> {
     const ctx = host.switchToRpc();
@@ -64,6 +81,20 @@ export class RpcCustomExceptionFilter implements RpcExceptionFilter {
       } else if (typeof errorResponse === 'string') {
         message = [errorResponse];
         statusCodeValue = statusCode.INTERNAL_SERVER_ERROR;
+      }
+    } else if (exception instanceof HttpException) {
+      // Mantener status HTTP original (p.ej. BadRequestException -> 400)
+      statusCodeValue = exception.getStatus();
+      const responseBody = exception.getResponse() as
+        | string
+        | { message?: string | string[] };
+
+      if (typeof responseBody === 'string') {
+        message = [responseBody];
+      } else {
+        message = this.toMessageArray(
+          responseBody?.message ?? exception.message,
+        );
       }
     } else {
       // Manejar otros tipos de errores (no RpcException)

@@ -297,6 +297,36 @@ export class RequestGatewayController {
     }
   }
 
+  @Get(':analistaId/expedientes-internal-user')
+  @ApiParam({ name: 'analistaId', type: String, required: true })
+  @ApiOperation({
+    summary: 'Expedientes de un analista',
+    description:
+      'Retorna todos los expedientes asociados a un analista específico.',
+  })
+  async getExpedientesByAnalista(
+    @Param('analistaId') analistaId: string,
+    @Req() request: Request,
+  ): Promise<ApiResponse> {
+    try {
+      const response = await sendKafkaRequest(
+        this.kafkaProxy.send(
+          this.kafkaClient,
+          'requests.get_expedientes_by_analista',
+          analistaId,
+        ),
+      );
+      return new ApiResponse(
+        'Expedientes obtenidos exitosamente',
+        response,
+        request.url,
+      );
+    } catch (error) {
+      const err = error instanceof RpcException ? error.getError() : error;
+      throw new RpcException(err as string | object);
+    }
+  }
+
   @Get(':solicitudId/historial')
   @ApiParam({ name: 'solicitudId', type: String, required: true })
   @ApiOperation({
@@ -496,7 +526,8 @@ export class RequestGatewayController {
   @ApiParam({
     name: 'clienteId',
     type: String,
-    description: 'Cédula (10 dígitos) o RUC (13 dígitos) del cliente, o UUID del cliente_usuario',
+    description:
+      'Cédula (10 dígitos) o RUC (13 dígitos) del cliente, o UUID del cliente_usuario',
     example: '1234567890',
   })
   @ApiOperation({
@@ -523,6 +554,119 @@ export class RequestGatewayController {
       );
       return new ApiResponse(
         'Tracking de solicitudes obtenido exitosamente',
+        response,
+        request.url,
+      );
+    } catch (error) {
+      const err = error instanceof RpcException ? error.getError() : error;
+      throw new RpcException(err as string | object);
+    }
+  }
+
+  @Get(':analistaId/tracking-internal-user')
+  @ApiParam({
+    name: 'analistaId',
+    type: String,
+    description: 'UUID del analista (usuario interno)',
+    example: '550e8400-e29b-41d4-a716-446655440000',
+  })
+  @ApiOperation({
+    summary: 'Tracking en tiempo real de solicitudes asignadas a un analista',
+    description:
+      'Retorna el listado de todas las solicitudes asignadas a un analista específico, enriquecidas con la fase actual del BPMN, estado legible, métricas y timeline completo.',
+  })
+  async getTrackingByAnalista(
+    @Param('analistaId') analistaId: string,
+    @Req() request: Request,
+  ): Promise<ApiResponse> {
+    try {
+      this.logger.log(`[GET /requests/${analistaId}/tracking-internal-user]`);
+      const response = await sendKafkaRequest(
+        this.kafkaProxy.send(
+          this.kafkaClient,
+          'requests.get_tracking_by_analista_id',
+          analistaId,
+        ),
+      );
+      return new ApiResponse(
+        'Tracking de solicitudes para analista obtenido exitosamente',
+        response,
+        request.url,
+      );
+    } catch (error) {
+      const err = error instanceof RpcException ? error.getError() : error;
+      throw new RpcException(err as string | object);
+    }
+  }
+
+  @Get(':solicitudId/tracking-by-solicitud-id')
+  @ApiParam({
+    name: 'solicitudId',
+    type: String,
+    description: 'UUID de la solicitud',
+    example: '550e8400-e29b-41d4-a716-446655440000',
+  })
+  @ApiOperation({
+    summary: 'Tracking detallado de una solicitud por ID',
+    description:
+      'Retorna el tracking detallado de una solicitud específica identificada por su UUID, enriquecida con la fase actual del BPMN, estado legible, métricas y timeline completo.',
+  })
+  async getTrackingBySolicitud(
+    @Param('solicitudId') solicitudId: string,
+    @Req() request: Request,
+  ): Promise<ApiResponse> {
+    try {
+      this.logger.log(
+        `[GET /requests/${solicitudId}/tracking-by-solicitud-id]`,
+      );
+      const response = await sendKafkaRequest(
+        this.kafkaProxy.send(
+          this.kafkaClient,
+          'requests.get_tracking_by_solicitud_id',
+          solicitudId,
+        ),
+      );
+      return new ApiResponse(
+        'Tracking de solicitud obtenido exitosamente',
+        response,
+        request.url,
+      );
+    } catch (error) {
+      const err = error instanceof RpcException ? error.getError() : error;
+      throw new RpcException(err as string | object);
+    }
+  }
+
+  @Get(':requestNumberOrId/detail-by-id-or-number')
+  @ApiParam({
+    name: 'requestNumberOrId',
+    type: String,
+    description:
+      'Número de solicitud (ej: SOL-2023-0001) o UUID de la solicitud (ej: 550e8400-e29b-41d4-a716-446655440000)',
+    example: 'SOL-2023-0001',
+  })
+  @ApiOperation({
+    summary: 'Detalle de solicitud por número o ID para cliente',
+    description:
+      'Retorna el detalle completo de una solicitud identificada por su número o UUID, incluyendo información general, estado actual, documentos asociados, datos de pago, inspección, contrato e instalación. Diseñado para la vista de detalle del cliente en el frontend.',
+  })
+  async getRequestDetailByRequestIdOrNumber(
+    @Param('requestNumberOrId') requestNumberOrId: string,
+    @Req() request: Request,
+  ): Promise<ApiResponse> {
+    try {
+      this.logger.log(
+        `[GET /requests/${requestNumberOrId}/detail-by-id-or-number]`,
+      );
+      const response = await sendKafkaRequest(
+        this.kafkaProxy.send(
+          this.kafkaClient,
+          'requests.get_request_detail_by_request_id_or_number',
+          requestNumberOrId,
+        ),
+      );
+      return new ApiResponse(
+        'Detalle de solicitud obtenido exitosamente',
         response,
         request.url,
       );
