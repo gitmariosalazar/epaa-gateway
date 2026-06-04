@@ -1,5 +1,6 @@
 import * as dotenv from 'dotenv';
 import * as Joi from 'joi';
+import { basename, dirname } from 'path';
 
 dotenv.config({
   path:
@@ -143,6 +144,8 @@ interface EnvironmentVariables {
   GATEWAY_DOCUMENTS_KAFKA_CLIENT_ID: string;
   GATEWAY_DOCUMENTS_KAFKA_GROUP_ID: string;
   CONNECTION_DOCUMENTS_UPLOAD_DIR: string;
+  CONNECTION_DOCUMENTS_UPLOAD_ROOT: string;
+  CONNECTION_DOCUMENTS_PUBLIC_PREFIX: string;
 
   JWT_SECRET: string;
   JWT_ACCESS_TOKEN_SECRET: string;
@@ -288,7 +291,9 @@ const envVarsSchema: Joi.ObjectSchema<EnvironmentVariables> = Joi.object({
   GATEWAY_DOCUMENTS_KAFKA_CLIENT: Joi.string().required(),
   GATEWAY_DOCUMENTS_KAFKA_CLIENT_ID: Joi.string().required(),
   GATEWAY_DOCUMENTS_KAFKA_GROUP_ID: Joi.string().required(),
-  CONNECTION_DOCUMENTS_UPLOAD_DIR: Joi.string().optional().default('/home/sigepaa/sigepaa/documents/connection-documents'),
+  CONNECTION_DOCUMENTS_UPLOAD_DIR: Joi.string()
+    .optional()
+    .default('/home/sigepaa/sigepaa/documents/connection-documents'),
 
   JWT_SECRET: Joi.string().required(),
   JWT_ACCESS_TOKEN_SECRET: Joi.string().optional(),
@@ -302,6 +307,9 @@ const { error, value: envVars } = envVarsSchema.validate(process.env);
 if (error) {
   throw new Error(`Config validation error: ${error.message}`);
 }
+
+const connectionDocumentsUploadDir = envVars.CONNECTION_DOCUMENTS_UPLOAD_DIR;
+const connectionDocumentsDirectoryName = basename(connectionDocumentsUploadDir);
 
 export const environments = {
   NODE_ENV: envVars.NODE_ENV,
@@ -529,7 +537,9 @@ export const environments = {
   GATEWAY_DOCUMENTS_KAFKA_CLIENT: envVars.GATEWAY_DOCUMENTS_KAFKA_CLIENT,
   GATEWAY_DOCUMENTS_KAFKA_CLIENT_ID: envVars.GATEWAY_DOCUMENTS_KAFKA_CLIENT_ID,
   GATEWAY_DOCUMENTS_KAFKA_GROUP_ID: envVars.GATEWAY_DOCUMENTS_KAFKA_GROUP_ID,
-  CONNECTION_DOCUMENTS_UPLOAD_DIR: envVars.CONNECTION_DOCUMENTS_UPLOAD_DIR,
+  CONNECTION_DOCUMENTS_UPLOAD_DIR: connectionDocumentsUploadDir,
+  CONNECTION_DOCUMENTS_UPLOAD_ROOT: dirname(connectionDocumentsUploadDir),
+  CONNECTION_DOCUMENTS_PUBLIC_PREFIX: `/uploads/${connectionDocumentsDirectoryName}`,
 
   // JWT & Storage
   JWT_SECRET: envVars.JWT_SECRET,

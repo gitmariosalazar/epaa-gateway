@@ -9,7 +9,7 @@ import * as path from 'path';
   imports: [
     KafkaDocumentsModule,
     ServeStaticModule.forRoot({
-      rootPath: path.dirname(environments.CONNECTION_DOCUMENTS_UPLOAD_DIR),
+      rootPath: environments.CONNECTION_DOCUMENTS_UPLOAD_ROOT,
       serveRoot: '/uploads',
       serveStaticOptions: { index: false, redirect: false },
     }),
