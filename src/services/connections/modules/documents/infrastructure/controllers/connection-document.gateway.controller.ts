@@ -12,6 +12,8 @@ import {
   Delete,
   UploadedFile,
   UseInterceptors,
+  UseGuards,
+  Res,
 } from '@nestjs/common';
 import { ApiBody, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { environments } from '../../../../../../settings/environments/environments';
@@ -22,6 +24,25 @@ import { KafkaProxyService } from '../../../../../../shared/kafka/kafka-proxy.se
 import { CreateConnectionDocumentRequest } from '../../domain/dto/request/create-connection-document.request';
 import { UpdateConnectionDocumentRequest } from '../../domain/dto/request/update-connection-document.request';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { AuthGuard } from '../../../../../../auth/guard/auth.guard';
+import { AllowedUserTypes } from '../../../../../../auth/decorator/allowed-user-types.decorator';
+import { createReadStream } from 'fs';
+import { access } from 'fs/promises';
+import { constants as fsConstants } from 'fs';
+import { basename, join } from 'path';
+import { Response } from 'express';
+import { statusCode } from '../../../../../../settings/environments/status-code';
+
+interface ConnectionDocumentLookup {
+  requestId: string;
+  fileUrl: string;
+  mimeType?: string;
+  originalName?: string;
+}
+
+interface RequestOwnershipLookup {
+  clientId?: string;
+}
 
 @Controller('connection-documents')
 @ApiTags('connection-documents')
@@ -29,6 +50,9 @@ export class ConnectionDocumentGatewayController {
   private readonly logger: Logger = new Logger(
     ConnectionDocumentGatewayController.name,
   );
+  private readonly uploadDir =
+    environments.CONNECTION_DOCUMENTS_UPLOAD_DIR ||
+    '/home/sigepaa/sigepaa/documents/connection-documents';
 
   constructor(
     @Inject(environments.CONNECTION_KAFKA_CLIENT)
@@ -185,6 +209,158 @@ export class ConnectionDocumentGatewayController {
       const err = error instanceof RpcException ? error.getError() : error;
       throw new RpcException(err as string | object);
     }
+  }
+
+  @Get(':documentId/preview')
+  @UseGuards(AuthGuard)
+  @AllowedUserTypes('employee', 'customer')
+  @ApiOperation({
+    summary: 'Open a connection document securely',
+    description:
+      'Returns the physical file inline for authenticated users. Customer users can only access documents from their own request.',
+  })
+  async downloadConnectionDocument(
+    @Param('documentId') documentId: string,
+    @Req() request: Request,
+    @Res() response: Response,
+  ): Promise<void> {
+    await this.streamConnectionDocument(
+      documentId,
+      request,
+      response,
+      'inline',
+    );
+  }
+
+  @Get(':documentId/download-file')
+  @UseGuards(AuthGuard)
+  @AllowedUserTypes('employee', 'customer')
+  @ApiOperation({
+    summary: 'Download a connection document securely',
+    description:
+      'Returns the physical file as attachment for authenticated users. Customer users can only download documents from their own request.',
+  })
+  async downloadConnectionDocumentAsAttachment(
+    @Param('documentId') documentId: string,
+    @Req() request: Request,
+    @Res() response: Response,
+  ): Promise<void> {
+    await this.streamConnectionDocument(
+      documentId,
+      request,
+      response,
+      'attachment',
+    );
+  }
+
+  private async streamConnectionDocument(
+    documentId: string,
+    request: Request,
+    response: Response,
+    contentDispositionType: 'inline' | 'attachment',
+  ): Promise<void> {
+    try {
+      const authUser = (request as any)['user'] ?? {};
+      const userId = authUser?.cliente_id ?? authUser?.sub ?? authUser?.userId;
+      const userType = authUser?.user_type ?? 'employee';
+
+      const document = await sendKafkaRequest<ConnectionDocumentLookup>(
+        this.kafkaProxy.send(
+          this.kafkaClient,
+          'connection-documents.get_by_id',
+          documentId,
+        ),
+      );
+
+      const requestData = await sendKafkaRequest<RequestOwnershipLookup>(
+        this.kafkaProxy.send(
+          this.kafkaClient,
+          'requests.get_request_by_id',
+          document.requestId,
+        ),
+      );
+
+      if (
+        userType === 'customer' &&
+        String(requestData?.clientId ?? '') !== String(userId ?? '')
+      ) {
+        throw new RpcException({
+          statusCode: statusCode.FORBIDDEN,
+          message: 'You do not have permission to access this document',
+        });
+      }
+
+      const fileName = this.extractSafeFileName(document.fileUrl);
+      const absolutePath = join(this.uploadDir, fileName);
+
+      await access(absolutePath, fsConstants.R_OK);
+
+      response.setHeader(
+        'Content-Type',
+        document.mimeType || 'application/octet-stream',
+      );
+      response.setHeader(
+        'Content-Disposition',
+        `${contentDispositionType}; filename="${basename(document.originalName || fileName)}"`,
+      );
+      response.setHeader(
+        'Cache-Control',
+        'no-store, no-cache, must-revalidate, private',
+      );
+      response.setHeader('Pragma', 'no-cache');
+      response.setHeader('X-Content-Type-Options', 'nosniff');
+
+      const stream = createReadStream(absolutePath);
+      stream.on('error', () => {
+        if (!response.headersSent) {
+          response.status(statusCode.INTERNAL_SERVER_ERROR).json({
+            statusCode: statusCode.INTERNAL_SERVER_ERROR,
+            message: 'Error streaming document',
+          });
+        } else {
+          response.end();
+        }
+      });
+
+      stream.pipe(response);
+    } catch (error) {
+      if (!response.headersSent) {
+        const rpcError =
+          error instanceof RpcException ? error.getError() : null;
+        const payload =
+          rpcError && typeof rpcError === 'object'
+            ? (rpcError as any)
+            : {
+                statusCode: statusCode.INTERNAL_SERVER_ERROR,
+                message: 'Error downloading document',
+              };
+
+        response
+          .status(payload.statusCode || statusCode.INTERNAL_SERVER_ERROR)
+          .json(payload);
+      }
+    }
+  }
+
+  private extractSafeFileName(fileUrl: string): string {
+    if (!fileUrl || typeof fileUrl !== 'string') {
+      throw new RpcException({
+        statusCode: statusCode.BAD_REQUEST,
+        message: 'Invalid document file URL',
+      });
+    }
+
+    const normalizedUrl = fileUrl.split('?')[0].split('#')[0];
+    const fileName = basename(normalizedUrl);
+
+    if (!fileName || fileName === '.' || fileName === '..') {
+      throw new RpcException({
+        statusCode: statusCode.BAD_REQUEST,
+        message: 'Invalid document filename',
+      });
+    }
+
+    return fileName;
   }
 
   @Get()
