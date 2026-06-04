@@ -25,6 +25,8 @@ export class KafkaProxyService {
     companies: 'companies_topic',
     connections: 'connection_topic',
     requests: 'connection_topic',
+    inspection_order: 'connection_topic',
+    installation_order: 'connection_topic',
     'connection-documents': 'connection_topic',
     'inspection-invoice': 'connection_topic',
     rates: 'connection_topic',

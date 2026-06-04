@@ -562,6 +562,7 @@ export class UserEmployeeGatewayController {
     }
   }
 
+
   @Get('find-all-employees')
   @ApiOperation({
     summary: 'Get all employees',
@@ -574,19 +575,154 @@ export class UserEmployeeGatewayController {
   ): Promise<ApiResponse> {
     try {
       const response: UserEmployeeResponse[] = await sendKafkaRequest(
-        this.kafkaProxy.send(this.clientKafka, 
+        this.kafkaProxy.send(this.clientKafka,
           'authentication.user-employee.find_all_employees', { limit, offset },
         ),
       );
-
       return new ApiResponse('All employees retrieved', response, request.url);
     } catch (error) {
       const err = error as Error;
-      this.logger.error(
-        `Error retrieving all employees: ${err.message}`,
-        err.stack,
-      );
+      this.logger.error(`Error retrieving all employees: ${err.message}`, err.stack);
       throw new RpcException(err as string | object);
+    }
+  }
+
+  // =============================================
+  // Endpoints para selección de técnicos / analistas
+  // Utilizados por los modales de órdenes de trabajo
+  // =============================================
+
+  /**
+   * GET /user-employee-gateway/find-by-role-name?roleName=ANALISTA
+   * Obtiene empleados activos filtrando por nombre de rol.
+   * Usado por los modales de emisión de OT para cargar el dropdown de técnicos.
+   */
+  @Get('find-by-role-name')
+  @ApiOperation({
+    summary: 'Get active employees by role name',
+    description:
+      'Retrieves all active employees that have the given role name assigned. ' +
+      'Used by work-order modals to populate technician/analyst dropdowns. ' +
+      'Example role names: ANALISTA, TECNICO, INSPECTOR, OPERADOR.',
+  })
+  async findByRoleName(
+    @Query('roleName') roleName: string,
+    @Req() request: Request,
+  ): Promise<ApiResponse> {
+    try {
+      if (!roleName || roleName.trim() === '') {
+        throw new RpcException({
+          statusCode: statusCode.BAD_REQUEST,
+          message: 'El parámetro roleName es requerido y no puede estar vacío.',
+        });
+      }
+      const response: UserEmployeeResponse[] = await sendKafkaRequest(
+        this.kafkaProxy.send(
+          this.clientKafka,
+          'authentication.user-employee.find_by_role_name',
+          roleName.trim().toUpperCase(),
+        ),
+      );
+      return new ApiResponse(
+        `Employees with role '${roleName}' retrieved successfully`,
+        response,
+        request.url,
+      );
+    } catch (error) {
+      const err = error as Error;
+      this.logger.error(`Error retrieving employees by role name: ${err.message}`, err.stack);
+      throw new RpcException(err as string | object);
+    }
+  }
+
+  /**
+   * GET /user-employee-gateway/find-active-by-role/:roleId
+   * Obtiene empleados activos filtrando por ID de rol.
+   */
+  @Get('find-active-by-role/:roleId')
+  @ApiOperation({
+    summary: 'Get active employees by role ID',
+    description: 'Retrieves all active employees that have the specified role ID assigned.',
+  })
+  async findActiveByRoleId(
+    @Param('roleId', ParseIntPipe) roleId: number,
+    @Req() request: Request,
+  ): Promise<ApiResponse> {
+    try {
+      const response: UserEmployeeResponse[] = await sendKafkaRequest(
+        this.kafkaProxy.send(
+          this.clientKafka,
+          'authentication.user-employee.find_active_by_role_id',
+          roleId,
+        ),
+      );
+      return new ApiResponse(
+        `Active employees with role ID ${roleId} retrieved`,
+        response,
+        request.url,
+      );
+    } catch (error) {
+      const err = error as Error;
+      this.logger.error(`Error retrieving active employees by role ID: ${err.message}`, err.stack);
+      throw new RpcException(err as string | object);
+    }
+  }
+
+  /**
+   * GET /user-employee-gateway/find-technicians?type=ALL
+   * Endpoint de conveniencia para poblar el selector de técnicos en los modales
+   * de emisión de órdenes de trabajo (inspección e instalación).
+   * Incluye fallback automático a find_all_active si el topic específico no existe.
+   */
+  @Get('find-technicians')
+  @ApiOperation({
+    summary: 'Get technicians for work order assignment',
+    description:
+      'Convenience endpoint used by the EmitInspectionOrderModal and ' +
+      'EmitInstallationOrderModal to populate the technician selector. ' +
+      'Returns all active employees. Optionally filter by type: ' +
+      'INSPECTOR, INSTALADOR, or ALL (default). ' +
+      'Falls back to find_all_active if the specific Kafka topic is not available.',
+  })
+  async findTechnicians(
+    @Query('type') type: string,
+    @Req() request: Request,
+  ): Promise<ApiResponse> {
+    const resolvedType = (type ?? 'ALL').toUpperCase();
+    try {
+      const response: UserEmployeeResponse[] = await sendKafkaRequest(
+        this.kafkaProxy.send(
+          this.clientKafka,
+          'authentication.user-employee.find_technicians',
+          { type: resolvedType },
+        ),
+      );
+      return new ApiResponse('Technicians retrieved successfully', response, request.url);
+    } catch (primaryError) {
+      // Fallback seguro: si el microservicio aún no implementa find_technicians,
+      // devolvemos todos los empleados activos para no romper el frontend.
+      this.logger.warn(
+        `find_technicians Kafka topic not available, falling back to find_all_active. ` +
+        `Reason: ${(primaryError as Error).message}`,
+      );
+      try {
+        const fallback: UserEmployeeResponse[] = await sendKafkaRequest(
+          this.kafkaProxy.send(
+            this.clientKafka,
+            'authentication.user-employee.find_all_active',
+            {},
+          ),
+        );
+        return new ApiResponse(
+          'Technicians retrieved (fallback: all active employees)',
+          fallback,
+          request.url,
+        );
+      } catch (fallbackError) {
+        const err = fallbackError as Error;
+        this.logger.error(`Fallback also failed: ${err.message}`, err.stack);
+        throw new RpcException(err as string | object);
+      }
     }
   }
 }

@@ -1,4 +1,12 @@
-import { Body, Controller, Inject, Logger, Patch, Post, Req } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Inject,
+  Logger,
+  Patch,
+  Post,
+  Req,
+} from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ClientKafka, RpcException } from '@nestjs/microservices';
 import { environments } from '../../../../../../settings/environments/environments';
@@ -7,19 +15,19 @@ import { sendKafkaRequest } from '../../../../../../shared/utils/kafka/send.kafk
 import { KafkaProxyService } from '../../../../../../shared/kafka/kafka-proxy.service';
 
 class IssueInspectionOrderGatewayRequest {
-  solicitudId: string;
-  technicianId: string | null;
-  description: string;
-  priorityId: number;
-  scheduledDate: string | null;
-  creatorId: string;
+  solicitudId!: string;
+  technicianId!: string | null;
+  description!: string;
+  priorityId!: number;
+  scheduledDate!: string | null;
+  creatorId!: string;
 }
 
 class StartInspectionGatewayRequest {
-  workOrderId: string;
-  technicianId: string;
+  workOrderId!: string;
+  technicianId!: string;
   /** ID del estado "EN_PROCESO" en work_orders.estado_orden_trabajo */
-  startStatusId: number;
+  startStatusId!: number;
 }
 
 @Controller('inspection-order')
@@ -49,11 +57,18 @@ export class InspectionOrderGatewayController {
     @Req() request: Request,
   ): Promise<ApiResponse> {
     try {
-      this.logger.log(`Issuing inspection order for solicitud: ${body.solicitudId}`);
+      this.logger.log(
+        `Issuing inspection order for solicitud: ${body.solicitudId}`,
+      );
       const result = await sendKafkaRequest(
         this.kafkaProxy.send(this.kafkaClient, 'inspection_order.issue', body),
       );
-      return new ApiResponse('Orden de inspección emitida exitosamente', result, request.url, 201);
+      return new ApiResponse(
+        'Orden de inspección emitida exitosamente',
+        result,
+        request.url,
+        201,
+      );
     } catch (error) {
       const err = error instanceof RpcException ? error.getError() : error;
       throw new RpcException(err as string | object);
@@ -80,7 +95,12 @@ export class InspectionOrderGatewayController {
       const result = await sendKafkaRequest(
         this.kafkaProxy.send(this.kafkaClient, 'inspection_order.start', body),
       );
-      return new ApiResponse('Inspección iniciada exitosamente', result, request.url, 200);
+      return new ApiResponse(
+        'Inspección iniciada exitosamente',
+        result,
+        request.url,
+        200,
+      );
     } catch (error) {
       const err = error instanceof RpcException ? error.getError() : error;
       throw new RpcException(err as string | object);
