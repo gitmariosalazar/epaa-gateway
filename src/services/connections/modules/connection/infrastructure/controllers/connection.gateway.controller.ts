@@ -69,6 +69,33 @@ export class ConnectionGatewayController {
     }
   }
 
+  @Get('live-update-map-connections')
+  @ApiOperation({
+    summary: 'Method GET - Get live update map connections',
+    description: 'Retrieves live update map connections',
+  })
+  async getLiveUpdateMapConnections(
+    @Req() request: Request,
+  ): Promise<ApiResponse> {
+    try {
+      this.logger.log(`Received request to get live update map connections`);
+      const response: any = await sendKafkaRequest(
+        this.kafkaProxy.send(
+          this.connectionKafkaClient,
+          'connections.get-live-update-map-connections',
+          {},
+        ),
+      );
+      return new ApiResponse(
+        `Live update map connections retrieved successfully!`,
+        response,
+        request.url,
+      );
+    } catch (error) {
+      throw new RpcException(error as string | object);
+    }
+  }
+
   @Post('create-connection')
   @ApiOperation({
     summary: 'Method POST - Create a new connection',
