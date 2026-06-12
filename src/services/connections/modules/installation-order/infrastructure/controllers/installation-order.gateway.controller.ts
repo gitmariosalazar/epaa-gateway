@@ -54,7 +54,7 @@ export class InstallationOrderGatewayController {
   @ApiOperation({
     summary: 'Fase 12: Emitir OT de instalación de acometida',
     description:
-      'El analista genera la orden de trabajo de instalación física y la asigna a la cuadrilla técnica. Transiciona a OT_INSTALACION_EMITIDA.',
+      'El analista genera la orden de trabajo de instalación física y la y asigna al técnico responsable. Transiciona a OT_INSTALACION_EMITIDA.',
   })
   async issueOrder(
     @Body() body: IssueInstallationOrderGatewayRequest,
@@ -80,7 +80,7 @@ export class InstallationOrderGatewayController {
   @Patch('ordenes/iniciar')
   @ApiOperation({
     summary: 'Fase 13a: Iniciar instalación en campo',
-    description: 'La cuadrilla confirma el inicio de la instalación física. Transiciona a INSTALACION_EN_PROCESO.',
+    description: 'El técnico confirma el inicio de la instalación física. Transiciona a INSTALACION_EN_PROCESO.',
   })
   async startInstallation(
     @Body() body: StartInstallationGatewayRequest,
@@ -107,7 +107,7 @@ export class InstallationOrderGatewayController {
   @ApiOperation({
     summary: 'Fase 13b: Confirmar instalación completada',
     description:
-      'La cuadrilla confirma la instalación exitosa. Transiciona a INSTALACION_COMPLETADA y automáticamente a REGISTRO_CATASTRAL_PENDIENTE.',
+      'El técnico confirma la instalación exitosa. Transiciona a INSTALACION_COMPLETADA y automáticamente a REGISTRO_CATASTRAL_PENDIENTE.',
   })
   async completeInstallation(
     @Body() body: CompleteInstallationGatewayRequest,
@@ -139,7 +139,7 @@ export class InstallationOrderGatewayController {
   @ApiOperation({
     summary: 'Fase 13c: Registrar instalación fallida',
     description:
-      'La cuadrilla reporta una falla en la instalación. Transiciona a INSTALACION_FALLIDA. La OT puede re-emitirse.',
+      'El técnico reporta una falla en la instalación. Transiciona a INSTALACION_FALLIDA. La OT puede re-emitirse.',
   })
   async failInstallation(
     @Body() body: FailInstallationGatewayRequest,

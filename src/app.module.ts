@@ -17,6 +17,7 @@ import { WorkTypeGatewayModule } from './services/work-orders/modules/work-order
 import { WorkOrderGatewayModule } from './services/work-orders/modules/work-order/infrastructure/modules/work-order.gateway.module';
 import { WorkOrderHistoryGatewayModule } from './services/work-orders/modules/work-order-history/infrastructure/modules/work-order-history.gateway.module';
 import { WorkOrderObservationGatewayModule } from './services/work-orders/modules/work-order-observation/infrastructure/modules/work-order-observation.gateway.module';
+import { ProcessWorkOrderGatewayModule } from './services/work-orders/modules/process-work-order/infrastructure/modules/process-work-order.gateway.module';
 import { InventoryGatewayModule } from './services/sigame-legacy/modules/inventory/modules/inventory.gateway.module';
 import { WorkerGatewayModule } from './services/workers/modules/workers/infrastructure/modules/worker.gateway.module';
 import { DetailWorkOrderMaterialGatewayModule } from './services/work-orders/modules/product-details/infrastructure/modules/detail-work-order-material.gateway.module';
@@ -63,6 +64,7 @@ import { DocumentsFactoryModule } from './services/documents/factory/documents-f
     PhotoConnectionGatewayModule,
     WorkTypeGatewayModule,
     WorkOrderGatewayModule,
+    ProcessWorkOrderGatewayModule,
     WorkOrderObservationGatewayModule,
     WorkOrderHistoryGatewayModule,
     InventoryGatewayModule,

@@ -7,18 +7,18 @@ import { sendKafkaRequest } from '../../../../../../shared/utils/kafka/send.kafk
 import { KafkaProxyService } from '../../../../../../shared/kafka/kafka-proxy.service';
 
 class RegisterCadastralGatewayRequest {
-  solicitudId: string;
+  solicitudId!: string;
   contractId?: string;
-  cadastralKey: string;
-  meterNumber: string;
-  exactAddress: string;
-  longitude: number;
-  latitude: number;
+  cadastralKey!: string;
+  meterNumber!: string;
+  exactAddress!: string;
+  longitude!: number;
+  latitude!: number;
   connectionDiameter?: string;
   serviceType?: string;
-  installationDate: string;
-  accountNumber: string;
-  registratorId: string;
+  installationDate!: string;
+  accountNumber!: string;
+  registratorId!: string;
 }
 
 @Controller('cadastral')
@@ -47,9 +47,15 @@ export class CadastralGatewayController {
     @Req() request: Request,
   ): Promise<ApiResponse> {
     try {
-      this.logger.log(`Registering catastral for solicitud: ${body.solicitudId}`);
+      this.logger.log(
+        `Registering catastral for solicitud: ${body.solicitudId}`,
+      );
       const result = await sendKafkaRequest(
-        this.kafkaProxy.send(this.kafkaClient, 'cadastral.register_and_activate', body),
+        this.kafkaProxy.send(
+          this.kafkaClient,
+          'cadastral.register_and_activate',
+          body,
+        ),
       );
       return new ApiResponse(
         'Suministro activado y predio registrado en catastro exitosamente',

@@ -8,14 +8,16 @@ import { ApiProperty } from '@nestjs/swagger';
 export class SubmitWithDocumentsRequest {
   @ApiProperty({
     example: '1003938477',
-    description: 'Cédula/RUC del cliente (id_cliente en acometidas.solicitud — varchar 13)',
+    description:
+      'Cédula/RUC del cliente (id_cliente en acometidas.solicitud — varchar 13)',
     type: String,
   })
   clientId!: string;
 
   @ApiProperty({
     example: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
-    description: 'UUID del usuario autenticado (para auditoría en fn_cambiar_estado_solicitud)',
+    description:
+      'UUID del usuario autenticado (para auditoría en fn_cambiar_estado_solicitud)',
     type: String,
     format: 'uuid',
   })
@@ -91,15 +93,10 @@ export class SubmitWithDocumentsRequest {
   documentTypeIds!: string;
 
   @ApiProperty({
-    description: 'Archivos a adjuntar (uno o más). Mismo orden que documentTypeIds.',
+    description:
+      'Archivos a adjuntar (uno o más). Mismo orden que documentTypeIds.',
     type: 'array',
     items: { type: 'string', format: 'binary' },
   })
   files!: any[];
-}
-
-export interface SubmitWithDocumentsResponse {
-  solicitudId: string;
-  estado: string;
-  documentosInsertados: number;
 }

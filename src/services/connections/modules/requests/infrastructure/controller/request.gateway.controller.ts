@@ -17,6 +17,7 @@ import {
 import {
   ApiBody,
   ApiConsumes,
+  ApiOkResponse,
   ApiOperation,
   ApiParam,
   ApiQuery,
@@ -32,6 +33,7 @@ import { KafkaProxyService } from '../../../../../../shared/kafka/kafka-proxy.se
 import { UpdateRequestRequest } from '../../domain/schemas/dto/request/update-request.request';
 import { SubmitWithDocumentsRequest } from '../../domain/schemas/dto/request/submit-with-documents.request';
 import { FilesInterceptor } from '@nestjs/platform-express';
+import { NotificationValidationMatrixResponse } from '../../domain/schemas/dto/response/notification-validation-matrix.response';
 
 @Controller('requests')
 @ApiTags('requests')
@@ -228,6 +230,67 @@ export class RequestGatewayController {
       );
       return new ApiResponse(
         'Dashboard KPIs obtenidos exitosamente',
+        response,
+        request.url,
+      );
+    } catch (error) {
+      const err = error instanceof RpcException ? error.getError() : error;
+      throw new RpcException(err as string | object);
+    }
+  }
+
+  @Get(':clienteId/dashboard/kpis')
+  @ApiParam({ name: 'clienteId', type: String, required: true })
+  @ApiOperation({
+    summary: 'Dashboard KPIs del módulo de acometidas por cliente',
+    description:
+      'Retorna métricas clave: total solicitudes, en proceso, completadas, rechazadas y promedio de días de tramitación para un cliente específico.',
+  })
+  async getDashboardKpisByClienteId(
+    @Param('clienteId') clienteId: string,
+    @Req() request: Request,
+  ): Promise<ApiResponse> {
+    try {
+      const response = await sendKafkaRequest(
+        this.kafkaProxy.send(
+          this.kafkaClient,
+          'requests.get_dashboard_kpis_by_cliente_id',
+          clienteId,
+        ),
+      );
+      return new ApiResponse(
+        'Dashboard KPIs obtenidos exitosamente',
+        response,
+        request.url,
+      );
+    } catch (error) {
+      const err = error instanceof RpcException ? error.getError() : error;
+      throw new RpcException(err as string | object);
+    }
+  }
+
+  @Get('notifications/validation-matrix')
+  @ApiOperation({
+    summary: 'Matriz de validacion QA de notificaciones',
+    description:
+      'Retorna la matriz fase -> evento Kafka -> destinatario para validacion E2E en ambiente QA.',
+  })
+  @ApiOkResponse({ type: NotificationValidationMatrixResponse })
+  async getNotificationValidationMatrix(
+    @Req() request: Request,
+  ): Promise<ApiResponse> {
+    try {
+      const response: NotificationValidationMatrixResponse =
+        await sendKafkaRequest(
+          this.kafkaProxy.send(
+            this.kafkaClient,
+            'requests.get_notification_validation_matrix',
+            {},
+          ),
+        );
+
+      return new ApiResponse(
+        'Matriz de validacion de notificaciones obtenida exitosamente',
         response,
         request.url,
       );

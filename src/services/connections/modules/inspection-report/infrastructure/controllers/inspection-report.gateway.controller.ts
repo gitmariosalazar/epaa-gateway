@@ -1,4 +1,12 @@
-import { Body, Controller, Inject, Logger, Patch, Post, Req } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Inject,
+  Logger,
+  Patch,
+  Post,
+  Req,
+} from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ClientKafka, RpcException } from '@nestjs/microservices';
 import { environments } from '../../../../../../settings/environments/environments';
@@ -7,9 +15,9 @@ import { sendKafkaRequest } from '../../../../../../shared/utils/kafka/send.kafk
 import { KafkaProxyService } from '../../../../../../shared/kafka/kafka-proxy.service';
 
 class SubmitReportRequest {
-  workOrderId: string;
-  solicitudId: string;
-  result: string;
+  workOrderId!: string;
+  solicitudId!: string;
+  result!: string;
   networkDistanceM?: number;
   connectionDiameter?: string;
   terrainConditions?: string;
@@ -18,15 +26,15 @@ class SubmitReportRequest {
   latitude?: number;
   materialCost?: number;
   laborCost?: number;
-  technicianId: string;
-  completedStatusId: number;
+  technicianId!: string;
+  completedStatusId!: number;
 }
 
 class ApproveReportRequest {
-  reportId: string;
-  approved: boolean;
+  reportId!: string;
+  approved!: boolean;
   rejectionReason?: string;
-  approverId: string;
+  approverId!: string;
 }
 
 @Controller('inspection-report')
@@ -47,15 +55,30 @@ export class InspectionReportGatewayController {
   @Post('ordenes/informe')
   @ApiOperation({
     summary: 'Fase 8: Enviar informe técnico de inspección',
-    description: 'El técnico sube su informe de campo. Cierra la OT y transiciona la solicitud a INFORME_EN_REVISION.',
+    description:
+      'El técnico sube su informe de campo. Cierra la OT y transiciona la solicitud a INFORME_EN_REVISION.',
   })
-  async submitReport(@Body() body: SubmitReportRequest, @Req() request: Request): Promise<ApiResponse> {
+  async submitReport(
+    @Body() body: SubmitReportRequest,
+    @Req() request: Request,
+  ): Promise<ApiResponse> {
     try {
-      this.logger.log(`Submitting inspection report for OT: ${body.workOrderId}`);
-      const result = await sendKafkaRequest(
-        this.kafkaProxy.send(this.kafkaClient, 'inspection_report.submit', body),
+      this.logger.log(
+        `Submitting inspection report for OT: ${body.workOrderId}`,
       );
-      return new ApiResponse('Informe técnico enviado exitosamente', result, request.url, 201);
+      const result = await sendKafkaRequest(
+        this.kafkaProxy.send(
+          this.kafkaClient,
+          'inspection_report.submit',
+          body,
+        ),
+      );
+      return new ApiResponse(
+        'Informe técnico enviado exitosamente',
+        result,
+        request.url,
+        201,
+      );
     } catch (error) {
       const err = error instanceof RpcException ? error.getError() : error;
       throw new RpcException(err as string | object);
@@ -69,15 +92,28 @@ export class InspectionReportGatewayController {
   @Patch('informes/aprobar')
   @ApiOperation({
     summary: 'Fase 9: Aprobar o rechazar el informe técnico',
-    description: 'El jefe de operaciones emite su dictamen. Transiciona a INFORME_APROBADO o RECHAZADA_TECNICA.',
+    description:
+      'El jefe de operaciones emite su dictamen. Transiciona a INFORME_APROBADO o RECHAZADA_TECNICA.',
   })
-  async approveReport(@Body() body: ApproveReportRequest, @Req() request: Request): Promise<ApiResponse> {
+  async approveReport(
+    @Body() body: ApproveReportRequest,
+    @Req() request: Request,
+  ): Promise<ApiResponse> {
     try {
       this.logger.log(`Approving inspection report: ${body.reportId}`);
       const result = await sendKafkaRequest(
-        this.kafkaProxy.send(this.kafkaClient, 'inspection_report.approve', body),
+        this.kafkaProxy.send(
+          this.kafkaClient,
+          'inspection_report.approve',
+          body,
+        ),
       );
-      return new ApiResponse('Dictamen emitido exitosamente', result, request.url, 200);
+      return new ApiResponse(
+        'Dictamen emitido exitosamente',
+        result,
+        request.url,
+        200,
+      );
     } catch (error) {
       const err = error instanceof RpcException ? error.getError() : error;
       throw new RpcException(err as string | object);
