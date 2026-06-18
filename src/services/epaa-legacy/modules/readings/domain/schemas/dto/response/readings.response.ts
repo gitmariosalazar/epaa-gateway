@@ -152,6 +152,7 @@ export interface OverdueSummaryResponse {
   totalSurcharge: number;
   totalOldSurcharge: number;
   totalImprovementsInterest: number;
+  totalInterestCalculated: number;
   avgMonthsPastDue: number;
   maxMonthsInDebt: number;
   minMonthsInDebt: number;
@@ -174,6 +175,7 @@ export interface YearlyOverdueSummaryResponse {
   totalSurcharge: number;
   totalOldSurcharge: number;
   totalImprovementsInterest: number;
+  totalInterestCalculated: number;
   avgMonthsPastDue: number;
   maxMonthsInDebt: number;
   minMonthsInDebt: number;
@@ -202,6 +204,7 @@ export interface MonthlyDebtSummaryResponse {
   totalSurcharge: number;
   totalOldSurcharge: number;
   totalImprovementsInterest: number;
+  totalInterestCalculated: number;
 
   avgMonthsPastDue: number | null;
   maxMonthsInDebt: number;
