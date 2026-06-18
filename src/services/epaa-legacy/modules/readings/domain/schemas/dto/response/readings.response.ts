@@ -65,6 +65,7 @@ export interface PendingReadingResponse {
   // ── Totales de la Planilla ─────────────────────────────────────────────────
   total: number; // Sumatoria base asumiendo tarifa plena de basura
   adjustedTotal: number; // TOTAL REAL A PAGAR (Total Epaa + Basura Efectiva Pagada)
+  dueDateStatus: string; // Estado de la fecha de vencimiento (Vencido/No Vencido)
 }
 
 export interface PaymentReadingResponse {
@@ -131,6 +132,14 @@ export interface OverduePaymentResponse {
   totalSurcharge: number;
   totalOldSurcharge: number;
   monthsPastDue: number;
+  totalInterestCalculated: number;
+  totalDebtAmount: number;
+  emisionDateMoreOld: string;
+  emisionDateMoreRecent: string;
+  dueDateMoreOld: string;
+  dueDateMoreRecent: string;
+  daysSinceDue: number;
+  daysSinceEmission: number;
 }
 
 export interface OverdueSummaryResponse {
