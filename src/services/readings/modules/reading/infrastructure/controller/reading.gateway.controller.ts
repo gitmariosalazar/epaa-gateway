@@ -45,6 +45,7 @@ import {
 } from '../../domain/schemas/dto/response/reading-basic.response';
 import { CreateReadingLegacyRequest } from '../../../../../epaa-legacy/modules/readings/domain/schemas/dto/request/create.reading-legacy.request';
 import { RealtimeService } from '../../../../../../shared/realtime';
+import { NoveltyResponse } from '../../domain/schemas/dto/response/novelty.response';
 
 @Controller('Readings')
 @ApiTags('Readings')
@@ -578,6 +579,35 @@ export class ReadingGatewayController {
       const err = error as Error;
       this.logger.error(
         `Error getting reading by novelty ${novelty ?? 'ALL'}, month ${month} and sector ${sector ?? 'ALL'}: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err.message || err);
+    }
+  }
+
+  @Get('find-all-novelties')
+  @ApiOperation({
+    summary: 'Method GET - Find all novelties',
+    description: 'The endpoint allows you to get all novelties.',
+  })
+  async findAllNovelties(@Req() request: Request): Promise<ApiResponse> {
+    try {
+      const response: NoveltyResponse[] = await sendKafkaRequest(
+        this.kafkaProxy.send(
+          this.readingClient,
+          'reading.find-all-novelties',
+          {},
+        ),
+      );
+      return new ApiResponse(
+        'All novelties found successfully!',
+        response,
+        request.url,
+      );
+    } catch (error) {
+      const err = error as Error;
+      this.logger.error(
+        `Error finding all novelties: ${err.message}`,
         err.stack,
       );
       throw new RpcException(err.message || err);

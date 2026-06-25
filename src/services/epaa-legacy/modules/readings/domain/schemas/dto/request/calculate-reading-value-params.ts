@@ -2,13 +2,17 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class CalculateReadingValueParams {
   @ApiProperty({
-    example: '123456789012345678',
+    example: '14-293',
     description: 'Cadastral key',
+    required: true,
+    type: String,
   })
-  cadastralKey: string;
+  cadastralKey!: string;
   @ApiProperty({
     example: 123,
     description: 'Consumption in m3',
+    required: true,
+    type: Number,
   })
-  consumptionM3: number;
+  consumptionM3!: number;
 }

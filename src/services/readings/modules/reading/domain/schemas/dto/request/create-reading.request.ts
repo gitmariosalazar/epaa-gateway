@@ -1,84 +1,84 @@
-import { ApiProperty } from "@nestjs/swagger"
+import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateReadingRequest {
   @ApiProperty({
-    example: 'A12345',
+    example: '14-293',
     description: 'Connection identifier',
-    required: true
+    required: true,
   })
-  connectionId: string
+  connectionId!: string;
   @ApiProperty({
     example: 1,
     description: 'Sector number',
-    required: true
+    required: true,
   })
-  sector: number
+  sector!: number;
   @ApiProperty({
     example: 123456,
     description: 'Account number',
-    required: true
+    required: true,
   })
-  account: number
+  account!: number;
   @ApiProperty({
     example: 'C123456',
     description: 'Cadastral key',
-    required: true
+    required: true,
   })
-  cadastralKey: string
+  cadastralKey!: string;
   @ApiProperty({
     example: 100,
     description: 'Sewer rate',
-    required: true
+    required: true,
   })
-  sewerRate: number
+  sewerRate!: number;
   @ApiProperty({
     example: 90,
     description: 'Previous reading',
-    required: true
+    required: true,
   })
-  previousReading: number
+  previousReading!: number;
   @ApiProperty({
     example: 100,
     description: 'Current reading',
-    required: true
+    required: true,
   })
-  currentReading: number
+  currentReading!: number;
   @ApiProperty({
     example: 2001,
     description: 'Income code',
-    required: true
+    required: true,
   })
-  incomeCode: number
+  incomeCode!: number;
   @ApiProperty({
     example: 100,
     description: 'Reading value',
-    required: true
+    required: true,
   })
-  readingValue: number
+  readingValue!: number;
   @ApiProperty({
     example: 2001,
     description: 'Rental income code',
-    required: true
+    required: true,
   })
-  rentalIncomeCode: number
+  rentalIncomeCode!: number;
   @ApiProperty({
     example: 'NO NOVELTY',
     description: 'Novelty',
-    required: false
+    required: false,
   })
-  novelty: string | null
+  novelty!: string | null;
   @ApiProperty({
     example: 95,
     description: 'Average consumption',
-    required: true
+    required: true,
   })
-  averageConsumption: number
+  averageConsumption!: number;
 
   @ApiProperty({
     example: '2025-06',
     description: 'Previous month reading in YYYY-MM format',
     required: true,
-    type: String
+    type: String,
   })
-  previousMonthReading: string;
+  previousMonthReading!: string;
 }

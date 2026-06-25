@@ -51,6 +51,7 @@ export class KafkaProxyService {
     readings: 'readings_topic',
     'observation-reading': 'readings_topic',
     'photo-reading': 'readings_topic',
+    incident: 'readings_topic',
     'work-orders': 'work_orders_topic',
     'work-order': 'work_orders_topic',
     'work-type': 'work_orders_topic',

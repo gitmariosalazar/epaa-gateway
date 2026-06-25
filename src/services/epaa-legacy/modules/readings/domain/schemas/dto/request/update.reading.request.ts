@@ -4,106 +4,106 @@ export class UpdateReadingLegacyRequest {
   @ApiProperty({
     description: 'Sector number',
     example: 21,
-    type: 'number',
+    type: Number,
     required: true,
   })
-  sector: number;
+  sector!: number;
   @ApiProperty({
     description: 'Account number',
     example: 260,
-    type: 'number',
+    type: Number,
     required: true,
   })
-  account: number;
+  account!: number;
   @ApiProperty({
     description: 'Year of the reading',
     example: 2026,
-    type: 'number',
+    type: Number,
     required: true,
   })
-  year: number;
+  year!: number;
   @ApiProperty({
     description: 'Month of the reading',
     example: 'ENERO',
-    type: 'string',
+    type: String,
     required: true,
   })
-  month: string;
+  month!: string;
   @ApiProperty({
     description: 'Previous reading value',
     example: 982,
-    type: 'number',
+    type: Number,
     required: true,
   })
-  previousReading: number;
+  previousReading!: number;
   @ApiProperty({
     description: 'Current reading value',
     example: 1000,
-    type: 'number',
+    type: Number,
     required: true,
   })
-  currentReading: number;
+  currentReading!: number;
   @ApiProperty({
     description: 'Cadastral key',
     example: '21-260',
-    type: 'string',
+    type: String,
     required: true,
   })
-  cadastralKey: string;
+  cadastralKey!: string;
   @ApiProperty({
     description: 'Novelty',
     example: null,
-    type: 'string',
+    type: String,
     required: false,
   })
-  novelty: string | null;
+  novelty!: string | null;
   @ApiProperty({
     description: 'Rental income code',
     example: null,
-    type: 'number',
+    type: Number,
     required: false,
   })
-  rentalIncomeCode: number | null;
+  rentalIncomeCode!: number | null;
   @ApiProperty({
     description: 'Reading value',
     example: null,
-    type: 'number',
+    type: Number,
     required: false,
   })
-  readingValue: number | null;
+  readingValue!: number | null;
   @ApiProperty({
     description: 'Sewer rate',
     example: null,
-    type: 'number',
+    type: Number,
     required: false,
   })
-  sewerRate: number | null;
+  sewerRate!: number | null;
   @ApiProperty({
     description: 'Reconnection',
     example: null,
-    type: 'number',
+    type: Number,
     required: false,
   })
-  reconnection: number | null;
+  reconnection!: number | null;
   @ApiProperty({
     description: 'Income code',
     example: null,
-    type: 'number',
+    type: Number,
     required: false,
   })
-  incomeCode: number | null;
+  incomeCode!: number | null;
   @ApiProperty({
     description: 'Reading date',
     example: '2026-01-01',
-    type: 'string',
+    type: Date,
     required: true,
   })
-  readingDate: Date;
+  readingDate!: Date;
   @ApiProperty({
     description: 'Reading time',
     example: '12:00',
-    type: 'string',
+    type: String,
     required: true,
   })
-  readingTime: string;
+  readingTime!: string;
 }

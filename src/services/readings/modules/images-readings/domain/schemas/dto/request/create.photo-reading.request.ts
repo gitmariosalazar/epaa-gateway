@@ -1,10 +1,11 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty } from '@nestjs/swagger';
 
 export class CreatePhotoReadingRequest {
   @ApiProperty({
-    example: 1, description: 'ID of the associated reading',
+    example: 1,
+    description: 'ID of the associated reading',
     required: true,
-    type: Number
+    type: Number,
   })
   readingId: number;
 
@@ -12,15 +13,15 @@ export class CreatePhotoReadingRequest {
     example: 'https://example.com/photo.jpg',
     description: 'URL of the photo',
     required: true,
-    type: String
+    type: String,
   })
   photoUrl: string;
 
   @ApiProperty({
-    example: 'ABC123',
+    example: '14-293',
     description: 'Cadastral key associated with the photo reading',
     required: true,
-    type: String
+    type: String,
   })
   cadastralKey: string;
 
@@ -28,7 +29,7 @@ export class CreatePhotoReadingRequest {
     example: 'Photo taken during site inspection',
     description: 'Optional description of the photo reading',
     required: false,
-    type: String
+    type: String,
   })
   description?: string;
 
@@ -36,7 +37,7 @@ export class CreatePhotoReadingRequest {
     readingId: number,
     photoUrl: string,
     cadastralKey: string,
-    description?: string
+    description?: string,
   ) {
     this.readingId = readingId;
     this.photoUrl = photoUrl;

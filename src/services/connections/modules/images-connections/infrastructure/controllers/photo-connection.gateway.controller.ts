@@ -9,7 +9,7 @@ import {
   Req,
   UploadedFiles,
   UseGuards,
-  UseInterceptors
+  UseInterceptors,
 } from '@nestjs/common';
 import { ClientKafka, RpcException } from '@nestjs/microservices';
 import { KafkaProxyService } from '../../../../../../shared/kafka/kafka-proxy.service';
@@ -116,8 +116,10 @@ export class PhotoConnectionGatewayController {
       const responses: PhotoConnectionResponse[] = [];
       for (const dto of photoConnectionDtos) {
         const response: PhotoConnectionResponse = await sendKafkaRequest(
-          this.kafkaProxy.send(this.photoConnectionClient, 
-            'photo-connection.create-photo-connection', dto,
+          this.kafkaProxy.send(
+            this.photoConnectionClient,
+            'photo-connection.create-photo-connection',
+            dto,
           ),
         );
         responses.push(response);
@@ -130,7 +132,10 @@ export class PhotoConnectionGatewayController {
       );
     } catch (error) {
       this.logger.error('Error creating photo readings:', error);
-      throw new RpcException(error);
+      if (error instanceof RpcException) {
+        throw error;
+      }
+      throw new RpcException(error as any);
     }
   }
 
@@ -143,8 +148,10 @@ export class PhotoConnectionGatewayController {
       if (!cadastralKey) throw new Error('Cadastral key is required.');
 
       const response: PhotoConnectionResponse[] = await sendKafkaRequest(
-        this.kafkaProxy.send(this.photoConnectionClient, 
-          'photo-connection.get-photo-connections-by-cadastral-key', { cadastralKey },
+        this.kafkaProxy.send(
+          this.photoConnectionClient,
+          'photo-connection.get-photo-connections-by-cadastral-key',
+          { cadastralKey },
         ),
       );
 
@@ -158,7 +165,10 @@ export class PhotoConnectionGatewayController {
         'Error retrieving photo connections by cadastral key:',
         error,
       );
-      throw new RpcException(error);
+      if (error instanceof RpcException) {
+        throw error;
+      }
+      throw new RpcException(error as any);
     }
   }
 }
