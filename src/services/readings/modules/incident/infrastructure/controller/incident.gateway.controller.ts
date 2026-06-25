@@ -373,8 +373,16 @@ export class IncidentGatewayController {
     };
   }
 
-  private parseOptionalNumber(value?: string): number | null {
-    if (value === undefined || value === null || value.trim() === '') {
+  private parseOptionalNumber(value?: string | number): number | null {
+    if (value === undefined || value === null) {
+      return null;
+    }
+
+    if (typeof value === 'number') {
+      return Number.isFinite(value) ? value : null;
+    }
+
+    if (value.trim() === '') {
       return null;
     }
 
