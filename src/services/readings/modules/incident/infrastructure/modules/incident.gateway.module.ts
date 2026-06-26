@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { MulterModule } from '@nestjs/platform-express';
-import { ServeStaticModule } from '@nestjs/serve-static';
 import { IncidentGatewayController } from '../controller/incident.gateway.controller';
 import { environments } from '../../../../../../settings/environments/environments';
 
@@ -32,14 +31,6 @@ const INCIDENT_IMAGES_DIR = '/home/sigepaa/sigepaa/images/incidents';
       },
     ]),
     MulterModule.register({ dest: INCIDENT_IMAGES_DIR }),
-    ServeStaticModule.forRoot({
-      rootPath: INCIDENT_IMAGES_DIR,
-      serveRoot: '/images/incidents',
-      serveStaticOptions: {
-        index: false,
-        redirect: false,
-      },
-    }),
   ],
   controllers: [IncidentGatewayController],
   providers: [],

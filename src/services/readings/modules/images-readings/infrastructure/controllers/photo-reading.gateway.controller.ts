@@ -25,8 +25,8 @@ import { PhotoReadingResponse } from '../../domain/schemas/dto/response/photo-re
 
 @Controller('photo-reading')
 @ApiTags('Photo Reading')
-//@ApiBearerAuth()
-//@UseGuards(AuthGuard)
+@ApiBearerAuth()
+@UseGuards(AuthGuard)
 export class PhotoReadingGatewayController {
   private readonly logger = new Logger(PhotoReadingGatewayController.name);
   constructor(

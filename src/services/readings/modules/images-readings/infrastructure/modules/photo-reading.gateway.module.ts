@@ -2,7 +2,6 @@ import { Module } from "@nestjs/common";
 import { ClientsModule, Transport } from "@nestjs/microservices";
 import { MulterModule } from "@nestjs/platform-express";
 import { PhotoReadingGatewayController } from "../controllers/photo-reading.gateway.controller";
-import { ServeStaticModule } from "@nestjs/serve-static";
 import { environments } from "../../../../../../settings/environments/environments";
 
 @Module({
@@ -29,27 +28,11 @@ import { environments } from "../../../../../../settings/environments/environmen
       },
     ]),
     MulterModule.register({ dest: '/home/sigepaa/sigepaa/images/readings' }),
-    ServeStaticModule.forRoot({
-      rootPath: '/home/sigepaa/sigepaa/images/readings',
-      serveRoot: '/images/readings',
-      serveStaticOptions: {
-        index: false,
-        redirect: false,
-      },
-    }),
-    ServeStaticModule.forRoot({
-      rootPath: '/home/sigepaa/sigepaa/images/qrcodes',
-      serveRoot: '/images/qrcodes',
-      serveStaticOptions: {
-        index: false,
-        redirect: false,
-      },
-    }),
   ],
   controllers: [
     PhotoReadingGatewayController
   ],
   providers: [],
-  exports: [MulterModule, ClientsModule, ServeStaticModule],
+  exports: [MulterModule, ClientsModule],
 })
 export class PhotoReadingGatewayModule { }

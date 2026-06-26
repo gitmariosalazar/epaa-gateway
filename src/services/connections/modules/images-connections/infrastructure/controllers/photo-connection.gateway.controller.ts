@@ -27,8 +27,8 @@ import { PhotoConnectionResponse } from '../../domain/schemas/dto/response/photo
 
 @Controller('photo-connection')
 @ApiTags('Photo Connection')
-//@ApiBearerAuth()
-//@UseGuards(AuthGuard)
+@ApiBearerAuth()
+@UseGuards(AuthGuard)
 export class PhotoConnectionGatewayController {
   private readonly logger = new Logger(PhotoConnectionGatewayController.name);
   constructor(

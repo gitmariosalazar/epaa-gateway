@@ -44,6 +44,7 @@ import { RealtimeModule } from './shared/realtime';
 import { KafkaProxyModule } from './shared/kafka/kafka-proxy.module';
 import { NotificationGatewayModule } from './services/notifications/modules/infrastructure/notification.gateway.module';
 import { DocumentsFactoryModule } from './services/documents/factory/documents-factory.module';
+import { ImageServeModule } from './shared/files/files-serve.module';
 
 @Module({
   imports: [
@@ -88,6 +89,7 @@ import { DocumentsFactoryModule } from './services/documents/factory/documents-f
     ConnectionFactoryModule,
     NotificationGatewayModule,
     DocumentsFactoryModule,
+    ImageServeModule,
     JwtModule.register({
       global: true,
       secret: process.env.JWT_SECRET,
