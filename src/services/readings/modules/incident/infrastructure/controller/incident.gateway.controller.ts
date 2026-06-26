@@ -40,7 +40,6 @@ import { AllowedUserTypes } from '../../../../../../auth/decorator/allowed-user-
 import { IncidentCategoryResponse } from '../../domain/schemas/dto/response/incident-category-type.response';
 
 const INCIDENT_IMAGES_DIR = '/home/sigepaa/sigepaa/images/incidents';
-const INCIDENT_IMAGES_PUBLIC_HOST = 'https://sigepaa-aa.com:8443';
 
 const incidentImagesInterceptor = FilesInterceptor('images', 10, {
   storage: diskStorage({
@@ -408,7 +407,7 @@ export class IncidentGatewayController {
       const finalPath = join(INCIDENT_IMAGES_DIR, finalFilename);
       renameSync(tempPath, finalPath);
 
-      const imageUrl = `${INCIDENT_IMAGES_PUBLIC_HOST}/images/incidents/${finalFilename}`;
+      const imageUrl = `$/images/incidents/${finalFilename}`;
       this.logger.log(`Incident image uploaded: ${imageUrl}`);
       return imageUrl;
     });

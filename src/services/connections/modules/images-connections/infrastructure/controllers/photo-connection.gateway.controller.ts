@@ -86,8 +86,6 @@ export class PhotoConnectionGatewayController {
         throw new Error('At least one image file is required.');
       if (!body.connectionId) throw new Error('Connection ID is required.');
 
-      const host = 'https://sigepaa-aa.com:8443';
-
       const photoConnectionDtos: CreatePhotoConnectionRequest[] = images.map(
         (image) => {
           // Renombrar el archivo con connectionId
@@ -100,7 +98,7 @@ export class PhotoConnectionGatewayController {
           renameSync(tempPath, finalPath);
 
           // Construye la URL de la imagen guardada
-          const imageUrl = `${host}/images/connections/${finalFilename}`;
+          const imageUrl = `$/images/connections/${finalFilename}`;
           this.logger.log(`Image uploaded and renamed: ${imageUrl}`);
 
           // Construye el DTO para Kafka

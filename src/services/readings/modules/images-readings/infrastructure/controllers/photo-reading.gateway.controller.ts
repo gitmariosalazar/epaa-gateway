@@ -86,8 +86,6 @@ export class PhotoReadingGatewayController {
         throw new Error('At least one image file is required.');
       if (!body.readingId) throw new Error('Reading ID is required.');
 
-      const host = 'https://sigepaa-aa.com:8443';
-
       const photoReadingDtos: CreatePhotoReadingRequest[] = images.map(
         (image) => {
           // Renombrar el archivo con readingId
@@ -100,7 +98,7 @@ export class PhotoReadingGatewayController {
           renameSync(tempPath, finalPath);
 
           // Construye la URL de la imagen guardada
-          const imageUrl = `${host}/images/readings/${finalFilename}`;
+          const imageUrl = `$/images/readings/${finalFilename}`;
           this.logger.log(`Image uploaded and renamed: ${imageUrl}`);
 
           // Construye el DTO para Kafka
