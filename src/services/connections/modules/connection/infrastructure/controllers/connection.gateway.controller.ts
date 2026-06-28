@@ -516,10 +516,13 @@ export class ConnectionGatewayController {
     @Query('limit') limit?: number,
     @Query('offset') offset?: number,
     @Query('query') query?: string,
+    @Query('hasIncidents') hasIncidents?: string,
+    @Query('status') status?: string,
+    @Query('sewerage') sewerage?: string,
   ): Promise<ApiResponse> {
     try {
       this.logger.log(
-        `Received request to get connections paginated with limit=${limit}, offset=${offset}, query=${query}`,
+        `Received request to get connections paginated with limit=${limit}, offset=${offset}, query=${query}, hasIncidents=${hasIncidents}, status=${status}, sewerage=${sewerage}`,
       );
       const response: ConnectionResponse[] = await sendKafkaRequest(
         this.kafkaProxy.send(
@@ -529,6 +532,9 @@ export class ConnectionGatewayController {
             limit,
             offset,
             query,
+            ...(hasIncidents ? { hasIncidents } : {}),
+            ...(status       ? { status }       : {}),
+            ...(sewerage     ? { sewerage }     : {}),
           },
         ),
       );

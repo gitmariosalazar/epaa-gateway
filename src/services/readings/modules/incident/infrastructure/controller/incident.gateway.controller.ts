@@ -38,6 +38,7 @@ import { AuthGuard } from '../../../../../../auth/guard/auth.guard';
 import { KafkaProxyService } from '../../../../../../shared/kafka/kafka-proxy.service';
 import { AllowedUserTypes } from '../../../../../../auth/decorator/allowed-user-types.decorator';
 import { IncidentCategoryResponse } from '../../domain/schemas/dto/response/incident-category-type.response';
+import { IncidentDetailRowResponse } from '../../domain/schemas/dto/response/view_incident.response';
 
 const INCIDENT_IMAGES_DIR = '/home/sigepaa/sigepaa/images/incidents';
 
@@ -252,7 +253,7 @@ export class IncidentGatewayController {
     @Req() request: Request,
   ): Promise<ApiResponse> {
     try {
-      const response: IncidentResponse[] = await sendKafkaRequest(
+      const response: IncidentDetailRowResponse[] = await sendKafkaRequest(
         this.kafkaProxy.send(
           this.incidentClient,
           'incident.find-by-connection',
@@ -287,7 +288,7 @@ export class IncidentGatewayController {
     @Req() request: Request,
   ): Promise<ApiResponse> {
     try {
-      const response: IncidentResponse[] = await sendKafkaRequest(
+      const response: IncidentDetailRowResponse[] = await sendKafkaRequest(
         this.kafkaProxy.send(this.incidentClient, 'incident.search', filters),
       );
 
