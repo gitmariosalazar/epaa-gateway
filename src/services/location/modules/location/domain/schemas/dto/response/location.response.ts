@@ -26,3 +26,9 @@ export interface ParishResponse {
   cantonId: string;
   parishTypeId: string;
 }
+
+export interface CenterLocationResponse {
+  centerLat: number;
+  centerLng: number;
+  countData: number;
+}

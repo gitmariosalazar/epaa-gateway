@@ -1,11 +1,4 @@
-import {
-  Controller,
-  Get,
-  Inject,
-  Logger,
-  Param,
-  Req
-} from '@nestjs/common';
+import { Controller, Get, Inject, Logger, Param, Req } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { environments } from '../../../../../../settings/environments/environments';
 import { ClientKafka, RpcException } from '@nestjs/microservices';
@@ -59,7 +52,11 @@ export class LocationGlobalGatewayController {
   ): Promise<ApiResponse> {
     try {
       const country: CountryResponse = await sendKafkaRequest(
-        this.kafkaProxy.send(this.kafkaClient, 'location.get-country-by-id', countryId),
+        this.kafkaProxy.send(
+          this.kafkaClient,
+          'location.get-country-by-id',
+          countryId,
+        ),
       );
       return new ApiResponse(
         'Country retrieved successfully',
@@ -84,7 +81,11 @@ export class LocationGlobalGatewayController {
   ): Promise<ApiResponse> {
     try {
       const country: CountryResponse = await sendKafkaRequest(
-        this.kafkaProxy.send(this.kafkaClient, 'location.get-country-by-name', countryName),
+        this.kafkaProxy.send(
+          this.kafkaClient,
+          'location.get-country-by-name',
+          countryName,
+        ),
       );
       return new ApiResponse(
         'Country retrieved successfully',
@@ -132,7 +133,11 @@ export class LocationGlobalGatewayController {
   ): Promise<ApiResponse> {
     try {
       const province = await sendKafkaRequest(
-        this.kafkaProxy.send(this.kafkaClient, 'location.get-province-by-name', provinceName),
+        this.kafkaProxy.send(
+          this.kafkaClient,
+          'location.get-province-by-name',
+          provinceName,
+        ),
       );
       return new ApiResponse(
         'Province retrieved successfully',
@@ -160,7 +165,11 @@ export class LocationGlobalGatewayController {
   ): Promise<ApiResponse> {
     try {
       const province = await sendKafkaRequest(
-        this.kafkaProxy.send(this.kafkaClient, 'location.get-province-by-id', provinceId),
+        this.kafkaProxy.send(
+          this.kafkaClient,
+          'location.get-province-by-id',
+          provinceId,
+        ),
       );
       return new ApiResponse(
         'Province retrieved successfully',
@@ -185,8 +194,10 @@ export class LocationGlobalGatewayController {
   ): Promise<ApiResponse> {
     try {
       const provinces = await sendKafkaRequest(
-        this.kafkaProxy.send(this.kafkaClient, 
-          'location.get-provinces-by-country-id', countryId,
+        this.kafkaProxy.send(
+          this.kafkaClient,
+          'location.get-provinces-by-country-id',
+          countryId,
         ),
       );
       return new ApiResponse(
@@ -239,7 +250,11 @@ export class LocationGlobalGatewayController {
   ): Promise<ApiResponse> {
     try {
       const canton = await sendKafkaRequest(
-        this.kafkaProxy.send(this.kafkaClient, 'location.get-canton-by-id', cantonId),
+        this.kafkaProxy.send(
+          this.kafkaClient,
+          'location.get-canton-by-id',
+          cantonId,
+        ),
       );
       return new ApiResponse(
         'Canton retrieved successfully',
@@ -264,7 +279,11 @@ export class LocationGlobalGatewayController {
   ): Promise<ApiResponse> {
     try {
       const canton = await sendKafkaRequest(
-        this.kafkaProxy.send(this.kafkaClient, 'location.get-canton-by-name', cantonName),
+        this.kafkaProxy.send(
+          this.kafkaClient,
+          'location.get-canton-by-name',
+          cantonName,
+        ),
       );
       return new ApiResponse(
         'Canton retrieved successfully',
@@ -289,8 +308,10 @@ export class LocationGlobalGatewayController {
   ): Promise<ApiResponse> {
     try {
       const cantons = await sendKafkaRequest(
-        this.kafkaProxy.send(this.kafkaClient, 
-          'location.get-cantons-by-province-id', provinceId,
+        this.kafkaProxy.send(
+          this.kafkaClient,
+          'location.get-cantons-by-province-id',
+          provinceId,
         ),
       );
       return new ApiResponse(
@@ -343,7 +364,11 @@ export class LocationGlobalGatewayController {
   ): Promise<ApiResponse> {
     try {
       const parish = await sendKafkaRequest(
-        this.kafkaProxy.send(this.kafkaClient, 'location.get-parish-by-id', parishId),
+        this.kafkaProxy.send(
+          this.kafkaClient,
+          'location.get-parish-by-id',
+          parishId,
+        ),
       );
       return new ApiResponse(
         'Parish retrieved successfully',
@@ -368,7 +393,11 @@ export class LocationGlobalGatewayController {
   ): Promise<ApiResponse> {
     try {
       const parish = await sendKafkaRequest(
-        this.kafkaProxy.send(this.kafkaClient, 'location.get-parish-by-name', parishName),
+        this.kafkaProxy.send(
+          this.kafkaClient,
+          'location.get-parish-by-name',
+          parishName,
+        ),
       );
       return new ApiResponse(
         'Parish retrieved successfully',
@@ -393,7 +422,11 @@ export class LocationGlobalGatewayController {
   ): Promise<ApiResponse> {
     try {
       const parishes = await sendKafkaRequest(
-        this.kafkaProxy.send(this.kafkaClient, 'location.get-parishes-by-canton-id', cantonId),
+        this.kafkaProxy.send(
+          this.kafkaClient,
+          'location.get-parishes-by-canton-id',
+          cantonId,
+        ),
       );
       return new ApiResponse(
         'Parishes retrieved successfully',
@@ -404,6 +437,35 @@ export class LocationGlobalGatewayController {
       const err = error as Error;
       this.logger.error(
         `Error in getParishesByCantonId: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
+    }
+  }
+
+  @Get('get-center-location-incidents')
+  @ApiOperation({
+    summary: 'Get center location about incidents',
+    description: 'Retrieves the center location data related to incidents.',
+  })
+  async getCenterLocation(@Req() request: Request): Promise<ApiResponse> {
+    try {
+      const centerLocation = await sendKafkaRequest(
+        this.kafkaProxy.send(
+          this.kafkaClient,
+          'location.get-center-location-incidents',
+          {},
+        ),
+      );
+      return new ApiResponse(
+        'Center location retrieved successfully',
+        centerLocation,
+        request.url,
+      );
+    } catch (error) {
+      const err = error as Error;
+      this.logger.error(
+        `Error in getCenterLocation: ${err.message}`,
         err.stack,
       );
       throw new RpcException(err as string | object);
