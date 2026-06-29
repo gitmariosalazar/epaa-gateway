@@ -29,9 +29,9 @@ export class SearchIncidentsRequest {
 
   @ApiProperty({
     example: 1,
-    description: 'Filter by incident type unique identifier (optional)',
+    description: 'Filter by incident category unique identifier (optional)',
     required: false,
     type: Number,
   })
-  incidentTypeId?: number;
+  categoryId?: number;
 }
