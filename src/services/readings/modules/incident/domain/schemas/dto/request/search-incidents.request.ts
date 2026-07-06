@@ -34,4 +34,28 @@ export class SearchIncidentsRequest {
     type: Number,
   })
   categoryId?: number;
+
+  @ApiProperty({
+    example: '10',
+    description: 'Filter by sector (optional)',
+    required: false,
+    type: String,
+  })
+  sector?: string;
+
+  @ApiProperty({
+    example: 'Near the main street',
+    description: 'Filter by reference (optional)',
+    required: false,
+    type: String,
+  })
+  reference?: string;
+
+  @ApiProperty({
+    example: '2023-06-01',
+    description: 'Filter by report date (optional)',
+    required: false,
+    type: String,
+  })
+  reportDate?: Date;
 }
