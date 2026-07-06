@@ -14,6 +14,13 @@ export class ProcessWorkOrderTransitionRequest {
   userId!: string;
 
   @ApiProperty({
+    example: 'EJECUTADA',
+    required: false,
+    description: 'New status for the work order',
+  })
+  newStatus?: string;
+
+  @ApiProperty({
     example: 'Order received by dispatch.',
     required: false,
     description: 'Optional comment',

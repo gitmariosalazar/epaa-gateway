@@ -16,6 +16,12 @@ export class AddWorkOrderMaterialRequest {
   @ApiProperty({ example: 14.2, description: 'Unit cost' })
   unitCost!: number;
 
+  @ApiProperty({ example: 'MAT-001', description: 'Material code' })
+  codigoMaterial!: string;
+
+  @ApiProperty({ example: 'Tubería PVC 1/2"', description: 'Material name' })
+  nombreMaterial!: string;
+
   @ApiProperty({
     example: 'b2c3d4e5-f6a7-4b6c-9d8e-1f2a3b4c5d6e',
     description: 'User who created the record',

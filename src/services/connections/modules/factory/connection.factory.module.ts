@@ -13,6 +13,7 @@ import { ContractsGatewayModule } from '../contracts/infrastructure/modules/cont
 import { CadastralGatewayModule } from '../cadastral/infrastructure/modules/cadastral.gateway.module';
 import { InspectionOrderGatewayModule } from '../inspection-order/infrastructure/modules/inspection-order.gateway.module';
 import { InstallationOrderGatewayModule } from '../installation-order/infrastructure/modules/installation-order.gateway.module';
+import { InstallationReportGatewayModule } from '../installation-report/infrastructure/modules/installation-report.gateway.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { InstallationOrderGatewayModule } from '../installation-order/infrastruc
     // Nuevos módulos del proceso BPMN (Fases 6-7, 12-13)
     InspectionOrderGatewayModule,
     InstallationOrderGatewayModule,
+    InstallationReportGatewayModule,
   ],
   controllers: [],
   providers: [],

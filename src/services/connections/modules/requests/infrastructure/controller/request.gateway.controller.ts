@@ -32,6 +32,7 @@ import { sendKafkaRequest } from '../../../../../../shared/utils/kafka/send.kafk
 import { KafkaProxyService } from '../../../../../../shared/kafka/kafka-proxy.service';
 import { UpdateRequestRequest } from '../../domain/schemas/dto/request/update-request.request';
 import { SubmitWithDocumentsRequest } from '../../domain/schemas/dto/request/submit-with-documents.request';
+import { SubmitCorrectionsRequest } from '../../domain/schemas/dto/request/submit-corrections.request';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { NotificationValidationMatrixResponse } from '../../domain/schemas/dto/response/notification-validation-matrix.response';
 
@@ -564,6 +565,69 @@ export class RequestGatewayController {
       );
       return new ApiResponse(
         'Solicitud creada y enviada exitosamente',
+        response,
+        request.url,
+      );
+    } catch (error) {
+      const err = error instanceof RpcException ? error.getError() : error;
+      throw new RpcException(err as string | object);
+    }
+  }
+
+  /**
+   * OPERACIÓN ATÓMICA — Sube archivos corregidos para documentos rechazados
+   * y transiciona la solicitud a DOCS_SUBMITTED.
+   */
+  @Post(':solicitudId/corrections')
+  @UseInterceptors(FilesInterceptor('files', 20)) // máximo 20 archivos
+  @ApiConsumes('multipart/form-data')
+  @ApiOperation({
+    summary: 'Fase 2: Subir correcciones en lote (atómico)',
+    description:
+      'Sube todos los archivos corregidos y transiciona a DOCS_SUBMITTED en una sola transacción. ' +
+      'documentIds debe ser una lista separada por comas con el mismo orden que los archivos. ' +
+      'Si cualquier paso falla → ROLLBACK total en PostgreSQL.',
+  })
+  @ApiBody({ type: SubmitCorrectionsRequest })
+  async submitCorrections(
+    @Param('solicitudId') solicitudId: string,
+    @Body() body: SubmitCorrectionsRequest,
+    @UploadedFiles() files: Express.Multer.File[],
+    @Req() request: Request,
+  ): Promise<ApiResponse> {
+    try {
+      this.logger.log(
+        `[POST /requests/${solicitudId}/corrections] data: ${JSON.stringify(body)}, archivos recibidos: ${files?.length ?? 0}`,
+      );
+      const docIds = (body.documentIds ?? '')
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean);
+
+      // Convierte cada archivo a base64 y lo empareja con su ID de documento
+      const documents = (files ?? []).map((file, idx) => ({
+        documentId: docIds[idx] ?? docIds[0] ?? '',
+        originalName: file.originalname,
+        mimeType: file.mimetype,
+        sizeInBytes: file.size,
+        fileBase64: `data:${file.mimetype};base64,${file.buffer.toString('base64')}`,
+      }));
+
+      const payload = {
+        solicitudId,
+        userId: body.userId,
+        documents,
+      };
+
+      const response = await sendKafkaRequest(
+        this.kafkaProxy.send(
+          this.kafkaClient,
+          'requests.submit_corrections',
+          payload,
+        ),
+      );
+      return new ApiResponse(
+        'Correcciones subidas y enviadas exitosamente',
         response,
         request.url,
       );

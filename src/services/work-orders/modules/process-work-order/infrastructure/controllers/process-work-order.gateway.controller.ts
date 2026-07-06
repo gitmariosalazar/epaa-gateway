@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
@@ -8,9 +9,21 @@ import {
   Post,
   Query,
   Req,
+  UploadedFiles,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
+import { FilesInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname, join } from 'path';
+import { renameSync } from 'fs';
 import { ClientKafka, RpcException } from '@nestjs/microservices';
 import { environments } from '../../../../../../settings/environments/environments';
 import { KafkaProxyService } from '../../../../../../shared/kafka/kafka-proxy.service';
@@ -25,6 +38,7 @@ import { CreatePreparationInspectionRequest } from '../../domain/dto/request/cre
 import { AddPreparationInspectionDetailRequest } from '../../domain/dto/request/add-preparation-inspection-detail.request';
 import { AddWorkOrderMaterialRequest } from '../../domain/dto/request/add-work-order-material.request';
 import { AddAdditionalCostRequest } from '../../domain/dto/request/add-additional-cost.request';
+import { AddAdditionalCostsBatchRequest } from '../../domain/dto/request/add-additional-costs-batch.request';
 import { AddWorkOrderAttachmentRequest } from '../../domain/dto/request/add-work-order-attachment.request';
 import { CreateQualityControlRequest } from '../../domain/dto/request/create-quality-control.request';
 import { AddQualityControlDetailRequest } from '../../domain/dto/request/add-quality-control-detail.request';
@@ -33,7 +47,23 @@ import { ResolvePreparationInspectionRequest } from '../../domain/dto/request/re
 import { ResolveQualityControlRequest } from '../../domain/dto/request/resolve-quality-control.request';
 import { AddWorkerToWorkOrderRequest } from '../../domain/dto/request/add-worker-to-work-order.request';
 import { RemoveWorkerFromWorkOrderRequest } from '../../domain/dto/request/remove-worker-from-work-order.request';
-import { AdvanceWorkOrderStateRequest }     from '../../domain/dto/request/advance-work-order-state.request';
+import { AdvanceWorkOrderStateRequest } from '../../domain/dto/request/advance-work-order-state.request';
+import { AddWorkOrderMaterialsBatchRequest } from '../../domain/dto/request/add-work-order-materials-batch.request';
+import { AddWorkersBatchToWorkOrderRequest } from '../../domain/dto/request/add-workers-batch-to-work-order.request';
+
+const WORK_ORDERS_UPLOAD_DIR = '/home/sigepaa/sigepaa/images/work_orders';
+
+/** Acepta hasta 10 archivos de cualquier tipo MIME, máx. 50 MB por archivo */
+const workOrderAttachmentInterceptor = FilesInterceptor('files', 10, {
+  storage: diskStorage({
+    destination: WORK_ORDERS_UPLOAD_DIR,
+    filename: (_req, file, cb) => {
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+      cb(null, `temp-${uniqueSuffix}${extname(file.originalname)}`);
+    },
+  }),
+  limits: { fileSize: 50 * 1024 * 1024 }, // 50 MB por archivo
+});
 
 @Controller('process-work-orders')
 @ApiTags('Process Work Orders')
@@ -340,7 +370,7 @@ export class ProcessWorkOrderGatewayController {
           'work-orders.process-work-order.start-execution',
           {
             ...payload,
-            newStatus: 'EN_PROCESO',
+            newStatus: payload.newStatus || 'EN_PROCESO',
           },
         ),
       );
@@ -390,6 +420,40 @@ export class ProcessWorkOrderGatewayController {
     }
   }
 
+  @Post('add-work-order-materials-batch')
+  @ApiOperation({
+    summary: 'Add work order materials in batch',
+    description:
+      'Fase 4 - Paso 1 (Ejecucion en campo): registra uno o más materiales en una única transacción atómica. Si alguno falla, se revierte el lote completo.',
+  })
+  @ApiBody({ type: AddWorkOrderMaterialsBatchRequest })
+  async addWorkOrderMaterialsBatch(
+    @Body() payload: AddWorkOrderMaterialsBatchRequest,
+    @Req() request: Request,
+  ): Promise<ApiResponse> {
+    try {
+      const response = await sendKafkaRequest(
+        this.kafkaProxy.send(
+          this.workOrderKafkaClient,
+          'work-orders.process-work-order.add-work-order-materials-batch',
+          payload,
+        ),
+      );
+      return new ApiResponse(
+        'Work order materials added successfully',
+        response,
+        request.url,
+      );
+    } catch (error) {
+      const err = error as Error;
+      this.logger.error(
+        `Error in addWorkOrderMaterialsBatch: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
+    }
+  }
+
   @Post('add-additional-cost')
   @ApiOperation({
     summary: 'Add additional cost',
@@ -424,28 +488,115 @@ export class ProcessWorkOrderGatewayController {
     }
   }
 
-  @Post('add-work-order-attachment')
+  @Post('add-additional-costs-batch')
   @ApiOperation({
-    summary: 'Add work order attachment',
+    summary: 'Add additional costs in batch',
     description:
-      'Fase 4 - Paso 3 (Ejecucion en campo): registra evidencias o adjuntos tecnicos de la OT (por ejemplo, fotografias).',
+      'Fase 4 - Paso 2 (Ejecucion en campo): registra uno o más costos adicionales en una única transacción atómica. Si alguno falla, se revierte el lote completo.',
   })
-  @ApiBody({ type: AddWorkOrderAttachmentRequest })
-  async addWorkOrderAttachment(
-    @Body() payload: AddWorkOrderAttachmentRequest,
+  @ApiBody({ type: AddAdditionalCostsBatchRequest })
+  async addAdditionalCostsBatch(
+    @Body() payload: AddAdditionalCostsBatchRequest,
     @Req() request: Request,
   ): Promise<ApiResponse> {
     try {
       const response = await sendKafkaRequest(
         this.kafkaProxy.send(
           this.workOrderKafkaClient,
-          'work-orders.process-work-order.add-work-order-attachment',
+          'work-orders.process-work-order.add-additional-costs-batch',
           payload,
         ),
       );
       return new ApiResponse(
-        'Work order attachment added successfully',
+        'Additional costs added successfully',
         response,
+        request.url,
+      );
+    } catch (error) {
+      const err = error as Error;
+      this.logger.error(
+        `Error in addAdditionalCostsBatch: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
+    }
+  }
+
+  @Post('add-work-order-attachment')
+  @UseInterceptors(workOrderAttachmentInterceptor)
+  @ApiConsumes('multipart/form-data')
+  @ApiOperation({
+    summary: 'Add work order attachments (batch)',
+    description:
+      'Fase 4 - Paso 3 (Ejecucion en campo): sube uno o varios archivos (máx. 10) de cualquier tipo ' +
+      '(imagen, PDF, Word, Excel, ZIP, etc.) y los registra como adjuntos de la OT. Máx. 50 MB por archivo.',
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      required: ['workOrderId', 'createdByUserId', 'files'],
+      properties: {
+        workOrderId: {
+          type: 'string',
+          format: 'uuid',
+          example: '7f2c1f1c-1f4f-4e17-8e2d-fc21f4d4e123',
+        },
+        createdByUserId: {
+          type: 'string',
+          format: 'uuid',
+          example: 'b2c3d4e5-f6a7-4b6c-9d8e-1f2a3b4c5d6e',
+        },
+        files: {
+          type: 'array',
+          items: { type: 'string', format: 'binary' },
+          description:
+            'Archivos adjuntos — cualquier tipo MIME aceptado. Mínimo 1, máximo 10.',
+        },
+      },
+    },
+  })
+  async addWorkOrderAttachment(
+    @Body() body: { workOrderId: string; createdByUserId: string },
+    @UploadedFiles() files: Express.Multer.File[],
+    @Req() request: Request,
+  ): Promise<ApiResponse> {
+    try {
+      if (!files || files.length === 0) {
+        throw new BadRequestException(
+          'Debe adjuntar al menos un archivo en el campo "files".',
+        );
+      }
+
+      const results: unknown[] = [];
+
+      for (const file of files) {
+        // Renombrar cada archivo temporal a nombre definitivo
+        const finalFilename = `wo-${body.workOrderId}-${Date.now()}-${Math.round(Math.random() * 1e9)}${extname(file.originalname)}`;
+        const finalPath = join(WORK_ORDERS_UPLOAD_DIR, finalFilename);
+        renameSync(file.path, finalPath);
+
+        const fileUrl = `$/images/work_orders/${finalFilename}`;
+        this.logger.log(`Work order attachment saved: ${fileUrl}`);
+
+        const response = await sendKafkaRequest(
+          this.kafkaProxy.send(
+            this.workOrderKafkaClient,
+            'work-orders.process-work-order.add-work-order-attachment',
+            {
+              workOrderId: body.workOrderId,
+              createdByUserId: body.createdByUserId,
+              fileName: file.originalname,
+              fileType: file.mimetype,
+              fileUrl,
+            },
+          ),
+        );
+        results.push(response);
+      }
+
+      return new ApiResponse(
+        `${results.length} attachment(s) added successfully`,
+        results,
         request.url,
       );
     } catch (error) {
@@ -476,7 +627,7 @@ export class ProcessWorkOrderGatewayController {
           'work-orders.process-work-order.start-execution',
           {
             ...payload,
-            newStatus: 'EJECUTADA',
+            newStatus: payload.newStatus || 'EJECUTADA',
           },
         ),
       );
@@ -778,6 +929,44 @@ export class ProcessWorkOrderGatewayController {
     }
   }
 
+  @Post('add-workers-batch')
+  @ApiOperation({
+    summary: 'Agregar trabajadores a OT en lote',
+    description:
+      'Agrega uno o más trabajadores a la OT en una única transacción atómica. Si alguno falla, se revierte el lote completo. Con isResponsible=true en un item se designa ese trabajador como técnico responsable.',
+  })
+  @ApiBody({ type: AddWorkersBatchToWorkOrderRequest })
+  async addWorkersBatchToWorkOrder(
+    @Body() payload: AddWorkersBatchToWorkOrderRequest,
+    @Req() request: Request,
+  ): Promise<ApiResponse> {
+    console.log(
+      'PAYLOAD RECEIVED IN GATEWAY:',
+      JSON.stringify(payload, null, 2),
+    );
+    try {
+      const response = await sendKafkaRequest(
+        this.kafkaProxy.send(
+          this.workOrderKafkaClient,
+          'work-orders.process-work-order.add-workers-batch',
+          payload,
+        ),
+      );
+      return new ApiResponse(
+        'Workers added to work order successfully',
+        response,
+        request.url,
+      );
+    } catch (error) {
+      const err = error as Error;
+      this.logger.error(
+        `Error in addWorkersBatchToWorkOrder: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
+    }
+  }
+
   @Post('remove-worker')
   @ApiOperation({
     summary: 'Remover trabajador de OT',
@@ -841,9 +1030,9 @@ export class ProcessWorkOrderGatewayController {
           'work-orders.process-work-order.receive',
           {
             workOrderId: payload.workOrderId,
-            newStatus:   payload.newStatus,   // ← se pasa sin modificar
-            userId:      payload.userId,
-            comment:     payload.comment ?? `Avance manual → ${payload.newStatus}`,
+            newStatus: payload.newStatus, // ← se pasa sin modificar
+            userId: payload.userId,
+            comment: payload.comment ?? `Avance manual → ${payload.newStatus}`,
           },
         ),
       );
@@ -854,7 +1043,10 @@ export class ProcessWorkOrderGatewayController {
       );
     } catch (error) {
       const err = error as Error;
-      this.logger.error(`Error in advanceWorkOrderState: ${err.message}`, err.stack);
+      this.logger.error(
+        `Error in advanceWorkOrderState: ${err.message}`,
+        err.stack,
+      );
       throw new RpcException(err as string | object);
     }
   }
@@ -867,12 +1059,12 @@ export class ProcessWorkOrderGatewayController {
   })
   async getAllWorkOrders(
     @Req() request: Request,
-    @Query('limit')  limit?:  string,
+    @Query('limit') limit?: string,
     @Query('offset') offset?: string,
   ): Promise<ApiResponse> {
     // ✅ Convertimos a entero de forma segura con valores por defecto.
     //    offset >= 0 (ya aceptado por el microservicio tras el fix).
-    const parsedLimit  = limit  ? Math.max(1, parseInt(limit,  10)) : 100;
+    const parsedLimit = limit ? Math.max(1, parseInt(limit, 10)) : 100;
     const parsedOffset = offset ? Math.max(0, parseInt(offset, 10)) : 0;
 
     const response = await sendKafkaRequest(

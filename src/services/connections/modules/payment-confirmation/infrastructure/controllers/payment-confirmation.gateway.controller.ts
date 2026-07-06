@@ -1,4 +1,4 @@
-import { Body, Controller, Inject, Logger, Patch, Req } from '@nestjs/common';
+import { Body, Controller, Inject, Logger, Patch, Req, Param } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ClientKafka, RpcException } from '@nestjs/microservices';
 import { environments } from '../../../../../../settings/environments/environments';
@@ -12,6 +12,11 @@ class ConfirmPaymentGatewayRequest {
   paymentReference: string;
   proofOfPaymentUrl?: string;
   collectorId: string;
+}
+
+class RejectPaymentGatewayRequest {
+  adminId: string;
+  reason: string;
 }
 
 @Controller('payment-confirmation')
@@ -49,6 +54,37 @@ export class PaymentConfirmationGatewayController {
         ),
       );
       return new ApiResponse('Pago confirmado exitosamente', result, request.url, 200);
+    } catch (error) {
+      const err = error instanceof RpcException ? error.getError() : error;
+      throw new RpcException(err as string | object);
+    }
+  }
+
+  /**
+   * RECHAZO DE PAGO DE INSPECCIÓN
+   * PATCH /payment-confirmation/facturas/:invoiceId/rechazar
+   */
+  @Patch('facturas/:invoiceId/rechazar')
+  @ApiOperation({
+    summary: 'Rechazar comprobante de pago',
+    description:
+      'Rechaza un comprobante de pago subido, devolviendo la solicitud a FACTURA_INSPECCION_EMITIDA.',
+  })
+  async rejectPayment(
+    @Param('invoiceId') invoiceId: string,
+    @Body() body: RejectPaymentGatewayRequest,
+    @Req() request: Request,
+  ): Promise<ApiResponse> {
+    try {
+      this.logger.log(`Rejecting payment for invoice: ${invoiceId}`);
+      const result = await sendKafkaRequest(
+        this.kafkaProxy.send(
+          this.kafkaClient,
+          'payment_confirmation.reject_payment',
+          { invoiceId, ...body },
+        ),
+      );
+      return new ApiResponse('Comprobante rechazado exitosamente', result, request.url, 200);
     } catch (error) {
       const err = error instanceof RpcException ? error.getError() : error;
       throw new RpcException(err as string | object);
