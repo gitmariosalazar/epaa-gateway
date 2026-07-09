@@ -81,4 +81,12 @@ export class CreateReadingRequest {
     type: String,
   })
   previousMonthReading!: string;
+
+  @ApiProperty({
+    example: { lat: -2.1701, lng: -79.9224 },
+    description: 'GPS coordinates captured at reading time',
+    required: false,
+    nullable: true,
+  })
+  locationCapture?: { lat: number; lng: number } | null;
 }

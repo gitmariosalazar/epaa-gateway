@@ -13,6 +13,7 @@ export interface ReadingResponse {
   rentalIncomeCode: number | null;
   novelty: string | null;
   incomeCode: number | null;
+  locationCapture?: { lat: number; lng: number } | null;
 }
 
 export interface ReadingHistoryResponse {
@@ -73,6 +74,11 @@ export interface TakenReadingConnectionResponse {
   readingTypeId: number;
   readingTypeName: string;
   novelty?: string;
+  locationCapture?: { lat: number; lng: number } | null;
+  locationConnection?: { lat: number; lng: number } | null;
+  distanceMeters?: number | null;
+  isInsideAllowedRadius?: boolean | null;
+  distanceLineGeoJSON?: any | null;
 }
 
 export interface ReadingNoveltyResponse {
@@ -100,4 +106,9 @@ export interface ReadingNoveltyResponse {
   noveltyTypeName: string | null;
   noveltyTypeDescription: string | null;
   images: string[];
+  locationCapture?: { lat: number; lng: number } | null;
+  locationConnection?: { lat: number; lng: number } | null;
+  distanceMeters?: number | null;
+  isInsideAllowedRadius?: boolean | null;
+  distanceLineGeoJSON?: any | null;
 }
