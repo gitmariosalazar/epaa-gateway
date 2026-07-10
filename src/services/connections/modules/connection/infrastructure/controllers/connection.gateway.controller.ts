@@ -386,9 +386,6 @@ export class ConnectionGatewayController {
           cadastralKey,
         ),
       );
-      this.logger.log(
-        `Connection and property retrieved successfully: ${JSON.stringify(response)}`,
-      );
       return new ApiResponse(
         `Connection and property retrieved successfully!`,
         response,
@@ -421,9 +418,6 @@ export class ConnectionGatewayController {
           searchValue,
         ),
       );
-      this.logger.log(
-        `Connection and property retrieved successfully: ${JSON.stringify(response)}`,
-      );
       return new ApiResponse(
         `Connection and property retrieved successfully!`,
         response,
@@ -454,9 +448,6 @@ export class ConnectionGatewayController {
           'connections.find-connection-with-property-by-cadastral-key',
           cadastralKey,
         ),
-      );
-      this.logger.log(
-        `Connection with property retrieved successfully: ${JSON.stringify(response)}`,
       );
       return new ApiResponse(
         `Connection with property retrieved successfully!`,
@@ -517,12 +508,14 @@ export class ConnectionGatewayController {
     @Query('offset') offset?: number,
     @Query('query') query?: string,
     @Query('hasIncidents') hasIncidents?: string,
+    @Query('hasCoordinates') hasCoordinates?: string,
     @Query('status') status?: string,
     @Query('sewerage') sewerage?: string,
+    @Query('searchField') searchField?: string,
   ): Promise<ApiResponse> {
     try {
       this.logger.log(
-        `Received request to get connections paginated with limit=${limit}, offset=${offset}, query=${query}, hasIncidents=${hasIncidents}, status=${status}, sewerage=${sewerage}`,
+        `Received request to get connections paginated with limit=${limit}, offset=${offset}, query=${query}, hasIncidents=${hasIncidents}, hasCoordinates=${hasCoordinates}, status=${status}, sewerage=${sewerage}, searchField=${searchField}`,
       );
       const response: ConnectionResponse[] = await sendKafkaRequest(
         this.kafkaProxy.send(
@@ -533,8 +526,10 @@ export class ConnectionGatewayController {
             offset,
             query,
             ...(hasIncidents ? { hasIncidents } : {}),
-            ...(status       ? { status }       : {}),
-            ...(sewerage     ? { sewerage }     : {}),
+            ...(hasCoordinates ? { hasCoordinates } : {}),
+            ...(status ? { status } : {}),
+            ...(sewerage ? { sewerage } : {}),
+            ...(searchField ? { searchField } : {}),
           },
         ),
       );

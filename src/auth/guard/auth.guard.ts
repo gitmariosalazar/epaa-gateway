@@ -41,14 +41,14 @@ export class AuthGuard implements CanActivate {
       });
 
       //this.logger.log('Payload verified in the gateway!');
-      console.log('Payload:', payload);
+      //console.log('Payload:', payload);
       // Read user types metadata using Reflector
       const allowedUserTypes = this.reflector.getAllAndOverride<string[]>(
         'user_types',
         [context.getHandler(), context.getClass()],
       );
 
-      console.log('Allowed user types for this endpoint:', allowedUserTypes);
+      //console.log('Allowed user types for this endpoint:', allowedUserTypes);
 
       // Retrocompatibility/Defensive: Default to 'employee' if no explicit allowed user types are defined on the endpoint
       const userTypes = allowedUserTypes || ['employee'];
