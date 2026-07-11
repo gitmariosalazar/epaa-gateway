@@ -1,6 +1,7 @@
 import {
   CanActivate,
   ExecutionContext,
+  Inject,
   Injectable,
   Logger,
 } from '@nestjs/common';
@@ -11,6 +12,11 @@ import { Request } from 'express';
 import { statusCode } from '../../settings/environments/status-code';
 import { environments } from '../../settings/environments/environments';
 import { IS_PUBLIC_KEY } from '../decorator/public.decorator';
+import { REQUIRE_APP_KEY } from '../decorator/require-app-key.decorator';
+import {
+  API_KEY_VALIDATOR,
+  IApiKeyValidator,
+} from '../interfaces/api-key-validator.interface';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -19,63 +25,76 @@ export class AuthGuard implements CanActivate {
   constructor(
     private readonly jwtService: JwtService,
     private readonly reflector: Reflector,
+    @Inject(API_KEY_VALIDATOR)
+    private readonly apiKeyValidator: IApiKeyValidator,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
-      context.getHandler(),
-      context.getClass(),
-    ]);
+    const handlers = [context.getHandler(), context.getClass()];
+
+    const isPublic = this.reflector.getAllAndOverride<boolean>(
+      IS_PUBLIC_KEY,
+      handlers,
+    );
+    const requiresAppKey = this.reflector.getAllAndOverride<boolean>(
+      REQUIRE_APP_KEY,
+      handlers,
+    );
 
     const request = context.switchToHttp().getRequest<Request>();
     const token = this.extractToken(request);
 
+    // ── No JWT token present ────────────────────────────────────────────────
     if (!token) {
-      if (isPublic) {
-        return true; // Permitir acceso anónimo
+      if (isPublic) return true;
+
+      if (requiresAppKey) {
+        return this.assertAppKey(request);
       }
+
       throw new RpcException({
         statusCode: statusCode.UNAUTHORIZED,
         message: 'Authorization token is missing or malformed!',
       });
     }
 
+    // ── JWT token present → verify it ───────────────────────────────────────
     try {
       const payload = await this.jwtService.verifyAsync(token, {
         secret: environments.JWT_ACCESS_TOKEN_SECRET,
       });
 
-      //this.logger.log('Payload verified in the gateway!');
-      //console.log('Payload:', payload);
-      // Read user types metadata using Reflector
       const allowedUserTypes = this.reflector.getAllAndOverride<string[]>(
         'user_types',
-        [context.getHandler(), context.getClass()],
+        handlers,
       );
 
-      //console.log('Allowed user types for this endpoint:', allowedUserTypes);
+      // For @RequireAppKey() endpoints no explicit user-type restriction is
+      // assumed when none is declared: any authenticated user type is valid.
+      if (!requiresAppKey || allowedUserTypes) {
+        const userTypes = allowedUserTypes || ['employee'];
+        const userType: string = payload.user_type || 'employee';
 
-      // Retrocompatibility/Defensive: Default to 'employee' if no explicit allowed user types are defined on the endpoint
-      const userTypes = allowedUserTypes || ['employee'];
-
-      const userType = payload.user_type || 'employee';
-
-      if (!userTypes.includes(userType)) {
-        throw new RpcException({
-          statusCode: statusCode.FORBIDDEN,
-          message:
-            'You do not have the required permissions to access this resource!',
-        });
+        if (!userTypes.includes(userType)) {
+          throw new RpcException({
+            statusCode: statusCode.FORBIDDEN,
+            message:
+              'You do not have the required permissions to access this resource!',
+          });
+        }
       }
 
-      request['user'] = payload; // Attach user payload to request
+      request['user'] = payload;
       request['auth_token'] = token;
       return true;
     } catch (error) {
-      if (isPublic) {
-        return true; // Si es público, aunque el token falle, lo dejamos pasar como anónimo (o podrías lanzar error)
+      if (isPublic) return true;
+
+      // JWT failed on a @RequireAppKey() endpoint → fall back to API key
+      if (requiresAppKey) {
+        return this.assertAppKey(request);
       }
-      
+
       this.logger.error(
         'Error verifying token in the gateway!',
         error instanceof Error ? error.stack : error,
@@ -88,6 +107,27 @@ export class AuthGuard implements CanActivate {
         message: 'Token is not valid or has expired!',
       });
     }
+  }
+
+  /**
+   * Validates the `x-api-key` header for endpoints decorated with
+   * @RequireAppKey(). Throws HTTP 401 when the key is absent or invalid.
+   */
+  private assertAppKey(request: Request): boolean {
+    const providedKey = request.headers['x-api-key'];
+
+    if (
+      typeof providedKey !== 'string' ||
+      !this.apiKeyValidator.isValid(providedKey)
+    ) {
+      throw new RpcException({
+        statusCode: statusCode.UNAUTHORIZED,
+        message:
+          'Access denied: a valid x-api-key header is required for unauthenticated requests to this endpoint.',
+      });
+    }
+
+    return true;
   }
 
   /**

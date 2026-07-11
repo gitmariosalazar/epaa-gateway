@@ -34,7 +34,7 @@ import { AuditGatewayModule } from './services/security/modules/audit/infrastruc
 import { UserEmployeeGatewayModule } from './services/security/modules/user-employee/infrastructure/modules/user-employee.gateway.module';
 import { AuthGatewayModule } from './services/security/modules/auth/infrastructure/modules/auth.gateway.module';
 import { JwtModule } from '@nestjs/jwt';
-import { AuthGuard } from './auth/guard/auth.guard';
+import { AuthCoreModule } from './auth/auth-core.module';
 import { LocationGlobalGatewayModule } from './services/location/modules/location/infrastructure/modules/location-global.gateway.module';
 import { EpaaLegacyFactoryModule } from './services/epaa-legacy/modules/factory/epaa-legacy.factory.module';
 import { ConnectionFactoryModule } from './services/connections/modules/factory/connection.factory.module';
@@ -90,6 +90,7 @@ import { ImageServeModule } from './shared/files/files-serve.module';
     NotificationGatewayModule,
     DocumentsFactoryModule,
     ImageServeModule,
+    AuthCoreModule,
     JwtModule.register({
       global: true,
       secret: process.env.JWT_SECRET,
@@ -98,12 +99,11 @@ import { ImageServeModule } from './shared/files/files-serve.module';
   ],
   controllers: [],
   providers: [
-    AuthGuard,
     {
       provide: APP_INTERCEPTOR,
       useClass: AuditContextInterceptor,
     },
   ],
-  exports: [AuthGuard],
+  exports: [],
 })
 export class AppModule {}

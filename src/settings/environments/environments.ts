@@ -154,6 +154,7 @@ interface EnvironmentVariables {
   JWT_ACCESS_TOKEN_SECRET: string;
   JWT_ACCESS_EXPIRATION: string;
   JWT_REFRESH_EXPIRATION: string;
+  APP_API_KEY: string;
 }
 
 const envVarsSchema: Joi.ObjectSchema<EnvironmentVariables> = Joi.object({
@@ -306,6 +307,7 @@ const envVarsSchema: Joi.ObjectSchema<EnvironmentVariables> = Joi.object({
   JWT_ACCESS_EXPIRATION: Joi.string().required(),
   JWT_REFRESH_EXPIRATION: Joi.string().required(),
   FILE_STORAGE_PATH: Joi.string().required(),
+  APP_API_KEY: Joi.string().required(),
 }).unknown();
 
 const { error, value: envVars } = envVarsSchema.validate(process.env);
@@ -559,4 +561,5 @@ export const environments = {
   JWT_ACCESS_EXPIRATION: envVars.JWT_ACCESS_EXPIRATION,
   JWT_REFRESH_EXPIRATION: envVars.JWT_REFRESH_EXPIRATION,
   FILE_STORAGE_PATH: envVars.FILE_STORAGE_PATH,
+  APP_API_KEY: envVars.APP_API_KEY,
 };

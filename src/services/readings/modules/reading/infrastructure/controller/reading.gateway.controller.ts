@@ -12,13 +12,16 @@ import {
   Query,
   Req,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { ClientKafka, RpcException } from '@nestjs/microservices';
 import {
   ApiBearerAuth,
+  ApiConsumes,
   ApiOperation,
   ApiParam,
   ApiQuery,
+  ApiSecurity,
   ApiTags,
 } from '@nestjs/swagger';
 import { UpdateReadingRequest } from '../../domain/schemas/dto/request/update-reading.request';
@@ -46,6 +49,7 @@ import {
 import { CreateReadingLegacyRequest } from '../../../../../epaa-legacy/modules/readings/domain/schemas/dto/request/create.reading-legacy.request';
 import { RealtimeService } from '../../../../../../shared/realtime';
 import { NoveltyResponse } from '../../domain/schemas/dto/response/novelty.response';
+import { RequireAppKey } from '../../../../../../auth/decorator/require-app-key.decorator';
 
 @Controller('Readings')
 @ApiTags('Readings')
@@ -95,6 +99,9 @@ export class ReadingGatewayController {
     }
   }
 
+  @RequireAppKey()
+  @ApiSecurity('x-api-key')
+  @ApiConsumes('multipart/form-data')
   @Get('find-reading-info/:cadastralKey')
   @ApiOperation({
     summary: 'Method GET - Find Reading Info by cadastral key',

@@ -20,7 +20,7 @@ async function bootstrap() {
   // la validación de negocio la realiza cada microservicio con sus propias reglas.
   app.useGlobalPipes(
     new ValidationPipe({
-      transform: true,             // coerción automática de tipos (UUID, number, etc.)
+      transform: true, // coerción automática de tipos (UUID, number, etc.)
       transformOptions: {
         enableImplicitConversion: true, // convierte query params string → number automáticamente
       },
@@ -31,7 +31,12 @@ async function bootstrap() {
     origin: true,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'X-Requested-With',
+      'x-api-key',
+    ],
     exposedHeaders: ['Set-Cookie'],
     preflightContinue: false,
     optionsSuccessStatus: 204,
@@ -55,6 +60,16 @@ async function bootstrap() {
       in: 'cookie',
       name: 'auth_token',
     })
+    .addApiKey(
+      {
+        type: 'apiKey',
+        in: 'header',
+        name: 'x-api-key',
+        description:
+          'Mobile-app token required for unauthenticated requests to protected public endpoints.',
+      },
+      'x-api-key',
+    )
     .build();
 
   const documentFactory = () => SwaggerModule.createDocument(app, config);

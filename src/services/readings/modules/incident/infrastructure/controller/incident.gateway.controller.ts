@@ -21,6 +21,7 @@ import {
   ApiBody,
   ApiConsumes,
   ApiOperation,
+  ApiSecurity,
   ApiTags,
 } from '@nestjs/swagger';
 import { FilesInterceptor } from '@nestjs/platform-express';
@@ -37,7 +38,7 @@ import { sendKafkaRequest } from '../../../../../../shared/utils/kafka/send.kafk
 import { AuthGuard } from '../../../../../../auth/guard/auth.guard';
 import { KafkaProxyService } from '../../../../../../shared/kafka/kafka-proxy.service';
 import { AllowedUserTypes } from '../../../../../../auth/decorator/allowed-user-types.decorator';
-import { Public } from '../../../../../../auth/decorator/public.decorator';
+import { RequireAppKey } from '../../../../../../auth/decorator/require-app-key.decorator';
 import { IncidentCategoryResponse } from '../../domain/schemas/dto/response/incident-category-type.response';
 import { IncidentDetailRowResponse } from '../../domain/schemas/dto/response/view_incident.response';
 
@@ -77,7 +78,8 @@ export class IncidentGatewayController {
   ) {}
 
   @Post('create-incident')
-  @Public()
+  @RequireAppKey()
+  @ApiSecurity('x-api-key')
   @UseInterceptors(incidentImagesInterceptor)
   @ApiConsumes('multipart/form-data')
   @ApiOperation({
@@ -119,7 +121,8 @@ export class IncidentGatewayController {
         reportClient: {
           type: 'string',
           description: 'JSON string of anonymous reporter data (optional)',
-          example: '{"firstName":"Carlos","lastName":"Salazar","email":"mariosalaza@gmail.com","cellPhone":"3132584575"}',
+          example:
+            '{"firstName":"Carlos","lastName":"Salazar","email":"mariosalaza@gmail.com","cellPhone":"3132584575"}',
         },
         images: {
           type: 'array',
@@ -180,6 +183,8 @@ export class IncidentGatewayController {
   }
 
   @Put('resolve-incident/:incidentId')
+  @RequireAppKey()
+  @ApiSecurity('x-api-key')
   @UseInterceptors(incidentImagesInterceptor)
   @ApiConsumes('multipart/form-data')
   @ApiOperation({
@@ -248,6 +253,9 @@ export class IncidentGatewayController {
     }
   }
 
+  @RequireAppKey()
+  @ApiSecurity('x-api-key')
+  @ApiConsumes('multipart/form-data')
   @Get('find-by-connection/:connectionId')
   @ApiOperation({
     summary: 'Method GET - Find Incidents by Connection ID',
@@ -282,6 +290,9 @@ export class IncidentGatewayController {
     }
   }
 
+  @RequireAppKey()
+  @ApiSecurity('x-api-key')
+  @ApiConsumes('multipart/form-data')
   @Get('search')
   @AllowedUserTypes('employee', 'customer')
   @ApiOperation({
@@ -310,6 +321,9 @@ export class IncidentGatewayController {
     }
   }
 
+  @RequireAppKey()
+  @ApiSecurity('x-api-key')
+  @ApiConsumes('multipart/form-data')
   @Get('categories')
   @ApiOperation({
     summary: 'Method GET - Retrieve Incident Categories and Types',
