@@ -20,7 +20,7 @@ export interface IncidentHistoryResponse {
   dateChange: string; // ISO 8601 Date string
   previousStatus: string | null;
   newStatus: string;
-  managedBy: string;
+  managedBy: string | Record<string, any>;
   observation: string | null;
 }
 
@@ -67,12 +67,15 @@ export interface UserRowResponse {
   name: string; // UUID
   cardId: string;
   userType: string;
+  email: string | null;
+  phone: string | null;
 }
 
 // 3. Interfaz Principal (La Fila de la Vista)
 export interface IncidentDetailRowResponse {
-  incidentId: number;
+  incidentId: string;
   connectionId: string | null;
+  incidentCode: string;
   readingId: number | null;
 
   // Categoría y Tipo

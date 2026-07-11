@@ -6,7 +6,7 @@ export class IncidentResponse {
     example: 1,
     description: 'The unique identifier of the incident',
   })
-  incidentId!: number;
+  incidentId!: string;
 
   @ApiProperty({
     example: '14-293',
@@ -17,7 +17,13 @@ export class IncidentResponse {
   connectionId!: string | null;
 
   @ApiProperty({
-    example: 123,
+    example: 'INC-EPAA-000001',
+    description: 'The unique code of the incident',
+  })
+  incidentCode!: string;
+
+  @ApiProperty({
+    example: '123',
     description:
       'The unique identifier of the reading linked to this incident (optional)',
     nullable: true,
@@ -131,4 +137,21 @@ export class IncidentResponse {
     description: 'The cost associated with repairing the incident',
   })
   repairCost!: number;
+
+  @ApiProperty({
+    example: {
+      firstName: 'Carlos',
+      lastName: 'Salazar',
+      email: 'mariosalaza@gmail.com',
+      cellPhone: '3132584575'
+    },
+    description: 'Anonymous reporter data if the user is not registered',
+    nullable: true,
+  })
+  reportClient?: {
+    firstName: string;
+    lastName: string;
+    email: string | null;
+    cellPhone: string | null;
+  } | null;
 }

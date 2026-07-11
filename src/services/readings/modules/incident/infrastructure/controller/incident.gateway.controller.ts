@@ -37,6 +37,7 @@ import { sendKafkaRequest } from '../../../../../../shared/utils/kafka/send.kafk
 import { AuthGuard } from '../../../../../../auth/guard/auth.guard';
 import { KafkaProxyService } from '../../../../../../shared/kafka/kafka-proxy.service';
 import { AllowedUserTypes } from '../../../../../../auth/decorator/allowed-user-types.decorator';
+import { Public } from '../../../../../../auth/decorator/public.decorator';
 import { IncidentCategoryResponse } from '../../domain/schemas/dto/response/incident-category-type.response';
 import { IncidentDetailRowResponse } from '../../domain/schemas/dto/response/view_incident.response';
 
@@ -76,7 +77,7 @@ export class IncidentGatewayController {
   ) {}
 
   @Post('create-incident')
-  @AllowedUserTypes('employee', 'customer')
+  @Public()
   @UseInterceptors(incidentImagesInterceptor)
   @ApiConsumes('multipart/form-data')
   @ApiOperation({
@@ -115,6 +116,11 @@ export class IncidentGatewayController {
         },
         latitude: { type: 'number', example: -0.1807 },
         longitude: { type: 'number', example: -78.4678 },
+        reportClient: {
+          type: 'string',
+          description: 'JSON string of anonymous reporter data (optional)',
+          example: '{"firstName":"Carlos","lastName":"Salazar","email":"mariosalaza@gmail.com","cellPhone":"3132584575"}',
+        },
         images: {
           type: 'array',
           items: { type: 'string', format: 'binary' },
@@ -201,7 +207,7 @@ export class IncidentGatewayController {
     },
   })
   async resolveIncident(
-    @Param('incidentId', ParseIntPipe) incidentId: number,
+    @Param('incidentId') incidentId: string,
     @Body() body: Record<string, string>,
     @UploadedFiles() files: Express.Multer.File[],
     @Req() request: Request,
@@ -350,6 +356,7 @@ export class IncidentGatewayController {
       priority: body.priority as CreateIncidentRequest['priority'],
       latitude: this.parseOptionalNumber(body.latitude),
       longitude: this.parseOptionalNumber(body.longitude),
+      reportClient: body.reportClient ? JSON.parse(body.reportClient) : null,
     };
   }
 

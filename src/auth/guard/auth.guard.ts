@@ -10,6 +10,7 @@ import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
 import { statusCode } from '../../settings/environments/status-code';
 import { environments } from '../../settings/environments/environments';
+import { IS_PUBLIC_KEY } from '../decorator/public.decorator';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -21,14 +22,18 @@ export class AuthGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context.switchToHttp().getRequest<Request>();
+    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
 
+    const request = context.switchToHttp().getRequest<Request>();
     const token = this.extractToken(request);
 
-    //this.logger.log('Token received in the gateway!');
-    //console.log(token);
-
     if (!token) {
+      if (isPublic) {
+        return true; // Permitir acceso anónimo
+      }
       throw new RpcException({
         statusCode: statusCode.UNAUTHORIZED,
         message: 'Authorization token is missing or malformed!',
@@ -67,6 +72,10 @@ export class AuthGuard implements CanActivate {
       request['auth_token'] = token;
       return true;
     } catch (error) {
+      if (isPublic) {
+        return true; // Si es público, aunque el token falle, lo dejamos pasar como anónimo (o podrías lanzar error)
+      }
+      
       this.logger.error(
         'Error verifying token in the gateway!',
         error instanceof Error ? error.stack : error,

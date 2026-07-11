@@ -82,4 +82,21 @@ export class CreateIncidentRequest {
     type: [String],
   })
   images?: string[];
+
+  @ApiProperty({
+    example: {
+      firstName: 'Carlos',
+      lastName: 'Salazar',
+      email: 'mariosalaza@gmail.com',
+      cellPhone: '3132584575'
+    },
+    description: 'Anonymous reporter data if the user is not registered',
+    required: false,
+  })
+  reportClient?: {
+    firstName: string;
+    lastName: string;
+    email: string | null;
+    cellPhone: string | null;
+  } | null;
 }
