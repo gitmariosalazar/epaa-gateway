@@ -69,6 +69,36 @@ export class ConnectionGatewayController {
     }
   }
 
+  @Get('get-customer-dashboard/:clientId')
+  @ApiOperation({
+    summary: 'Method GET - Get customer dashboard',
+    description: 'Retrieves consolidated dashboard for a specific client',
+  })
+  async getCustomerDashboard(
+    @Req() request: Request,
+    @Param('clientId') clientId: string,
+  ): Promise<ApiResponse> {
+    try {
+      this.logger.log(
+        `Received request to get customer dashboard for client ID: ${clientId}`,
+      );
+      const response: any = await sendKafkaRequest(
+        this.kafkaProxy.send(
+          this.connectionKafkaClient,
+          'connections.get-customer-dashboard',
+          clientId,
+        ),
+      );
+      return new ApiResponse(
+        `Customer dashboard retrieved successfully!`,
+        response,
+        request.url,
+      );
+    } catch (error) {
+      throw new RpcException(error as string | object);
+    }
+  }
+
   @Get('live-update-map-connections')
   @ApiOperation({
     summary: 'Method GET - Get live update map connections',

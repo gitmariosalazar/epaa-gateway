@@ -77,6 +77,39 @@ export class IncidentGatewayController {
     private readonly kafkaProxy: KafkaProxyService,
   ) {}
 
+  @RequireAppKey()
+  @ApiSecurity('x-api-key')
+  @Get('dashboard/kpis')
+  @ApiOperation({
+    summary: 'Method GET - Get Incident Dashboard KPIs',
+    description:
+      'Retrieves consolidated KPIs for the incident dashboard',
+  })
+  async getIncidentDashboardKpis(@Req() request: Request): Promise<ApiResponse> {
+    try {
+      const response: any = await sendKafkaRequest(
+        this.kafkaProxy.send(
+          this.incidentClient,
+          'incident.dashboard-kpis',
+          {},
+        ),
+      );
+
+      return new ApiResponse(
+        'Incident dashboard KPIs retrieved successfully!',
+        response,
+        request.url,
+      );
+    } catch (error) {
+      const err = error as Error;
+      this.logger.error(
+        `Error retrieving incident dashboard KPIs: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
+    }
+  }
+
   @Post('create-incident')
   @RequireAppKey()
   @ApiSecurity('x-api-key')

@@ -21,12 +21,16 @@ import { ApiResponse } from '../../../../../../shared/errors/responses/ApiRespon
 import { AuthGuard } from '../../../../../../auth/guard/auth.guard';
 import { CreateCustomerRequest } from '../../domain/schemas/dto/request/create.customer.request';
 import { UpdateCustomerRequest } from '../../domain/schemas/dto/request/update.customer.request';
-import { CustomerResponse } from '../../domain/schemas/dto/response/customer.response';
+import {
+  CustomerResponse,
+  UserProfileResponse,
+} from '../../domain/schemas/dto/response/customer.response';
 import { sendKafkaRequest } from '../../../../../../shared/utils/kafka/send.kafka.request';
 import { RegisterNaturalRequest } from '../../domain/schemas/dto/request/register-natural.request';
 import { RegisterCompanyRequest } from '../../domain/schemas/dto/request/register-company.request';
 import { VerifyCodeRequest } from '../../domain/schemas/dto/request/verify-code.request';
 import { ResendVerificationCodeRequest } from '../../domain/schemas/dto/request/resend-verification-code.request';
+import { AllowedUserTypes } from '../../../../../../auth/decorator/allowed-user-types.decorator';
 
 @Controller('customer-gateway')
 @ApiTags('Customer-Gateway')
@@ -364,7 +368,7 @@ export class CustomerGatewayController {
         this.kafkaProxy.send(
           this.customerClient,
           'customers.verify-customer-exists',
-          payload.clientId,   // ✅ string: preserva ceros iniciales ('0400000000')
+          payload.clientId, // ✅ string: preserva ceros iniciales ('0400000000')
         ),
       ).catch(() => false);
 
@@ -373,7 +377,7 @@ export class CustomerGatewayController {
           `Customer profile already exists for customerId: ${payload.clientId}. Updating profile details.`,
         );
         const profilePayload = {
-          customerId: payload.clientId,   // ✅ string
+          customerId: payload.clientId, // ✅ string
           firstName: payload.firstName,
           lastName: payload.lastName,
           emails: payload.emails,
@@ -394,7 +398,7 @@ export class CustomerGatewayController {
             this.customerClient,
             'customers.update-customer',
             {
-              customerId: payload.clientId,   // ✅ string
+              customerId: payload.clientId, // ✅ string
               customer: profilePayload,
             },
           ),
@@ -404,7 +408,7 @@ export class CustomerGatewayController {
         );
       } else {
         const profilePayload = {
-          customerId: payload.clientId,   // ✅ string
+          customerId: payload.clientId, // ✅ string
           firstName: payload.firstName,
           lastName: payload.lastName,
           emails: payload.emails,
@@ -452,10 +456,14 @@ export class CustomerGatewayController {
     clienteUsuarioId: string,
     tipoCodigo: 'EMAIL_CODE' | 'PHONE_CODE' = 'EMAIL_CODE',
   ): void {
-    this.kafkaProxy.emit(this.clientKafka, 'authentication.customer.send_verification_code', {
-      clienteUsuarioId,
-      tipoCodigo,
-    });
+    this.kafkaProxy.emit(
+      this.clientKafka,
+      'authentication.customer.send_verification_code',
+      {
+        clienteUsuarioId,
+        tipoCodigo,
+      },
+    );
     this.logger.log(
       `[VerificationCode] Emitido código para user: ${clienteUsuarioId}, tipo: ${tipoCodigo}`,
     );
@@ -616,7 +624,7 @@ export class CustomerGatewayController {
       this.logger.log(
         `[verify-code] user: ${body.clienteUsuarioId}, tipo: ${body.tipoCodigo ?? 'EMAIL_CODE'}`,
       );
-      const result = await sendKafkaRequest(
+      const result = (await sendKafkaRequest(
         this.kafkaProxy.send(
           this.clientKafka,
           'authentication.customer.verify_code',
@@ -626,7 +634,7 @@ export class CustomerGatewayController {
             tipoCodigo: body.tipoCodigo ?? 'EMAIL_CODE',
           },
         ),
-      ) as { verified: boolean; message: string };
+      )) as { verified: boolean; message: string };
       return new ApiResponse(
         result.message ?? 'Cuenta verificada correctamente',
         { verified: result.verified },
@@ -672,7 +680,47 @@ export class CustomerGatewayController {
       );
     } catch (error) {
       const err = error as Error;
-      this.logger.error(`Error in resendVerificationCode: ${err.message}`, err.stack);
+      this.logger.error(
+        `Error in resendVerificationCode: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
+    }
+  }
+
+  @AllowedUserTypes('customer')
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard)
+  @Get('profile/:searchValue')
+  @ApiOperation({
+    summary: 'Get user profile by search value',
+    description:
+      'Retrieves a user profile by email, client ID, or user UUID. ' +
+      'Useful for fetching profile details without exposing sensitive data.',
+  })
+  async getProfileBySearchValue(
+    @Param('searchValue') searchValue: string,
+    @Req() request: Request,
+  ): Promise<ApiResponse> {
+    try {
+      const response: UserProfileResponse | null = await sendKafkaRequest(
+        this.kafkaProxy.send(
+          this.clientKafka,
+          'authentication.customer.get_profile_by_search_value',
+          searchValue,
+        ),
+      );
+      return new ApiResponse(
+        'User profile retrieved successfully',
+        response,
+        request.url,
+      );
+    } catch (error) {
+      const err = error as Error;
+      this.logger.error(
+        `Error retrieving user profile by search value: ${err.message}`,
+        err.stack,
+      );
       throw new RpcException(err as string | object);
     }
   }
