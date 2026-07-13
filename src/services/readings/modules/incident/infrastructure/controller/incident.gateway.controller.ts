@@ -82,10 +82,11 @@ export class IncidentGatewayController {
   @Get('dashboard/kpis')
   @ApiOperation({
     summary: 'Method GET - Get Incident Dashboard KPIs',
-    description:
-      'Retrieves consolidated KPIs for the incident dashboard',
+    description: 'Retrieves consolidated KPIs for the incident dashboard',
   })
-  async getIncidentDashboardKpis(@Req() request: Request): Promise<ApiResponse> {
+  async getIncidentDashboardKpis(
+    @Req() request: Request,
+  ): Promise<ApiResponse> {
     try {
       const response: any = await sendKafkaRequest(
         this.kafkaProxy.send(
@@ -194,6 +195,8 @@ export class IncidentGatewayController {
       } else {
         kafkaPayload.reporterUserId = userId;
       }
+
+      this.logger.log(kafkaPayload);
 
       const response: IncidentResponse = await sendKafkaRequest(
         this.kafkaProxy.send(
