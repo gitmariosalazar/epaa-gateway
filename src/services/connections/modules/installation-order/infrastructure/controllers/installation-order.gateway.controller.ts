@@ -1,4 +1,12 @@
-import { Body, Controller, Inject, Logger, Patch, Post, Req } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Inject,
+  Logger,
+  Patch,
+  Post,
+  Req,
+} from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ClientKafka, RpcException } from '@nestjs/microservices';
 import { environments } from '../../../../../../settings/environments/environments';
@@ -7,31 +15,31 @@ import { sendKafkaRequest } from '../../../../../../shared/utils/kafka/send.kafk
 import { KafkaProxyService } from '../../../../../../shared/kafka/kafka-proxy.service';
 
 class IssueInstallationOrderGatewayRequest {
-  solicitudId: string;
-  technicianId: string | null;
-  description: string;
-  priorityId: number;
-  scheduledDate: string | null;
-  creatorId: string;
+  solicitudId!: string;
+  technicianId!: string | null;
+  description!: string;
+  priorityId!: number;
+  scheduledDate!: string | null;
+  creatorId!: string;
 }
 
 class StartInstallationGatewayRequest {
-  workOrderId: string;
-  technicianId: string;
-  startStatusId: number;
+  workOrderId!: string;
+  technicianId!: string;
+  startStatusId!: number;
 }
 
 class CompleteInstallationGatewayRequest {
-  workOrderId: string;
-  userId: string;
-  completedStatusId: number;
+  workOrderId!: string;
+  userId!: string;
+  completedStatusId!: number;
 }
 
 class FailInstallationGatewayRequest {
-  workOrderId: string;
-  userId: string;
-  failureReason: string;
-  failedStatusId: number;
+  workOrderId!: string;
+  userId!: string;
+  failureReason!: string;
+  failedStatusId!: number;
 }
 
 @Controller('installation-order')
@@ -61,11 +69,22 @@ export class InstallationOrderGatewayController {
     @Req() request: Request,
   ): Promise<ApiResponse> {
     try {
-      this.logger.log(`Issuing installation order for solicitud: ${body.solicitudId}`);
-      const result = await sendKafkaRequest(
-        this.kafkaProxy.send(this.kafkaClient, 'installation_order.issue', body),
+      this.logger.log(
+        `Issuing installation order for solicitud: ${body.solicitudId}`,
       );
-      return new ApiResponse('Orden de instalación emitida exitosamente', result, request.url, 201);
+      const result = await sendKafkaRequest(
+        this.kafkaProxy.send(
+          this.kafkaClient,
+          'installation_order.issue',
+          body,
+        ),
+      );
+      return new ApiResponse(
+        'Orden de instalación emitida exitosamente',
+        result,
+        request.url,
+        201,
+      );
     } catch (error) {
       const err = error instanceof RpcException ? error.getError() : error;
       throw new RpcException(err as string | object);
@@ -80,7 +99,8 @@ export class InstallationOrderGatewayController {
   @Patch('ordenes/iniciar')
   @ApiOperation({
     summary: 'Fase 13a: Iniciar instalación en campo',
-    description: 'El técnico confirma el inicio de la instalación física. Transiciona a INSTALACION_EN_PROCESO.',
+    description:
+      'El técnico confirma el inicio de la instalación física. Transiciona a INSTALACION_EN_PROCESO.',
   })
   async startInstallation(
     @Body() body: StartInstallationGatewayRequest,
@@ -89,9 +109,18 @@ export class InstallationOrderGatewayController {
     try {
       this.logger.log(`Starting installation for OT: ${body.workOrderId}`);
       const result = await sendKafkaRequest(
-        this.kafkaProxy.send(this.kafkaClient, 'installation_order.start', body),
+        this.kafkaProxy.send(
+          this.kafkaClient,
+          'installation_order.start',
+          body,
+        ),
       );
-      return new ApiResponse('Instalación iniciada exitosamente', result, request.url, 200);
+      return new ApiResponse(
+        'Instalación iniciada exitosamente',
+        result,
+        request.url,
+        200,
+      );
     } catch (error) {
       const err = error instanceof RpcException ? error.getError() : error;
       throw new RpcException(err as string | object);
@@ -116,7 +145,11 @@ export class InstallationOrderGatewayController {
     try {
       this.logger.log(`Completing installation for OT: ${body.workOrderId}`);
       const result = await sendKafkaRequest(
-        this.kafkaProxy.send(this.kafkaClient, 'installation_order.complete', body),
+        this.kafkaProxy.send(
+          this.kafkaClient,
+          'installation_order.complete',
+          body,
+        ),
       );
       return new ApiResponse(
         'Instalación completada. Solicitud derivada a catastro.',
@@ -146,11 +179,18 @@ export class InstallationOrderGatewayController {
     @Req() request: Request,
   ): Promise<ApiResponse> {
     try {
-      this.logger.log(`Failing installation for OT: ${body.workOrderId} — ${body.failureReason}`);
+      this.logger.log(
+        `Failing installation for OT: ${body.workOrderId} — ${body.failureReason}`,
+      );
       const result = await sendKafkaRequest(
         this.kafkaProxy.send(this.kafkaClient, 'installation_order.fail', body),
       );
-      return new ApiResponse('Falla de instalación registrada', result, request.url, 200);
+      return new ApiResponse(
+        'Falla de instalación registrada',
+        result,
+        request.url,
+        200,
+      );
     } catch (error) {
       const err = error instanceof RpcException ? error.getError() : error;
       throw new RpcException(err as string | object);

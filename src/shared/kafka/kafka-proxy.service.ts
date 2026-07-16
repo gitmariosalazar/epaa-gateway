@@ -38,6 +38,7 @@ export class KafkaProxyService {
     inspection_report: 'connection_topic',
     contracts: 'connection_topic',
     cadastral: 'connection_topic',
+    installation_report: 'connection_topic',
     // Microservicio de notificaciones
     notifications: 'notifications_topic',
     // Otros servicios
