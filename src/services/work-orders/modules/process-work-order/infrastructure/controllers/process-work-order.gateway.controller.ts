@@ -855,18 +855,22 @@ export class ProcessWorkOrderGatewayController {
     @Query('numeroOrden') numeroOrden: string,
     @Req() request: Request,
   ): Promise<ApiResponse> {
-    const response = await sendKafkaRequest(
-      this.kafkaProxy.send(
-        this.workOrderKafkaClient,
-        'work-orders.process-work-order.get-tracking-by-numero-orden',
-        { numeroOrden },
-      ),
-    );
-    return new ApiResponse(
-      'Work order tracking retrieved successfully',
-      response,
-      request.url,
-    );
+    try {
+      const response = await sendKafkaRequest(
+        this.kafkaProxy.send(
+          this.workOrderKafkaClient,
+          'work-orders.process-work-order.get-tracking-by-numero-orden',
+          { numeroOrden },
+        ),
+      );
+      return new ApiResponse(
+        'Work order tracking retrieved successfully',
+        response,
+        request.url,
+      );
+    } catch (error) {
+      throw new RpcException(error as string | object);
+    }
   }
 
   @Get('get-ordenes-by-solicitud-id')

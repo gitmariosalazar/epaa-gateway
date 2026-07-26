@@ -12,9 +12,11 @@ import {
   Req,
   Delete,
   UploadedFiles,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import {
+  ApiBearerAuth,
   ApiBody,
   ApiConsumes,
   ApiOkResponse,
@@ -35,6 +37,11 @@ import { SubmitWithDocumentsRequest } from '../../domain/schemas/dto/request/sub
 import { SubmitCorrectionsRequest } from '../../domain/schemas/dto/request/submit-corrections.request';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { NotificationValidationMatrixResponse } from '../../domain/schemas/dto/response/notification-validation-matrix.response';
+import { AuthGuard } from '../../../../../../auth/guard/auth.guard';
+import { AllowedUserTypes } from '../../../../../../auth/decorator/allowed-user-types.decorator';
+
+/** Rol que otorga visibilidad total sobre los expedientes, sin restricción por analista asignado. */
+const SUPER_ADMIN_ROLE_NAME = 'SUPER ADMINISTRADOR';
 
 @Controller('requests')
 @ApiTags('requests')
@@ -362,22 +369,27 @@ export class RequestGatewayController {
   }
 
   @Get(':analistaId/expedientes-internal-user')
+  @UseGuards(AuthGuard)
+  @AllowedUserTypes('employee')
+  @ApiBearerAuth()
   @ApiParam({ name: 'analistaId', type: String, required: true })
   @ApiOperation({
     summary: 'Expedientes de un analista',
     description:
-      'Retorna todos los expedientes asociados a un analista específico.',
+      'Retorna todos los expedientes asociados a un analista específico. ' +
+      `Si el usuario autenticado tiene el rol ${SUPER_ADMIN_ROLE_NAME}, retorna todos los expedientes sin filtrar por analista.`,
   })
   async getExpedientesByAnalista(
     @Param('analistaId') analistaId: string,
     @Req() request: Request,
   ): Promise<ApiResponse> {
     try {
+      const isSuperAdmin = this.isSuperAdmin(request);
       const response = await sendKafkaRequest(
         this.kafkaProxy.send(
           this.kafkaClient,
           'requests.get_expedientes_by_analista',
-          analistaId,
+          { analistaId, isSuperAdmin },
         ),
       );
       return new ApiResponse(
@@ -389,6 +401,25 @@ export class RequestGatewayController {
       const err = error instanceof RpcException ? error.getError() : error;
       throw new RpcException(err as string | object);
     }
+  }
+
+  /**
+   * Determina si el usuario autenticado (payload del JWT validado por AuthGuard)
+   * tiene el rol SUPER_ADMINISTRADOR. Nunca confiar en flags enviados por el cliente:
+   * el rol siempre se deriva del token verificado en `request['user']`.
+   */
+  private isSuperAdmin(request: Request): boolean {
+    const roles = (request['user']?.roles ?? []) as Array<
+      string | { id: number; name?: string }
+    >;
+    this.logger.log(
+      `Verificando roles del usuario autenticado: ${JSON.stringify(roles)}`,
+    );
+    return roles.some(
+      (role) =>
+        (typeof role === 'string' ? role : role?.name) ===
+        SUPER_ADMIN_ROLE_NAME,
+    );
   }
 
   @Get(':solicitudId/historial')
@@ -691,6 +722,9 @@ export class RequestGatewayController {
   }
 
   @Get(':analistaId/tracking-internal-user')
+  @UseGuards(AuthGuard)
+  @AllowedUserTypes('employee')
+  @ApiBearerAuth()
   @ApiParam({
     name: 'analistaId',
     type: String,
@@ -708,11 +742,13 @@ export class RequestGatewayController {
   ): Promise<ApiResponse> {
     try {
       this.logger.log(`[GET /requests/${analistaId}/tracking-internal-user]`);
+      const isSuperAdmin = this.isSuperAdmin(request);
+
       const response = await sendKafkaRequest(
         this.kafkaProxy.send(
           this.kafkaClient,
           'requests.get_tracking_by_analista_id',
-          analistaId,
+          { analistaId, isSuperAdmin },
         ),
       );
       return new ApiResponse(

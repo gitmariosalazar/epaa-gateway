@@ -75,8 +75,6 @@ async function bootstrap() {
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, documentFactory, {
     customSiteTitle: 'API Documentation',
-    customCssUrl:
-      'https://mariosalazar-styles-swagger-ui.vercel.app/css/swagger-ui.css',
   });
 
   app.useGlobalFilters(new RpcCustomExceptionFilter());

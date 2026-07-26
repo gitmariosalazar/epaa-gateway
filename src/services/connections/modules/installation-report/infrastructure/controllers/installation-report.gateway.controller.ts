@@ -7,13 +7,16 @@ import {
   Req,
   Get,
   Param,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ClientKafka, RpcException } from '@nestjs/microservices';
 import { environments } from '../../../../../../settings/environments/environments';
 import { ApiResponse } from '../../../../../../shared/errors/responses/ApiResponse';
 import { sendKafkaRequest } from '../../../../../../shared/utils/kafka/send.kafka.request';
 import { KafkaProxyService } from '../../../../../../shared/kafka/kafka-proxy.service';
+import { AuthGuard } from '../../../../../../auth/guard/auth.guard';
+import { AllowedUserTypes } from '../../../../../../auth/decorator/allowed-user-types.decorator';
 
 class SubmitInstallationReportRequest {
   workOrderId!: string;
@@ -31,7 +34,9 @@ class SubmitInstallationReportRequest {
 @Controller('installation-report')
 @ApiTags('installation-report')
 export class InstallationReportGatewayController {
-  private readonly logger = new Logger(InstallationReportGatewayController.name);
+  private readonly logger = new Logger(
+    InstallationReportGatewayController.name,
+  );
 
   constructor(
     @Inject(environments.CONNECTION_KAFKA_CLIENT)
@@ -39,17 +44,31 @@ export class InstallationReportGatewayController {
     private readonly kafkaProxy: KafkaProxyService,
   ) {}
 
+  private getUserIdFromRequest(request: Request): { userId: string } {
+    const user = request['user'] as { sub: string; username: string };
+    return { userId: user.sub };
+  }
+
   @Post('ordenes/informe')
   @ApiOperation({
     summary: 'Fase 14: Enviar informe de instalación',
-    description: 'El técnico envía el informe de instalación del medidor. Se cierra la OT.',
+    description:
+      'El técnico envía el informe de instalación del medidor. Se cierra la OT.',
   })
+  @UseGuards(AuthGuard)
+  @AllowedUserTypes('employee')
+  @ApiBearerAuth()
   async submitReport(
     @Body() body: SubmitInstallationReportRequest,
     @Req() request: Request,
   ): Promise<ApiResponse> {
     try {
-      this.logger.log(`Submitting installation report for OT: ${body.workOrderId}`);
+      const { userId } = this.getUserIdFromRequest(request);
+      body['userId'] = userId;
+
+      this.logger.log(
+        `Submitting installation report for OT: ${body.workOrderId}`,
+      );
       const result = await sendKafkaRequest(
         this.kafkaProxy.send(
           this.kafkaClient,
@@ -69,23 +88,29 @@ export class InstallationReportGatewayController {
     }
   }
 
-  @Get('ordenes/:workOrderId/informe')
+  @Get('ordenes/:orderCodeOrRequestNumber/informe')
   @ApiOperation({
-    summary: 'Obtener informe de instalación por OT',
+    summary:
+      'Obtener informe de instalación por código de orden o número de solicitud',
   })
-  async getReport(
-    @Param('workOrderId') workOrderId: string,
+  async getReportByOrderCodeOrRequestNumber(
+    @Param('orderCodeOrRequestNumber') orderCodeOrRequestNumber: string,
     @Req() request: Request,
   ): Promise<ApiResponse> {
     try {
       const result = await sendKafkaRequest(
         this.kafkaProxy.send(
           this.kafkaClient,
-          'installation_report.get',
-          { workOrderId },
+          'installation_report.get-by-order-code-or-request-number',
+          { orderCodeOrRequestNumber },
         ),
       );
-      return new ApiResponse('Informe de instalación obtenido', result, request.url, 200);
+      return new ApiResponse(
+        'Informe de instalación obtenido',
+        result,
+        request.url,
+        200,
+      );
     } catch (error) {
       const err = error instanceof RpcException ? error.getError() : error;
       throw new RpcException(err as string | object);

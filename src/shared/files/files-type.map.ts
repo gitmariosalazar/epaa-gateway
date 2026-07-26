@@ -13,4 +13,8 @@ export const FILE_TYPE_DIR_MAP: Record<string, string> = {
   connections: '/home/sigepaa/sigepaa/images/connections',
   // ── Work Orders ───────────────────────────────────────────────────────────
   work_orders: '/home/sigepaa/sigepaa/images/work_orders',
+  // ── Connection Documents (Receipts, etc) ──────────────────────────────────
+  connection_documents:
+    process.env.CONNECTION_DOCUMENTS_UPLOAD_DIR ||
+    '/home/sigepaa/sigepaa/documents/connection-documents',
 };

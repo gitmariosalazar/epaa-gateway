@@ -1,8 +1,10 @@
 import {
   Body,
   Controller,
+  Get,
   Inject,
   Logger,
+  Param,
   Patch,
   Post,
   Req,
@@ -110,6 +112,38 @@ export class InspectionReportGatewayController {
       );
       return new ApiResponse(
         'Dictamen emitido exitosamente',
+        result,
+        request.url,
+        200,
+      );
+    } catch (error) {
+      const err = error instanceof RpcException ? error.getError() : error;
+      throw new RpcException(err as string | object);
+    }
+  }
+
+  @Get('ordenes/:orderCodeOrRequestNumber/informe')
+  @ApiOperation({
+    summary:
+      'Obtener informe técnico por código de orden o número de solicitud',
+  })
+  async getReport(
+    @Req() request: Request,
+    @Param('orderCodeOrRequestNumber') orderCodeOrRequestNumber: string,
+  ): Promise<ApiResponse> {
+    try {
+      this.logger.log(
+        `Fetching inspection report for: ${orderCodeOrRequestNumber}`,
+      );
+      const result = await sendKafkaRequest(
+        this.kafkaProxy.send(
+          this.kafkaClient,
+          'inspection_report.get-by-order-code-or-request-number',
+          { orderCodeOrRequestNumber },
+        ),
+      );
+      return new ApiResponse(
+        'Informe técnico obtenido exitosamente',
         result,
         request.url,
         200,
