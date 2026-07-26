@@ -31,6 +31,7 @@ import { ApiResponse } from '../../../../../../shared/errors/responses/ApiRespon
 import { sendKafkaRequest } from '../../../../../../shared/utils/kafka/send.kafka.request';
 import { AuthGuard } from '../../../../../../auth/guard/auth.guard';
 import { CreateWorkOrderRequest } from '../../domain/dto/request/create-work-order.request';
+import { CreateWorkOrderFromIncidentRequest } from '../../domain/dto/request/create-work-order-from-incident.request';
 import { ProcessWorkOrderTransitionRequest } from '../../domain/dto/request/process-work-order-transition.request';
 import { AssignWorkOrderToCrewRequest } from '../../domain/dto/request/assign-work-order-to-crew.request';
 import { AssignWorkOrderToWorkerRequest } from '../../domain/dto/request/assign-work-order-to-worker.request';
@@ -105,6 +106,48 @@ export class ProcessWorkOrderGatewayController {
     } catch (error) {
       const err = error as Error;
       this.logger.error(`Error in createWorkOrder: ${err.message}`, err.stack);
+      throw new RpcException(err as string | object);
+    }
+  }
+
+  @Post('create-work-order-from-incident')
+  @ApiOperation({
+    summary: 'Create a work order from an incident',
+    description:
+      'Fase 1 - Paso 1 (Notificacion/Creacion): registra una nueva OT a partir de un incidente.',
+  })
+  @ApiBody({ type: CreateWorkOrderFromIncidentRequest })
+  async createWorkOrderFromIncident(
+    @Body() payload: CreateWorkOrderFromIncidentRequest,
+    @Req() request: Request,
+  ): Promise<ApiResponse> {
+    try {
+      // 1. Extraemos el usuario en sesión inyectado por el AuthGuard en request['user']
+      const authUser = (request as any)['user'] ?? {};
+      const userIdCreator =
+        authUser?.cliente_id ?? authUser?.sub ?? authUser?.userId;
+
+      const response = await sendKafkaRequest(
+        this.kafkaProxy.send(
+          this.workOrderKafkaClient,
+          'work-orders.process-work-order.create-from-incident',
+          {
+            ...payload,
+            userIdCreator, // <- AQUÍ lo inyectamos obligatoriamente desde el token
+          },
+        ),
+      );
+      return new ApiResponse(
+        'Work order created from incident successfully',
+        response,
+        request.url,
+      );
+    } catch (error) {
+      const err = error as Error;
+      this.logger.error(
+        `Error in createWorkOrderFromIncident: ${err.message}`,
+        err.stack,
+      );
       throw new RpcException(err as string | object);
     }
   }

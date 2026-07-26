@@ -75,6 +75,7 @@ export interface UserRowResponse {
 export interface IncidentDetailRowResponse {
   incidentId: string;
   connectionId: string | null;
+  orderCode: string | null;
   incidentCode: string;
   readingId: number | null;
 
@@ -131,4 +132,6 @@ export interface IncidentDetailRowResponse {
   // Auditoría básica
   createdAt: string; // ISO 8601 Date string
   updatedAt: string; // ISO 8601 Date string
+  previousOrderState: string | null;
+  currentOrderState: string | null;
 }
