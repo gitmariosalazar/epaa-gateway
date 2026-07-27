@@ -1,4 +1,12 @@
-import { Body, Controller, Inject, Logger, Patch, Req, Param } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Inject,
+  Logger,
+  Patch,
+  Req,
+  Param,
+} from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ClientKafka, RpcException } from '@nestjs/microservices';
 import { environments } from '../../../../../../settings/environments/environments';
@@ -7,22 +15,24 @@ import { sendKafkaRequest } from '../../../../../../shared/utils/kafka/send.kafk
 import { KafkaProxyService } from '../../../../../../shared/kafka/kafka-proxy.service';
 
 class ConfirmPaymentGatewayRequest {
-  invoiceId: string;
-  paymentMethod: string;
-  paymentReference: string;
+  invoiceId!: string;
+  paymentMethod!: string;
+  paymentReference!: string;
   proofOfPaymentUrl?: string;
-  collectorId: string;
+  collectorId!: string;
 }
 
 class RejectPaymentGatewayRequest {
-  adminId: string;
-  reason: string;
+  adminId!: string;
+  reason!: string;
 }
 
 @Controller('payment-confirmation')
 @ApiTags('payment-confirmation')
 export class PaymentConfirmationGatewayController {
-  private readonly logger = new Logger(PaymentConfirmationGatewayController.name);
+  private readonly logger = new Logger(
+    PaymentConfirmationGatewayController.name,
+  );
 
   constructor(
     @Inject(environments.CONNECTION_KAFKA_CLIENT)
@@ -53,7 +63,12 @@ export class PaymentConfirmationGatewayController {
           body,
         ),
       );
-      return new ApiResponse('Pago confirmado exitosamente', result, request.url, 200);
+      return new ApiResponse(
+        'Pago confirmado exitosamente',
+        result,
+        request.url,
+        200,
+      );
     } catch (error) {
       const err = error instanceof RpcException ? error.getError() : error;
       throw new RpcException(err as string | object);
@@ -84,7 +99,12 @@ export class PaymentConfirmationGatewayController {
           { invoiceId, ...body },
         ),
       );
-      return new ApiResponse('Comprobante rechazado exitosamente', result, request.url, 200);
+      return new ApiResponse(
+        'Comprobante rechazado exitosamente',
+        result,
+        request.url,
+        200,
+      );
     } catch (error) {
       const err = error instanceof RpcException ? error.getError() : error;
       throw new RpcException(err as string | object);
