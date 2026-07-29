@@ -440,7 +440,7 @@ export class ConnectionGatewayController {
   })
   async getConnectionByCadastralKeyOrCardId(
     @Req() request: Request,
-    @Query('searchValue') searchValue: string,
+    @Param('searchValue') searchValue: string,
     @Query('limit') limit: number,
     @Query('offset') offset: number,
   ): Promise<ApiResponse> {
