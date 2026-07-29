@@ -360,6 +360,54 @@ export class IncidentGatewayController {
   @RequireAppKey()
   @ApiSecurity('x-api-key')
   @ApiConsumes('multipart/form-data')
+  @Get('search-by-client-id')
+  @AllowedUserTypes('employee', 'customer')
+  @ApiOperation({
+    summary: 'Method GET - Search Incidents by Client ID',
+    description:
+      'The endpoint allows you to search and list incidents by client ID with optional filters like connectionId, status, priority, categoryId, sector, reference, and reportDate',
+  })
+  async searchIncidentsByClientId(
+    @Query()
+    filters: {
+      externalUserId: string;
+      connectionId?: string | null;
+      status?: string | null;
+      priority?: string | null;
+      categoryId?: number | null;
+      sector?: string | null;
+      reference?: string | null;
+      reportDate?: Date | null;
+    },
+    @Req() request: Request,
+  ): Promise<ApiResponse> {
+    try {
+      const response: IncidentDetailRowResponse[] = await sendKafkaRequest(
+        this.kafkaProxy.send(
+          this.incidentClient,
+          'incident.search-by-client-id',
+          filters,
+        ),
+      );
+
+      return new ApiResponse(
+        'Incidents searched successfully by client ID!',
+        response,
+        request.url,
+      );
+    } catch (error) {
+      const err = error as Error;
+      this.logger.error(
+        `Error searching incidents by client ID: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
+    }
+  }
+
+  @RequireAppKey()
+  @ApiSecurity('x-api-key')
+  @ApiConsumes('multipart/form-data')
   @Get('categories')
   @ApiOperation({
     summary: 'Method GET - Retrieve Incident Categories and Types',

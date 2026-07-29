@@ -20,11 +20,16 @@ import { ApiResponse } from '../../../../../../shared/errors/responses/ApiRespon
 import { sendKafkaRequest } from '../../../../../../shared/utils/kafka/send.kafka.request';
 import { CreateConnectionRequest } from '../../domain/schemas/dto/request/create.connection.request';
 import { AuthGuard } from '../../../../../../auth/guard/auth.guard';
+import { AllowedUserTypes } from '../../../../../../auth/decorator/allowed-user-types.decorator';
 import {
   ConnectionAndPropertyResponse,
   ConnectionResponse,
   PropertyWithClientResponse,
 } from '../../domain/schemas/dto/response/connection.response';
+import {
+  ClientDashboardResponse,
+  ConnectionDashboardResponse,
+} from '../../domain/schemas/dto/response/view-dashboard.response';
 
 @Controller('connections')
 @ApiTags('Connections Gateway')
@@ -605,6 +610,74 @@ export class ConnectionGatewayController {
       );
       return new ApiResponse(
         `Property with client retrieved successfully!`,
+        response,
+        request.url,
+      );
+    } catch (error) {
+      throw new RpcException(error as string | object);
+    }
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard)
+  @AllowedUserTypes('employee', 'customer')
+  @Get('get-dashboard-connections-by-client-id/:clientId')
+  @ApiOperation({
+    summary: 'Method GET - Get dashboard connections by client ID',
+    description:
+      'The endpoint allows you to retrieve dashboard connections for a client using the client ID',
+  })
+  async getDashboardConnectionsByClientId(
+    @Req() request: Request,
+    @Param('clientId') clientId: string,
+  ): Promise<ApiResponse> {
+    try {
+      this.logger.log(
+        `Received request to get dashboard connections by client ID: ${clientId}`,
+      );
+      const response: ConnectionDashboardResponse = await sendKafkaRequest(
+        this.kafkaProxy.send(
+          this.connectionKafkaClient,
+          'connections.get-dashboard-connections-by-client-id',
+          clientId,
+        ),
+      );
+      return new ApiResponse(
+        `Dashboard connections retrieved successfully!`,
+        response,
+        request.url,
+      );
+    } catch (error) {
+      throw new RpcException(error as string | object);
+    }
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard)
+  @AllowedUserTypes('employee', 'customer')
+  @Get('get-dashboard-global-client-id/:clientId')
+  @ApiOperation({
+    summary: 'Method GET - Get dashboard global client ID',
+    description:
+      'The endpoint allows you to retrieve dashboard global information for a client using the client ID',
+  })
+  async getDashboardGlobalClientId(
+    @Req() request: Request,
+    @Param('clientId') clientId: string,
+  ): Promise<ApiResponse> {
+    try {
+      this.logger.log(
+        `Received request to get dashboard global information by client ID: ${clientId}`,
+      );
+      const response: ClientDashboardResponse = await sendKafkaRequest(
+        this.kafkaProxy.send(
+          this.connectionKafkaClient,
+          'connections.get-dashboard-global-client-id',
+          clientId,
+        ),
+      );
+      return new ApiResponse(
+        `Dashboard global information retrieved successfully!`,
         response,
         request.url,
       );

@@ -58,4 +58,19 @@ export class SearchIncidentsRequest {
     type: String,
   })
   reportDate?: Date;
+
+  @ApiProperty({
+    example: 'a7718257-9d2c-48d1-a888-4c016e5b9d22',
+    description: 'Filter by internal user unique identifier (optional)',
+    required: false,
+    type: String,
+  })
+  internalUserId?: string | null;
+  @ApiProperty({
+    example: 'b8818257-9d2c-48d1-a888-4c016e5b9d33',
+    description: 'Filter by external user unique identifier (optional)',
+    required: false,
+    type: String,
+  })
+  externalUserId?: string | null;
 }
