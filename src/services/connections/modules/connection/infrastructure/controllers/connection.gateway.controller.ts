@@ -440,7 +440,9 @@ export class ConnectionGatewayController {
   })
   async getConnectionByCadastralKeyOrCardId(
     @Req() request: Request,
-    @Param('searchValue') searchValue: string,
+    @Query('searchValue') searchValue: string,
+    @Query('limit') limit: number,
+    @Query('offset') offset: number,
   ): Promise<ApiResponse> {
     try {
       this.logger.log(
@@ -450,7 +452,11 @@ export class ConnectionGatewayController {
         this.kafkaProxy.send(
           this.connectionKafkaClient,
           'connections.find-connection-by-cadastral-key-or-card-id',
-          searchValue,
+          {
+            searchValue,
+            limit,
+            offset,
+          },
         ),
       );
       return new ApiResponse(
