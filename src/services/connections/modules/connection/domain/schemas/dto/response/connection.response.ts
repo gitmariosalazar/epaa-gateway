@@ -94,6 +94,9 @@ export interface ConnectionAndPropertyResponse {
   zoneId: number;
   zoneCode: string;
   zoneName: string;
+  incidents: number; // Total incidents associated with the connection
+  connectionType: string | null;
+  connectionTypeName: string | null;
   // Client Data
   company: CompanyResponse | null;
   person: ClientResponse | null;
@@ -186,6 +189,9 @@ export interface ConnectionWithoutPropertyResponse {
   zoneId: number;
   zoneCode: string;
   zoneName: string;
+  incidents: number; // Total incidents associated with the connection
+  connectionType: string | null;
+  connectionTypeName: string | null;
   // Client Data
   company: CompanyResponse | null;
   person: ClientResponse | null;
