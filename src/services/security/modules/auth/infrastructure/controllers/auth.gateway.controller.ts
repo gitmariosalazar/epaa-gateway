@@ -74,7 +74,8 @@ export class AuthGatewayController {
           secure: false, // environments.COOKIE_SECURE,
           sameSite: 'lax', //environments.COOKIE_SAME_SITE,
           path: '/',
-          maxAge: parseExpirationToSeconds(environments.JWT_ACCESS_EXPIRATION), //environments.JWT_ACCESS_TOKEN_EXPIRES_IN * 1000, // Convertir a milisegundos
+          maxAge:
+            parseExpirationToSeconds(environments.JWT_ACCESS_EXPIRATION) * 1000, // Convertir segundos a milisegundos
         });
       }
 
