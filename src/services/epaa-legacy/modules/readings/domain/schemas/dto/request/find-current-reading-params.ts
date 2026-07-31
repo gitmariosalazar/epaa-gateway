@@ -7,7 +7,7 @@ export class FindCurrentReadingParams {
     type: 'number',
     required: true,
   })
-  sector: number;
+  sector!: number;
 
   @ApiProperty({
     description: 'Account number',
@@ -15,7 +15,7 @@ export class FindCurrentReadingParams {
     type: 'number',
     required: true,
   })
-  account: number;
+  account!: number;
 
   @ApiProperty({
     description: 'Year of the reading',
@@ -23,7 +23,7 @@ export class FindCurrentReadingParams {
     type: 'number',
     required: true,
   })
-  year: number;
+  year!: number;
 
   @ApiProperty({
     description: 'Month of the reading',
@@ -31,13 +31,13 @@ export class FindCurrentReadingParams {
     type: 'string',
     required: true,
   })
-  month: string;
+  month!: string;
 
   @ApiProperty({
-    description: 'Previous reading value',
-    example: 982,
-    type: 'number',
+    description: 'Unique reading identifier used to locate the legacy record',
+    example: '982',
+    type: 'string',
     required: true,
   })
-  previousReading: number;
+  readingId!: string;
 }

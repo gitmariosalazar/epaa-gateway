@@ -106,4 +106,20 @@ export class UpdateReadingLegacyRequest {
     required: true,
   })
   readingTime!: string;
+
+  @ApiProperty({
+    description: 'Username of the person who made the reading',
+    example: 'john_doe',
+    type: String,
+    required: true,
+  })
+  username!: string;
+
+  @ApiProperty({
+    description: 'Reading ID',
+    example: '12345',
+    type: String,
+    required: true,
+  })
+  readingId!: string;
 }

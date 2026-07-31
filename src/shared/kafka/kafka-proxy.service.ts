@@ -131,9 +131,24 @@ export class KafkaProxyService {
   ): Observable<TResult> {
     const topic = this.getTopicForPattern(pattern);
     // Use emit for one-way events, but still wrap with pattern for routing
-    return client.emit(topic, {
+    const source$ = client.emit<TResult>(topic, {
       pattern,
       data,
     });
+
+    // client.emit() returns a ConnectableObservable backed by a plain Subject
+    // (not replayed) and calls .connect() eagerly. If the caller only
+    // `await`s the call (Observables aren't thenable, so `await` never
+    // subscribes) a dispatch failure (broker hiccup, timeout, etc.) is
+    // silently dropped — no log, no exception. Subscribing here guarantees
+    // the error surfaces even when nobody else subscribes.
+    source$.subscribe({
+      error: (err) =>
+        this.logger.error(
+          `[KafkaProxy] Failed to emit "${pattern}" to topic "${topic}": ${err?.message ?? err}`,
+        ),
+    });
+
+    return source$;
   }
 }
