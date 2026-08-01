@@ -79,6 +79,13 @@ export class ProcessWorkOrderGatewayController {
     private readonly kafkaProxy: KafkaProxyService,
   ) {}
 
+  // Ignora cualquier id de usuario que venga en el body: siempre se toma
+  // del usuario autenticado inyectado por AuthGuard en request['user'].
+  private extractAuthUserId(request: Request): string {
+    const authUser = (request as any)['user'] ?? {};
+    return authUser?.cliente_id ?? authUser?.sub ?? authUser?.userId;
+  }
+
   @Post('create-work-order')
   @ApiOperation({
     summary: 'Create a work order',
@@ -95,7 +102,7 @@ export class ProcessWorkOrderGatewayController {
         this.kafkaProxy.send(
           this.workOrderKafkaClient,
           'work-orders.process-work-order.create',
-          payload,
+          { ...payload, createdByUserId: this.extractAuthUserId(request) },
         ),
       );
       return new ApiResponse(
@@ -170,6 +177,7 @@ export class ProcessWorkOrderGatewayController {
           'work-orders.process-work-order.receive',
           {
             ...payload,
+            userId: this.extractAuthUserId(request),
             newStatus: 'PENDIENTE',
           },
         ),
@@ -202,7 +210,7 @@ export class ProcessWorkOrderGatewayController {
         this.kafkaProxy.send(
           this.workOrderKafkaClient,
           'work-orders.process-work-order.assign-crew',
-          payload,
+          { ...payload, assignedByUserId: this.extractAuthUserId(request) },
         ),
       );
       return new ApiResponse(
@@ -236,7 +244,7 @@ export class ProcessWorkOrderGatewayController {
         this.kafkaProxy.send(
           this.workOrderKafkaClient,
           'work-orders.process-work-order.assign-worker',
-          payload,
+          { ...payload, assignedByUserId: this.extractAuthUserId(request) },
         ),
       );
       return new ApiResponse(
@@ -272,6 +280,7 @@ export class ProcessWorkOrderGatewayController {
           'work-orders.process-work-order.start-preparation',
           {
             ...payload,
+            userId: this.extractAuthUserId(request),
             newStatus: 'PREPARACION',
           },
         ),
@@ -304,7 +313,7 @@ export class ProcessWorkOrderGatewayController {
         this.kafkaProxy.send(
           this.workOrderKafkaClient,
           'work-orders.process-work-order.create-preparation-inspection',
-          payload,
+          { ...payload, createdByUserId: this.extractAuthUserId(request) },
         ),
       );
       return new ApiResponse(
@@ -338,7 +347,7 @@ export class ProcessWorkOrderGatewayController {
         this.kafkaProxy.send(
           this.workOrderKafkaClient,
           'work-orders.process-work-order.add-preparation-inspection-detail',
-          payload,
+          { ...payload, createdByUserId: this.extractAuthUserId(request) },
         ),
       );
       return new ApiResponse(
@@ -374,7 +383,7 @@ export class ProcessWorkOrderGatewayController {
           'work-orders.process-work-order.resolve-preparation-inspection',
           {
             workOrderId: payload.workOrderId,
-            userId: payload.userId,
+            userId: this.extractAuthUserId(request),
             comment: payload.comment,
             newStatus: payload.passed ? 'EN_PROCESO' : 'REVISION_RECHAZADA',
           },
@@ -413,6 +422,7 @@ export class ProcessWorkOrderGatewayController {
           'work-orders.process-work-order.start-execution',
           {
             ...payload,
+            userId: this.extractAuthUserId(request),
             newStatus: payload.newStatus || 'EN_PROCESO',
           },
         ),
@@ -445,7 +455,7 @@ export class ProcessWorkOrderGatewayController {
         this.kafkaProxy.send(
           this.workOrderKafkaClient,
           'work-orders.process-work-order.add-work-order-material',
-          payload,
+          { ...payload, createdByUserId: this.extractAuthUserId(request) },
         ),
       );
       return new ApiResponse(
@@ -479,7 +489,7 @@ export class ProcessWorkOrderGatewayController {
         this.kafkaProxy.send(
           this.workOrderKafkaClient,
           'work-orders.process-work-order.add-work-order-materials-batch',
-          payload,
+          { ...payload, createdByUserId: this.extractAuthUserId(request) },
         ),
       );
       return new ApiResponse(
@@ -513,7 +523,7 @@ export class ProcessWorkOrderGatewayController {
         this.kafkaProxy.send(
           this.workOrderKafkaClient,
           'work-orders.process-work-order.add-additional-cost',
-          payload,
+          { ...payload, createdByUserId: this.extractAuthUserId(request) },
         ),
       );
       return new ApiResponse(
@@ -547,7 +557,7 @@ export class ProcessWorkOrderGatewayController {
         this.kafkaProxy.send(
           this.workOrderKafkaClient,
           'work-orders.process-work-order.add-additional-costs-batch',
-          payload,
+          { ...payload, createdByUserId: this.extractAuthUserId(request) },
         ),
       );
       return new ApiResponse(
@@ -627,7 +637,7 @@ export class ProcessWorkOrderGatewayController {
             'work-orders.process-work-order.add-work-order-attachment',
             {
               workOrderId: body.workOrderId,
-              createdByUserId: body.createdByUserId,
+              createdByUserId: this.extractAuthUserId(request),
               fileName: file.originalname,
               fileType: file.mimetype,
               fileUrl,
@@ -670,6 +680,7 @@ export class ProcessWorkOrderGatewayController {
           'work-orders.process-work-order.start-execution',
           {
             ...payload,
+            userId: this.extractAuthUserId(request),
             newStatus: payload.newStatus || 'EJECUTADA',
           },
         ),
@@ -702,7 +713,7 @@ export class ProcessWorkOrderGatewayController {
         this.kafkaProxy.send(
           this.workOrderKafkaClient,
           'work-orders.process-work-order.create-quality-control',
-          payload,
+          { ...payload, createdByUserId: this.extractAuthUserId(request) },
         ),
       );
       return new ApiResponse(
@@ -736,7 +747,7 @@ export class ProcessWorkOrderGatewayController {
         this.kafkaProxy.send(
           this.workOrderKafkaClient,
           'work-orders.process-work-order.add-quality-control-detail',
-          payload,
+          { ...payload, createdByUserId: this.extractAuthUserId(request) },
         ),
       );
       return new ApiResponse(
@@ -772,7 +783,7 @@ export class ProcessWorkOrderGatewayController {
           'work-orders.process-work-order.resolve-quality-control',
           {
             workOrderId: payload.workOrderId,
-            userId: payload.userId,
+            userId: this.extractAuthUserId(request),
             comment: payload.comment,
             newStatus: payload.approved ? 'COMPLETADA' : 'RECHAZADA_TECNICA',
           },
@@ -811,6 +822,7 @@ export class ProcessWorkOrderGatewayController {
           'work-orders.process-work-order.complete',
           {
             ...payload,
+            userId: this.extractAuthUserId(request),
             newStatus: 'COMPLETADA',
           },
         ),
@@ -846,7 +858,7 @@ export class ProcessWorkOrderGatewayController {
         this.kafkaProxy.send(
           this.workOrderKafkaClient,
           'work-orders.process-work-order.register-satisfaction-survey',
-          payload,
+          { ...payload, createdByUserId: this.extractAuthUserId(request) },
         ),
       );
       return new ApiResponse(
@@ -958,7 +970,7 @@ export class ProcessWorkOrderGatewayController {
         this.kafkaProxy.send(
           this.workOrderKafkaClient,
           'work-orders.process-work-order.add-worker',
-          payload,
+          { ...payload, assignedByUserId: this.extractAuthUserId(request) },
         ),
       );
       return new ApiResponse(
@@ -996,7 +1008,7 @@ export class ProcessWorkOrderGatewayController {
         this.kafkaProxy.send(
           this.workOrderKafkaClient,
           'work-orders.process-work-order.add-workers-batch',
-          payload,
+          { ...payload, assignedByUserId: this.extractAuthUserId(request) },
         ),
       );
       return new ApiResponse(
@@ -1029,7 +1041,7 @@ export class ProcessWorkOrderGatewayController {
         this.kafkaProxy.send(
           this.workOrderKafkaClient,
           'work-orders.process-work-order.remove-worker',
-          payload,
+          { ...payload, removedByUserId: this.extractAuthUserId(request) },
         ),
       );
       return new ApiResponse(
@@ -1078,7 +1090,7 @@ export class ProcessWorkOrderGatewayController {
           {
             workOrderId: payload.workOrderId,
             newStatus: payload.newStatus, // ← se pasa sin modificar
-            userId: payload.userId,
+            userId: this.extractAuthUserId(request),
             comment: payload.comment ?? `Avance manual → ${payload.newStatus}`,
           },
         ),
