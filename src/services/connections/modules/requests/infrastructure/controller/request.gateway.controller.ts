@@ -35,6 +35,7 @@ import { KafkaProxyService } from '../../../../../../shared/kafka/kafka-proxy.se
 import { UpdateRequestRequest } from '../../domain/schemas/dto/request/update-request.request';
 import { SubmitWithDocumentsRequest } from '../../domain/schemas/dto/request/submit-with-documents.request';
 import { SubmitCorrectionsRequest } from '../../domain/schemas/dto/request/submit-corrections.request';
+import { AssignAnalystToRequestRequest } from '../../domain/schemas/dto/request/assign-analyst.request';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { NotificationValidationMatrixResponse } from '../../domain/schemas/dto/response/notification-validation-matrix.response';
 import { AuthGuard } from '../../../../../../auth/guard/auth.guard';
@@ -659,6 +660,45 @@ export class RequestGatewayController {
       );
       return new ApiResponse(
         'Correcciones subidas y enviadas exitosamente',
+        response,
+        request.url,
+      );
+    } catch (error) {
+      const err = error instanceof RpcException ? error.getError() : error;
+      throw new RpcException(err as string | object);
+    }
+  }
+
+  /**
+   * Asignación MANUAL de analista, elegida desde el frontend. Solo tiene
+   * efecto si la solicitud aún no tiene analista asignado; no reemplaza la
+   * autoasignación/round-robin que ya ocurre al crear la solicitud.
+   */
+  @Put(':solicitudId/assign-analyst')
+  @UseGuards(AuthGuard)
+  @AllowedUserTypes('employee')
+  @ApiBearerAuth()
+  @ApiParam({ name: 'solicitudId', type: String, required: true })
+  @ApiBody({ type: AssignAnalystToRequestRequest })
+  @ApiOperation({
+    summary: 'Asignar manualmente un analista a una solicitud',
+    description:
+      'Solo aplica si la solicitud aún no tiene analista asignado (p.ej. quedó sin asignar por falta de analistas activos al crearla).',
+  })
+  async assignAnalyst(
+    @Param('solicitudId') solicitudId: string,
+    @Body() body: AssignAnalystToRequestRequest,
+    @Req() request: Request,
+  ): Promise<ApiResponse> {
+    try {
+      const response = await sendKafkaRequest(
+        this.kafkaProxy.send(this.kafkaClient, 'requests.assign_analyst', {
+          solicitudId,
+          analystId: body.analystId,
+        }),
+      );
+      return new ApiResponse(
+        'Analista asignado exitosamente',
         response,
         request.url,
       );
