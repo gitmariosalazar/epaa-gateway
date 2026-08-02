@@ -17,11 +17,12 @@ export class SubmitWithDocumentsRequest {
   @ApiProperty({
     example: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
     description:
-      'UUID del usuario autenticado (para auditoría en fn_cambiar_estado_solicitud)',
+      'Ignorado: el userId se toma del JWT autenticado (request.user.sub), nunca del body.',
     type: String,
     format: 'uuid',
+    required: false,
   })
-  userId!: string;
+  userId?: string;
 
   @ApiProperty({
     example: 'NATURAL',

@@ -3,6 +3,7 @@ import {
   Controller,
   Param,
   Get,
+  HttpException,
   Inject,
   Logger,
   Patch,
@@ -40,9 +41,15 @@ import { FilesInterceptor } from '@nestjs/platform-express';
 import { NotificationValidationMatrixResponse } from '../../domain/schemas/dto/response/notification-validation-matrix.response';
 import { AuthGuard } from '../../../../../../auth/guard/auth.guard';
 import { AllowedUserTypes } from '../../../../../../auth/decorator/allowed-user-types.decorator';
+import { createHash, randomUUID } from 'crypto';
+import { mkdir, writeFile } from 'fs/promises';
+import { basename, extname, join } from 'path';
 
 /** Rol que otorga visibilidad total sobre los expedientes, sin restricción por analista asignado. */
 const SUPER_ADMIN_ROLE_NAME = 'SUPER ADMINISTRADOR';
+
+/** Límite por archivo subido (se guarda directo a disco, no viaja por Kafka). */
+const MAX_FILE_SIZE_BYTES = 20 * 1024 * 1024; // 20 MB
 
 @Controller('requests')
 @ApiTags('requests')
@@ -55,6 +62,39 @@ export class RequestGatewayController {
     private readonly kafkaProxy: KafkaProxyService,
   ) {
     this.logger.log('RequestGatewayController initialized');
+  }
+
+  /**
+   * Guarda el archivo directo en el disco compartido con `connection`
+   * (CONNECTION_DOCUMENTS_UPLOAD_DIR) y retorna solo la referencia
+   * (fileUrl + hash) para enviar por Kafka. Evita mandar el archivo
+   * completo en base64 dentro del mensaje de Kafka.
+   */
+  private async saveDocumentToDisk(file: Express.Multer.File): Promise<{
+    fileUrl: string;
+    mimeType: string;
+    sizeInBytes: number;
+    hashSha256: string;
+  }> {
+    const uploadDir =
+      environments.CONNECTION_DOCUMENTS_UPLOAD_DIR ||
+      '/home/sigepaa/sigepaa/documents/connection-documents';
+    const safeBaseName = basename(file.originalname || 'document').replace(
+      /[^a-zA-Z0-9._-]/g,
+      '_',
+    );
+    const extension = extname(safeBaseName);
+    const fileName = `${Date.now()}-${randomUUID()}${extension}`;
+
+    await mkdir(uploadDir, { recursive: true });
+    await writeFile(join(uploadDir, fileName), file.buffer);
+
+    return {
+      fileUrl: `${environments.CONNECTION_DOCUMENTS_PUBLIC_PREFIX}/${fileName}`,
+      mimeType: file.mimetype,
+      sizeInBytes: file.size,
+      hashSha256: createHash('sha256').update(file.buffer).digest('hex'),
+    };
   }
 
   @Post('create_request')
@@ -532,10 +572,18 @@ export class RequestGatewayController {
   /**
    * OPERACIÓN ATÓMICA — Crear solicitud + documentos reales + DOCS_SUBMITTED en un solo call.
    * Acepta multipart/form-data con uno o más archivos reales.
-   * Los archivos se convierten a base64 y se envían por Kafka al microservicio.
+   * Los archivos se guardan directo en disco (compartido con `connection`); por
+   * Kafka solo viaja la referencia (fileUrl + hash), nunca el archivo completo.
    */
   @Post('submit-with-documents')
-  @UseInterceptors(FilesInterceptor('files', 20)) // máximo 20 archivos
+  @UseGuards(AuthGuard)
+  @AllowedUserTypes('employee', 'customer')
+  @ApiBearerAuth()
+  @UseInterceptors(
+    FilesInterceptor('files', 20, {
+      limits: { fileSize: MAX_FILE_SIZE_BYTES },
+    }),
+  ) // máximo 20 archivos, 20MB c/u
   @ApiConsumes('multipart/form-data')
   @ApiOperation({
     summary: 'Fase única: Crear solicitud con documentos reales (atómico)',
@@ -554,23 +602,28 @@ export class RequestGatewayController {
       this.logger.log(
         `data: ${JSON.stringify(body)}, archivos recibidos: ${files?.length ?? 0}`,
       );
+      // userId SIEMPRE del JWT verificado, nunca del body (evita spoofing)
+      const userId = request['user']?.sub;
       const typeIds = (body.documentTypeIds ?? '')
         .split(',')
         .map((s) => s.trim())
         .filter(Boolean);
 
-      // Convierte cada archivo a base64 y lo empareja con su tipo de documento
-      const documents = (files ?? []).map((file, idx) => ({
-        documentTypeId: typeIds[idx] ?? typeIds[0] ?? '',
-        originalName: file.originalname,
-        mimeType: file.mimetype,
-        sizeInBytes: file.size,
-        fileBase64: `data:${file.mimetype};base64,${file.buffer.toString('base64')}`,
-      }));
+      // Guarda cada archivo directo a disco y arma solo la referencia (sin base64)
+      const documents = await Promise.all(
+        (files ?? []).map(async (file, idx) => {
+          const stored = await this.saveDocumentToDisk(file);
+          return {
+            documentTypeId: typeIds[idx] ?? typeIds[0] ?? '',
+            originalName: file.originalname,
+            ...stored,
+          };
+        }),
+      );
 
       const payload = {
         clientId: body.clientId,
-        userId: body.userId, // UUID del usuario autenticado → fn_cambiar_estado_solicitud
+        userId, // UUID del usuario autenticado (del JWT) → fn_cambiar_estado_solicitud
         personType: body.personType,
         connectionType: body.connectionType,
         propertyUse: body.propertyUse,
@@ -601,6 +654,9 @@ export class RequestGatewayController {
         request.url,
       );
     } catch (error) {
+      if (error instanceof HttpException) {
+        throw error; // conserva el status real (p.ej. 400 de la validación de tamaño)
+      }
       const err = error instanceof RpcException ? error.getError() : error;
       throw new RpcException(err as string | object);
     }
@@ -608,10 +664,18 @@ export class RequestGatewayController {
 
   /**
    * OPERACIÓN ATÓMICA — Sube archivos corregidos para documentos rechazados
-   * y transiciona la solicitud a DOCS_SUBMITTED.
+   * y transiciona la solicitud a DOCS_SUBMITTED. Los archivos se guardan
+   * directo en disco; por Kafka solo viaja la referencia (fileUrl + hash).
    */
   @Post(':solicitudId/corrections')
-  @UseInterceptors(FilesInterceptor('files', 20)) // máximo 20 archivos
+  @UseGuards(AuthGuard)
+  @AllowedUserTypes('employee', 'customer')
+  @ApiBearerAuth()
+  @UseInterceptors(
+    FilesInterceptor('files', 20, {
+      limits: { fileSize: MAX_FILE_SIZE_BYTES },
+    }),
+  ) // máximo 20 archivos, 20MB c/u
   @ApiConsumes('multipart/form-data')
   @ApiOperation({
     summary: 'Fase 2: Subir correcciones en lote (atómico)',
@@ -631,23 +695,28 @@ export class RequestGatewayController {
       this.logger.log(
         `[POST /requests/${solicitudId}/corrections] data: ${JSON.stringify(body)}, archivos recibidos: ${files?.length ?? 0}`,
       );
+      // userId SIEMPRE del JWT verificado, nunca del body (evita spoofing)
+      const userId = request['user']?.sub;
       const docIds = (body.documentIds ?? '')
         .split(',')
         .map((s) => s.trim())
         .filter(Boolean);
 
-      // Convierte cada archivo a base64 y lo empareja con su ID de documento
-      const documents = (files ?? []).map((file, idx) => ({
-        documentId: docIds[idx] ?? docIds[0] ?? '',
-        originalName: file.originalname,
-        mimeType: file.mimetype,
-        sizeInBytes: file.size,
-        fileBase64: `data:${file.mimetype};base64,${file.buffer.toString('base64')}`,
-      }));
+      // Guarda cada archivo directo a disco y arma solo la referencia (sin base64)
+      const documents = await Promise.all(
+        (files ?? []).map(async (file, idx) => {
+          const stored = await this.saveDocumentToDisk(file);
+          return {
+            documentId: docIds[idx] ?? docIds[0] ?? '',
+            originalName: file.originalname,
+            ...stored,
+          };
+        }),
+      );
 
       const payload = {
         solicitudId,
-        userId: body.userId,
+        userId, // UUID del usuario autenticado (del JWT), nunca del body
         documents,
       };
 
@@ -664,6 +733,9 @@ export class RequestGatewayController {
         request.url,
       );
     } catch (error) {
+      if (error instanceof HttpException) {
+        throw error; // conserva el status real (p.ej. 400 de la validación de tamaño)
+      }
       const err = error instanceof RpcException ? error.getError() : error;
       throw new RpcException(err as string | object);
     }

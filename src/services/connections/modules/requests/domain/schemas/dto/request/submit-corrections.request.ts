@@ -1,14 +1,20 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, IsArray } from 'class-validator';
+import { IsNotEmpty, IsString, IsArray, IsOptional } from 'class-validator';
 
 export class SubmitCorrectionsRequest {
-  @ApiProperty({ description: 'ID del cliente o usuario que sube la corrección', type: String })
-  @IsNotEmpty()
+  @ApiProperty({
+    description:
+      'Ignorado: el userId se toma del JWT autenticado (request.user.sub), nunca del body.',
+    type: String,
+    required: false,
+  })
+  @IsOptional()
   @IsString()
-  userId: string;
+  userId?: string;
 
   @ApiProperty({
-    description: 'Lista de IDs de documentos correspondientes a los archivos, en el mismo orden',
+    description:
+      'Lista de IDs de documentos correspondientes a los archivos, en el mismo orden',
     type: String,
     example: 'uuid1,uuid2',
   })
