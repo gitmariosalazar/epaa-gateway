@@ -39,6 +39,20 @@ const epaaLegacyKafkaProviders = [
       ...KAFKA_LEGACY_CONSUMER_OPTIONS,
     },
   }),
+  // Epaa Legacy Migration Kafka Client
+  provideContextualKafkaClient('EPAA_LEGACY_MIGRATION_KAFKA_CLIENT', {
+    replyTopic: EPAA_LEGACY_REPLY_TOPIC,
+    client: {
+      brokers: [environments.KAFKA_BROKER_URL],
+      clientId: `${environments.EPAA_LEGACY_READINGS_KAFKA_CLIENT_ID}-mig-gw-v3`,
+      retry: KAFKA_RETRY_OPTIONS,
+    },
+
+    consumer: {
+      groupId: `${environments.EPAA_LEGACY_READINGS_KAFKA_GROUP_ID}-mig-gw-v3`,
+      ...KAFKA_LEGACY_CONSUMER_OPTIONS,
+    },
+  }),
 ];
 
 @Module({
