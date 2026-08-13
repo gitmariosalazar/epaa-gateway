@@ -44,9 +44,10 @@ import { AllowedUserTypes } from '../../../../../../auth/decorator/allowed-user-
 import { createHash, randomUUID } from 'crypto';
 import { mkdir, writeFile } from 'fs/promises';
 import { basename, extname, join } from 'path';
+import { AccessTokenPayload } from '../../../../../../shared/utils/interfaces/user.payload';
 
 /** Rol que otorga visibilidad total sobre los expedientes, sin restricción por analista asignado. */
-const SUPER_ADMIN_ROLE_NAME = 'SUPER ADMINISTRADOR';
+const SUPER_ADMIN_ROLE_NAME: string = 'SUPER ADMINISTRADOR';
 
 /** Límite por archivo subido (se guarda directo a disco, no viaja por Kafka). */
 const MAX_FILE_SIZE_BYTES = 20 * 1024 * 1024; // 20 MB
@@ -450,16 +451,20 @@ export class RequestGatewayController {
    * el rol siempre se deriva del token verificado en `request['user']`.
    */
   private isSuperAdmin(request: Request): boolean {
-    const roles = (request['user']?.roles ?? []) as Array<
-      string | { id: number; name?: string }
-    >;
+    const user: AccessTokenPayload = request['user'] as AccessTokenPayload;
+    if (!user) {
+      this.logger.warn(
+        'No se encontró el payload del usuario en request["user"] al verificar rol SUPER_ADMINISTRADOR.',
+      );
+      return false;
+    }
+    const roles = user.roles || user['roles'] || [];
     this.logger.log(
       `Verificando roles del usuario autenticado: ${JSON.stringify(roles)}`,
     );
     return roles.some(
       (role) =>
-        (typeof role === 'string' ? role : role?.name) ===
-        SUPER_ADMIN_ROLE_NAME,
+        role === 'SUPER ADMINISTRADOR' || role === SUPER_ADMIN_ROLE_NAME,
     );
   }
 
@@ -603,7 +608,8 @@ export class RequestGatewayController {
         `data: ${JSON.stringify(body)}, archivos recibidos: ${files?.length ?? 0}`,
       );
       // userId SIEMPRE del JWT verificado, nunca del body (evita spoofing)
-      const userId = request['user']?.sub;
+      const user: AccessTokenPayload = request['user'] as AccessTokenPayload;
+      const userId = user.sub;
       const typeIds = (body.documentTypeIds ?? '')
         .split(',')
         .map((s) => s.trim())
@@ -696,6 +702,7 @@ export class RequestGatewayController {
         `[POST /requests/${solicitudId}/corrections] data: ${JSON.stringify(body)}, archivos recibidos: ${files?.length ?? 0}`,
       );
       // userId SIEMPRE del JWT verificado, nunca del body (evita spoofing)
+      const user: AccessTokenPayload = request['user'] as AccessTokenPayload;
       const userId = request['user']?.sub;
       const docIds = (body.documentIds ?? '')
         .split(',')

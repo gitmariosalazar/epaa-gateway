@@ -51,6 +51,7 @@ import { RemoveWorkerFromWorkOrderRequest } from '../../domain/dto/request/remov
 import { AdvanceWorkOrderStateRequest } from '../../domain/dto/request/advance-work-order-state.request';
 import { AddWorkOrderMaterialsBatchRequest } from '../../domain/dto/request/add-work-order-materials-batch.request';
 import { AddWorkersBatchToWorkOrderRequest } from '../../domain/dto/request/add-workers-batch-to-work-order.request';
+import { AccessTokenPayload } from '../../../../../../shared/utils/interfaces/user.payload';
 
 const WORK_ORDERS_UPLOAD_DIR = '/home/sigepaa/sigepaa/images/work_orders';
 
@@ -82,8 +83,9 @@ export class ProcessWorkOrderGatewayController {
   // Ignora cualquier id de usuario que venga en el body: siempre se toma
   // del usuario autenticado inyectado por AuthGuard en request['user'].
   private extractAuthUserId(request: Request): string {
-    const authUser = (request as any)['user'] ?? {};
-    return authUser?.cliente_id ?? authUser?.sub ?? authUser?.userId;
+    const authUser: AccessTokenPayload =
+      ((request as any)['user'] as AccessTokenPayload) ?? {};
+    return authUser?.sub;
   }
 
   @Post('create-work-order')
@@ -130,9 +132,9 @@ export class ProcessWorkOrderGatewayController {
   ): Promise<ApiResponse> {
     try {
       // 1. Extraemos el usuario en sesión inyectado por el AuthGuard en request['user']
-      const authUser = (request as any)['user'] ?? {};
-      const userIdCreator =
-        authUser?.cliente_id ?? authUser?.sub ?? authUser?.userId;
+      const authUser: AccessTokenPayload =
+        ((request as any)['user'] as AccessTokenPayload) ?? {};
+      const userIdCreator = authUser?.cliente_id ?? authUser?.sub;
 
       const response = await sendKafkaRequest(
         this.kafkaProxy.send(

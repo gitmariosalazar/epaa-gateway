@@ -36,6 +36,7 @@ import {
   DocumentResponseDto,
   EntityRelationType,
 } from '../../application/dtos/documento.dto';
+import { AccessTokenPayload } from '../../../../../../shared/utils/interfaces/user.payload';
 
 @Controller('Documents')
 @ApiTags('Documents')
@@ -73,8 +74,10 @@ export class DocumentsGatewayController {
       }
 
       // Obtener el ID del usuario desde el JWT expuesto por AuthGuard
-      const uploadedBy =
-        (request as any)['user']?.sub ?? (request as any)['user']?.userId;
+      const user: AccessTokenPayload = (request as any)[
+        'user'
+      ] as AccessTokenPayload;
+      const uploadedBy = user.sub;
 
       // Crear FormData y adjuntar el Buffer del archivo de forma binaria
       const formData = new FormData();
@@ -201,8 +204,10 @@ export class DocumentsGatewayController {
     @Req() request: Request,
   ): Promise<ApiResponse> {
     try {
-      const uploadedBy =
-        (request as any)['user']?.sub ?? (request as any)['user']?.userId;
+      const user: AccessTokenPayload = (request as any)[
+        'user'
+      ] as AccessTokenPayload;
+      const uploadedBy = user.sub;
       const payload = { ...dto, uploadedBy };
 
       const response = await sendKafkaRequest(
@@ -270,8 +275,10 @@ export class DocumentsGatewayController {
     @Req() request: Request,
   ): Promise<ApiResponse> {
     try {
-      const realizadoPor =
-        (request as any)['user']?.sub ?? (request as any)['user']?.userId;
+      const user: AccessTokenPayload = (request as any)[
+        'user'
+      ] as AccessTokenPayload;
+      const realizadoPor = user.sub;
       const payload = { id, dto: { ...dto, realizadoPor } };
 
       const response = await sendKafkaRequest(

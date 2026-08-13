@@ -17,6 +17,7 @@ import { sendKafkaRequest } from '../../../../../../shared/utils/kafka/send.kafk
 import { KafkaProxyService } from '../../../../../../shared/kafka/kafka-proxy.service';
 import { AuthGuard } from '../../../../../../auth/guard/auth.guard';
 import { AllowedUserTypes } from '../../../../../../auth/decorator/allowed-user-types.decorator';
+import { AccessTokenPayload } from '../../../../../../shared/utils/interfaces/user.payload';
 
 class SubmitInstallationReportRequest {
   workOrderId!: string;
@@ -45,7 +46,7 @@ export class InstallationReportGatewayController {
   ) {}
 
   private getUserIdFromRequest(request: Request): { userId: string } {
-    const user = request['user'] as { sub: string; username: string };
+    const user: AccessTokenPayload = request['user'] as AccessTokenPayload;
     return { userId: user.sub };
   }
 

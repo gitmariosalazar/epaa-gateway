@@ -5,8 +5,16 @@ export interface AuthResponse {
     userId: string;
     username: string;
     email: string;
-    roles: string[];
-    permissions: string[];
+    roles: {
+      id: number;
+      name: string;
+      description: string;
+    }[];
+    permissions: {
+      id: number;
+      name: string;
+      description: string;
+    }[];
     firstName: string;
     lastName: string;
     isActive: boolean;

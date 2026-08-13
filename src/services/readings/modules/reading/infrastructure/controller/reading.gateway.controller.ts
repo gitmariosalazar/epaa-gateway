@@ -47,6 +47,7 @@ import { NoveltyResponse } from '../../domain/schemas/dto/response/novelty.respo
 import { RequireAppKey } from '../../../../../../auth/decorator/require-app-key.decorator';
 import { CreateReadingUseCase } from '../../application/use-cases/create-reading.use-case';
 import { UpdateCurrentReadingUseCase } from '../../application/use-cases/update-current-reading.use-case';
+import { AccessTokenPayload } from '../../../../../../shared/utils/interfaces/user.payload';
 
 @Controller('Readings')
 @ApiTags('Readings')
@@ -65,12 +66,17 @@ export class ReadingGatewayController {
 
   /** Extracts the authenticated user id set by AuthGuard onto the request. */
   private extractUserId(request: Request): string | undefined {
-    return (request as any)['user']?.sub ?? (request as any)['user']?.userId;
+    const user: AccessTokenPayload = (request as any)[
+      'user'
+    ] as AccessTokenPayload;
+    return user?.sub;
   }
 
   /** Extracts the username claim from the JWT payload (not the user id). */
   private extractUsername(request: Request): { username: string } {
-    const user = request['user'] as { sub: string; username: string };
+    const user: AccessTokenPayload = (request as any)[
+      'user'
+    ] as AccessTokenPayload;
     return { username: user.username };
   }
 
@@ -305,13 +311,14 @@ export class ReadingGatewayController {
     @Param('month') month: string,
     @Req() request: Request,
     @Param('sector', new ParseIntPipe({ optional: true })) sector?: number, // <-- 2. Opcional
+    @Query('userId') userId?: string, // <-- changed to query
   ): Promise<ApiResponse> {
     try {
       const response: TakenReadingConnectionResponse[] = await sendKafkaRequest(
         this.kafkaProxy.send(
           this.readingClient,
           'reading.get-taken-reading-estimates-or-average',
-          { month, sector },
+          { month, sector, userId },
         ),
       );
       return new ApiResponse(
@@ -342,6 +349,7 @@ export class ReadingGatewayController {
     @Param('month') month: string,
     @Req() request: Request,
     @Param('sector', new ParseIntPipe({ optional: true })) sector?: number, // <-- 2. Opcional
+    @Query('userId') userId?: string, // <-- changed to query
   ): Promise<ApiResponse> {
     try {
       const response: TakenReadingConnectionResponse[] = await sendKafkaRequest(
@@ -351,6 +359,7 @@ export class ReadingGatewayController {
           {
             month,
             sector,
+            userId,
           },
         ),
       );
@@ -395,6 +404,7 @@ export class ReadingGatewayController {
     @Req() request: Request,
     @Query('novelty') novelty?: string,
     @Query('sector', new ParseIntPipe({ optional: true })) sector?: number,
+    @Query('userId') userId?: string,
   ): Promise<ApiResponse> {
     try {
       const response: ReadingNoveltyResponse[] = await sendKafkaRequest(
@@ -405,6 +415,7 @@ export class ReadingGatewayController {
             novelty, // Si es undefined, Kafka recibirá undefined
             month,
             sector,
+            userId,
           },
         ),
       );

@@ -6,13 +6,15 @@ import {
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { AuditContextStorage } from '../utils/audit-context.storage';
+import { AccessTokenPayload } from '../utils/interfaces/user.payload';
 
 @Injectable()
 export class AuditContextInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const request = context.switchToHttp().getRequest();
     // Extract User Identity if available (already set by AuthGuard)
-    const user = request['user'];
+    const user: AccessTokenPayload =
+      ((request as any)['user'] as AccessTokenPayload) ?? {};
 
     // Extract Technical Metadata (IP and User-Agent) ALWAYS
     const ip =

@@ -23,6 +23,7 @@ import { parseExpirationToSeconds } from '../../../../../../shared/utils/jwt/tim
 import { AuthGuard } from '../../../../../../auth/guard/auth.guard';
 import { AllowedUserTypes } from '../../../../../../auth/decorator/allowed-user-types.decorator';
 import { KafkaProxyService } from '../../../../../../shared/kafka/kafka-proxy.service';
+import { AccessTokenPayload } from '../../../../../../shared/utils/interfaces/user.payload';
 
 @Controller('auth')
 export class AuthGatewayController {
@@ -166,7 +167,7 @@ export class AuthGatewayController {
     @Body() payload: { refreshToken?: string },
   ): Promise<ApiResponse> {
     try {
-      const user = request['user'];
+      const user: AccessTokenPayload = request['user'] as AccessTokenPayload;
 
       // Notificar al microservicio para invalidar tokens y auditar LOGOUT
       if (user?.sub) {

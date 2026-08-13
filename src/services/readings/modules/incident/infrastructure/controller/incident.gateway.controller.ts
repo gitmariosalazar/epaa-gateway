@@ -41,6 +41,7 @@ import { AllowedUserTypes } from '../../../../../../auth/decorator/allowed-user-
 import { RequireAppKey } from '../../../../../../auth/decorator/require-app-key.decorator';
 import { IncidentCategoryResponse } from '../../domain/schemas/dto/response/incident-category-type.response';
 import { IncidentDetailRowResponse } from '../../domain/schemas/dto/response/view_incident.response';
+import { AccessTokenPayload } from '../../../../../../shared/utils/interfaces/user.payload';
 
 const INCIDENT_IMAGES_DIR = '/home/sigepaa/sigepaa/images/incidents';
 
@@ -172,8 +173,10 @@ export class IncidentGatewayController {
     @Req() request: Request,
   ): Promise<ApiResponse> {
     try {
-      const userPayload = (request as any)['user'];
-      const userId = userPayload?.sub ?? userPayload?.userId;
+      const userPayload: AccessTokenPayload = (request as any)[
+        'user'
+      ] as AccessTokenPayload;
+      const userId = userPayload?.sub;
       const userType = userPayload?.user_type || 'employee';
 
       const incidentRequest = this.parseCreateIncidentBody(body);
@@ -195,8 +198,6 @@ export class IncidentGatewayController {
       } else {
         kafkaPayload.reporterUserId = userId;
       }
-
-      this.logger.log(kafkaPayload);
 
       const response: IncidentResponse = await sendKafkaRequest(
         this.kafkaProxy.send(
@@ -254,8 +255,10 @@ export class IncidentGatewayController {
     @Req() request: Request,
   ): Promise<ApiResponse> {
     try {
-      const resolverUserId =
-        (request as any)['user']?.sub ?? (request as any)['user']?.userId;
+      const resolverUserId: AccessTokenPayload = (request as any)[
+        'user'
+      ] as AccessTokenPayload;
+      const resolverUserIdValue = resolverUserId?.sub;
 
       const incidentRequest = this.parseResolveIncidentBody(body);
       const imageUrls = this.saveUploadedImages(
@@ -270,7 +273,7 @@ export class IncidentGatewayController {
             ...incidentRequest,
             images: imageUrls,
           },
-          resolverUserId,
+          resolverUserId: resolverUserIdValue,
         }),
       );
 

@@ -32,6 +32,7 @@ import { constants as fsConstants } from 'fs';
 import { basename, join } from 'path';
 import { Response } from 'express';
 import { statusCode } from '../../../../../../settings/environments/status-code';
+import { AccessTokenPayload } from '../../../../../../shared/utils/interfaces/user.payload';
 
 interface ConnectionDocumentLookup {
   requestId: string;
@@ -260,8 +261,8 @@ export class ConnectionDocumentGatewayController {
     contentDispositionType: 'inline' | 'attachment',
   ): Promise<void> {
     try {
-      const authUser = (request as any)['user'] ?? {};
-      const userId = authUser?.cliente_id ?? authUser?.sub ?? authUser?.userId;
+      const authUser: AccessTokenPayload = (request as any)['user'] ?? {};
+      const userId = authUser?.cliente_id ?? authUser?.sub;
       const userType = authUser?.user_type ?? 'employee';
 
       const document = await sendKafkaRequest<ConnectionDocumentLookup>(

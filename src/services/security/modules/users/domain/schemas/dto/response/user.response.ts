@@ -98,6 +98,14 @@ export interface CustomerWithRolesAndPermissionsResponse {
   passwordHash?: string | null;
   company: CompanyResponse | null;
   person: ClientResponse | null;
-  roles: string[];
-  permissions: string[];
+  roles: {
+    id: number;
+    name: string;
+    description: string;
+  }[];
+  permissions: {
+    id: number;
+    name: string;
+    description: string;
+  }[];
 }
