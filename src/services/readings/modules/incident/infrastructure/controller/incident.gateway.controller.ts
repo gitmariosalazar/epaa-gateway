@@ -240,6 +240,13 @@ export class IncidentGatewayController {
         },
         repairCost: { type: 'number', example: 150.5 },
         chargeToUser: { type: 'boolean', example: true },
+        changeDetails: {
+          type: 'string',
+          description:
+            'JSON string con cambios de datos del medidor/predio (opcional, solo si el usuario reporta cambios)',
+          example:
+            '[{"clave_catastral":"","numero_medidor":"","serie":"","ubicacion":"","observaciones":""}]',
+        },
         images: {
           type: 'array',
           items: { type: 'string', format: 'binary' },
@@ -478,6 +485,9 @@ export class IncidentGatewayController {
       description: body.description,
       repairCost: Number(body.repairCost),
       chargeToUser: this.parseBoolean(body.chargeToUser),
+      changeDetails: body.changeDetails
+        ? JSON.parse(body.changeDetails)
+        : undefined,
     };
   }
 
