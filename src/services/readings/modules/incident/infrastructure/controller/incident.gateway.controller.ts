@@ -243,9 +243,9 @@ export class IncidentGatewayController {
         changeDetails: {
           type: 'string',
           description:
-            'JSON string con cambios de datos del medidor/predio (opcional, solo si el usuario reporta cambios)',
+            'JSON string con cambios de datos del medidor/predio (opcional, solo si el usuario reporta cambios). Incluye medidor_anterior/medidor_nuevo solo cuando hubo un reemplazo físico del medidor.',
           example:
-            '[{"clave_catastral":"","numero_medidor":"","serie":"","ubicacion":"","observaciones":""}]',
+            '[{"clave_catastral":"","numero_medidor":"","serie":"","ubicacion":"","observaciones":"","medidor_anterior":{"numero_medidor":"MTR-123456","ultima_lectura":1520,"fecha_ultima_lectura":"2026-07-15T00:00:00.000Z"},"medidor_nuevo":{"numero_medidor":"MTR-789012","lectura_anterior":1520,"lectura_actual":0,"fecha_ultima_lectura":"2026-08-17T00:00:00.000Z"}}]',
         },
         images: {
           type: 'array',
