@@ -463,4 +463,47 @@ export class ReadingGatewayController {
       throw new RpcException(err.message || err);
     }
   }
+
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard)
+  @Get('get-map-geojson-by-day-and-by-user/:date')
+  @ApiOperation({
+    summary: 'Method GET - Get Map GeoJSON by day and by user',
+    description:
+      'The endpoint allows you to get Map GeoJSON data for readings on a specific day, optionally filtered by user ID.',
+  })
+  @ApiParam({ name: 'date', type: String, example: '2026-08-18' })
+  @ApiQuery({
+    name: 'userId',
+    type: String,
+    required: false,
+    description: 'Optional user ID filter',
+  })
+  async getMapGeojsonByDayAndByUser(
+    @Req() request: Request,
+    @Param('date') date: string,
+    @Query('userId') userId?: string,
+  ): Promise<ApiResponse> {
+    try {
+      const response = await sendKafkaRequest(
+        this.kafkaProxy.send(
+          this.readingClient,
+          'reading.get-map-geojson-by-day-and-by-user',
+          { date, userId },
+        ),
+      );
+      return new ApiResponse(
+        `Map GeoJSON data for date ${date} and user ID ${userId ?? 'ALL'} retrieved successfully!`,
+        response,
+        request.url,
+      );
+    } catch (error) {
+      const err = error as Error;
+      this.logger.error(
+        `Error getting Map GeoJSON by day ${date} and user ID ${userId ?? 'ALL'}: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err.message || err);
+    }
+  }
 }
