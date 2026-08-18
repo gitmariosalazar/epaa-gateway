@@ -10,15 +10,26 @@ import {
   Put,
   Query,
   Req,
+  UploadedFiles,
   UseGuards,
+  UseInterceptors,
+  BadRequestException,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiBearerAuth,
+  ApiConsumes,
+  ApiBody,
+} from '@nestjs/swagger';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import { environments } from '../../../../../../settings/environments/environments';
 import { ClientKafka, RpcException } from '@nestjs/microservices';
 import { KafkaProxyService } from '../../../../../../shared/kafka/kafka-proxy.service';
 import { ApiResponse } from '../../../../../../shared/errors/responses/ApiResponse';
 import { sendKafkaRequest } from '../../../../../../shared/utils/kafka/send.kafka.request';
 import { CreateConnectionRequest } from '../../domain/schemas/dto/request/create.connection.request';
+import { MeterChangeDetail } from '../../domain/schemas/dto/request/change-meter.connection.request';
 import { AuthGuard } from '../../../../../../auth/guard/auth.guard';
 import { AllowedUserTypes } from '../../../../../../auth/decorator/allowed-user-types.decorator';
 import {
@@ -189,6 +200,89 @@ export class ConnectionGatewayController {
       );
       return new ApiResponse(
         `Connection updated successfully!`,
+        response,
+        request.url,
+      );
+    } catch (error) {
+      throw new RpcException(error as string | object);
+    }
+  }
+
+  @Post('change-meter/:connectionId')
+  @UseInterceptors(FilesInterceptor('images', 10))
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      required: ['changeDetail'],
+      properties: {
+        changeDetail: {
+          type: 'string',
+          description:
+            'JSON string con MeterChangeDetail (clave_catastral, numero_medidor, serie, ubicacion, observaciones, medidor_anterior, medidor_nuevo). medidor_nuevo.numero_medidor es obligatorio.',
+          example:
+            '{"clave_catastral":"","numero_medidor":"","serie":"","ubicacion":"","observaciones":"","medidor_anterior":{"numero_medidor":"MTR-123456","ultima_lectura":1520,"fecha_ultima_lectura":"2026-07-15T00:00:00.000Z"},"medidor_nuevo":{"numero_medidor":"MTR-789012","lectura_anterior":1520,"lectura_actual":0,"fecha_ultima_lectura":"2026-08-17T00:00:00.000Z"}}',
+        },
+        imageDescriptions: {
+          type: 'string',
+          description:
+            'JSON string con un array de descripciones alineado por índice a "images" (opcional). Ej: ["Medidor viejo dañado","Medidor nuevo instalado"]',
+        },
+        images: {
+          type: 'array',
+          items: { type: 'string', format: 'binary' },
+          description:
+            'Fotos/evidencias del cambio de medidor (opcional, máx. 10)',
+        },
+      },
+    },
+  })
+  @ApiOperation({
+    summary: 'Method POST - Change the meter of a connection',
+    description:
+      'Actualiza el número de medidor de una acometida, registra el cambio en el historial de medidores y adjunta evidencias fotográficas.',
+  })
+  async changeMeter(
+    @Req() request: Request,
+    @Param('connectionId') connectionId: string,
+    @Body() body: Record<string, string>,
+    @UploadedFiles() files: Express.Multer.File[],
+  ): Promise<ApiResponse> {
+    try {
+      if (!body.changeDetail) {
+        throw new BadRequestException('changeDetail es obligatorio');
+      }
+
+      const changeDetail: MeterChangeDetail = JSON.parse(body.changeDetail);
+      const descriptions: string[] = body.imageDescriptions
+        ? JSON.parse(body.imageDescriptions)
+        : [];
+
+      const images = (files ?? []).map((file, index) => ({
+        fileBase64: `data:${file.mimetype};base64,${file.buffer.toString('base64')}`,
+        originalName: file.originalname,
+        mimeType: file.mimetype,
+        description: descriptions[index] ?? null,
+      }));
+
+      this.logger.log(
+        `Received request to change meter for connection ${connectionId}`,
+      );
+
+      const response = await sendKafkaRequest(
+        this.kafkaProxy.send(
+          this.connectionKafkaClient,
+          'connections.change-meter',
+          {
+            connectionId,
+            changeDetail,
+            images,
+          },
+        ),
+      );
+
+      return new ApiResponse(
+        `Meter changed successfully for connection ${connectionId}!`,
         response,
         request.url,
       );
