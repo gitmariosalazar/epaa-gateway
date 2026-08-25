@@ -55,4 +55,7 @@ export interface ReadingInfoResponse {
   connectionStateDescription: string;
   permitReading: boolean;
   connectionLocation?: { lat: number; lng: number } | null;
+  images?: { id: number; path: string; novelty: string }[];
+  observations?: { id: number; title: string; observation: string }[];
+  readingLocation?: { lat: number; lng: number } | null;
 }

@@ -506,4 +506,43 @@ export class ReadingGatewayController {
       throw new RpcException(err.message || err);
     }
   }
+
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard)
+  @Get('get-detailed-reading-info-by-cadastral-key/:cadastralKey/:yearAndMonth')
+  @ApiOperation({
+    summary:
+      'Method GET - Get Detailed Reading Info by cadastral key and year/month',
+    description:
+      'The endpoint allows you to get detailed reading information for a specific cadastral key and year/month.',
+  })
+  @ApiParam({ name: 'cadastralKey', type: String, example: '14-293' })
+  @ApiParam({ name: 'yearAndMonth', type: String, example: '2026-08' })
+  async getDetailedReadingInfoByCadastralKey(
+    @Req() request: Request,
+    @Param('cadastralKey') cadastralKey: string,
+    @Param('yearAndMonth') yearAndMonth: string,
+  ): Promise<ApiResponse> {
+    try {
+      const response = await sendKafkaRequest(
+        this.kafkaProxy.send(
+          this.readingClient,
+          'reading.get-detailed-reading-info-by-cadastral-key',
+          { cadastralKey, yearAndMonth },
+        ),
+      );
+      return new ApiResponse(
+        `Detailed reading info for cadastral key ${cadastralKey} and year/month ${yearAndMonth} retrieved successfully!`,
+        response,
+        request.url,
+      );
+    } catch (error) {
+      const err = error as Error;
+      this.logger.error(
+        `Error getting detailed reading info by cadastral key ${cadastralKey} and year/month ${yearAndMonth}: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err.message || err);
+    }
+  }
 }
