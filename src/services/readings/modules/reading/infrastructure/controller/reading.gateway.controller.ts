@@ -524,7 +524,7 @@ export class ReadingGatewayController {
     @Param('yearAndMonth') yearAndMonth: string,
   ): Promise<ApiResponse> {
     try {
-      const response = await sendKafkaRequest(
+      const response: ReadingInfoResponse | null = await sendKafkaRequest(
         this.kafkaProxy.send(
           this.readingClient,
           'reading.get-detailed-reading-info-by-cadastral-key',
