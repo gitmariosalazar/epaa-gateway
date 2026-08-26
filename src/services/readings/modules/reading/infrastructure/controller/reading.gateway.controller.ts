@@ -41,6 +41,7 @@ import { KafkaProxyService } from '../../../../../../shared/kafka/kafka-proxy.se
 
 import {
   ReadingBasicInfoResponse,
+  ReadingDetailedResponse,
   ReadingInfoResponse,
 } from '../../domain/schemas/dto/response/reading-basic.response';
 import { NoveltyResponse } from '../../domain/schemas/dto/response/novelty.response';
@@ -524,7 +525,7 @@ export class ReadingGatewayController {
     @Param('yearAndMonth') yearAndMonth: string,
   ): Promise<ApiResponse> {
     try {
-      const response: ReadingInfoResponse | null = await sendKafkaRequest(
+      const response: ReadingDetailedResponse | null = await sendKafkaRequest(
         this.kafkaProxy.send(
           this.readingClient,
           'reading.get-detailed-reading-info-by-cadastral-key',
