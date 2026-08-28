@@ -15,6 +15,14 @@ export class CreateConnectionRequest {
   clientId: string;
 
   @ApiProperty({
+    example: 'user-1234',
+    description: 'Identifier for the user associated with the connection',
+    type: String,
+    required: false,
+  })
+  userId?: string;
+
+  @ApiProperty({
     example: 1,
     description: 'Identifier for the connection rate',
     type: Number,

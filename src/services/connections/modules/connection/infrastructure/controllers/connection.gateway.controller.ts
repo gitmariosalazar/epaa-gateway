@@ -41,6 +41,7 @@ import {
   ClientDashboardResponse,
   ConnectionDashboardResponse,
 } from '../../domain/schemas/dto/response/view-dashboard.response';
+import { AccessTokenPayload } from '../../../../../../shared/utils/interfaces/user.payload';
 
 @Controller('connections')
 @ApiTags('Connections Gateway')
@@ -142,6 +143,8 @@ export class ConnectionGatewayController {
     }
   }
 
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard)
   @Post('create-connection')
   @ApiOperation({
     summary: 'Method POST - Create a new connection',
@@ -153,6 +156,10 @@ export class ConnectionGatewayController {
     @Body() connection: CreateConnectionRequest,
   ): Promise<ApiResponse> {
     try {
+      const authUser: AccessTokenPayload =
+        ((request as any)['user'] as AccessTokenPayload) ?? {};
+      connection.userId = authUser?.sub;
+
       this.logger.log(
         `Received request to create connection: ${JSON.stringify(connection)}`,
       );
@@ -173,6 +180,8 @@ export class ConnectionGatewayController {
     }
   }
 
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard)
   @Put('update-connection/:connectionId')
   @ApiOperation({
     summary: 'Method PUT - Update an existing connection',
@@ -185,6 +194,10 @@ export class ConnectionGatewayController {
     @Body() connection: CreateConnectionRequest,
   ): Promise<ApiResponse> {
     try {
+      const authUser: AccessTokenPayload =
+        ((request as any)['user'] as AccessTokenPayload) ?? {};
+      connection.userId = authUser?.sub;
+
       this.logger.log(
         `Received request to update connection ${connectionId}: ${JSON.stringify(connection)}`,
       );
@@ -208,6 +221,8 @@ export class ConnectionGatewayController {
     }
   }
 
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard)
   @Post('change-meter/:connectionId')
   @UseInterceptors(FilesInterceptor('images', 10))
   @ApiConsumes('multipart/form-data')
@@ -253,7 +268,12 @@ export class ConnectionGatewayController {
         throw new BadRequestException('changeDetail es obligatorio');
       }
 
+      const authUser: AccessTokenPayload =
+        ((request as any)['user'] as AccessTokenPayload) ?? {};
+      const userIdCreator = authUser?.sub;
+
       const changeDetail: MeterChangeDetail = JSON.parse(body.changeDetail);
+      changeDetail.user_id = userIdCreator; // Asignar el user_id al detalle del cambio
       const descriptions: string[] = body.imageDescriptions
         ? JSON.parse(body.imageDescriptions)
         : [];

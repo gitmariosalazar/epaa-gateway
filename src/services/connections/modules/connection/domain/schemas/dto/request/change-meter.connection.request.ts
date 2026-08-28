@@ -50,6 +50,9 @@ export class MeterChangeDetail {
 
   @ApiProperty({ type: NewMeterDetail })
   medidor_nuevo!: NewMeterDetail;
+
+  @ApiProperty({ example: 'user-uuid', required: false })
+  user_id?: string; // ID del usuario que realiza el cambio, si aplica
 }
 
 export class ChangeMeterRequest {
