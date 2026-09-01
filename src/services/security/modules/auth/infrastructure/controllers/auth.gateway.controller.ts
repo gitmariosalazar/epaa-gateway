@@ -25,6 +25,9 @@ import { AllowedUserTypes } from '../../../../../../auth/decorator/allowed-user-
 import { KafkaProxyService } from '../../../../../../shared/kafka/kafka-proxy.service';
 import { AccessTokenPayload } from '../../../../../../shared/utils/interfaces/user.payload';
 
+import { UnlockModuleRequest } from '../../domain/schemas/dto/request/unlock-module.request';
+import { SetPinRequest } from '../../domain/schemas/dto/request/set-pin.request';
+
 @Controller('auth')
 export class AuthGatewayController {
   private readonly logger = new Logger(AuthGatewayController.name);
@@ -33,6 +36,106 @@ export class AuthGatewayController {
     private readonly authKafkaClient: ClientKafka,
     private readonly kafkaProxy: KafkaProxyService,
   ) {}
+
+  @Post('unlock-module')
+  @UseGuards(AuthGuard)
+  @AllowedUserTypes('employee')
+  @ApiOperation({
+    summary: 'Unlock special module (Session Upgrade)',
+    description: 'Endpoint to elevate user privileges with a security PIN',
+  })
+  async unlockModule(
+    @Req() request: ExpressRequest,
+    @Body() payload: UnlockModuleRequest,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<ApiResponse> {
+    try {
+      this.logger.log(`Unlocking module for user: ${payload.userId}`);
+      const kafkaResponse: { elevated_token: string } = await sendKafkaRequest(
+        this.kafkaProxy.send(
+          this.authKafkaClient,
+          'authentication.auth.unlock-module',
+          payload,
+        ),
+      );
+
+      const isBrowser =
+        request.headers['user-agent']?.includes('Mozilla') ?? false;
+
+      if (isBrowser && kafkaResponse.elevated_token) {
+        // Update the cookie with the newly elevated token
+        res.cookie('auth_token', kafkaResponse.elevated_token, {
+          httpOnly: true,
+          secure: false, // environments.COOKIE_SECURE,
+          sameSite: 'lax', //environments.COOKIE_SAME_SITE,
+          path: '/',
+          maxAge:
+            parseExpirationToSeconds(environments.JWT_ACCESS_EXPIRATION) * 1000,
+        });
+      }
+
+      return new ApiResponse(
+        'Module unlocked successfully!',
+        kafkaResponse,
+        request.url,
+      );
+    } catch (error) {
+      const err = error as Error;
+      this.logger.error(`Error unlocking module: ${err.message}`, err.stack);
+      throw new RpcException(err as string | object);
+    }
+  }
+
+  @Post('set-pin')
+  @UseGuards(AuthGuard)
+  @AllowedUserTypes('employee')
+  @ApiOperation({
+    summary: 'Set or update security PIN',
+    description: 'Endpoint to configure a security PIN for the authenticated user, or for another user if you have admin privileges.',
+  })
+  async setPin(
+    @Req() request: ExpressRequest,
+    @Body() payload: SetPinRequest,
+  ): Promise<ApiResponse> {
+    try {
+      const user: AccessTokenPayload = request['user'] as AccessTokenPayload;
+      let targetUserId = user.sub;
+
+      if (payload.userId && payload.userId !== user.sub) {
+        const isAdmin = user.roles?.some(
+          (role) => role.toLowerCase() === 'admin' || role.toLowerCase() === 'administrador'
+        );
+
+        if (!isAdmin) {
+          throw new RpcException({
+            statusCode: 403,
+            message: 'You do not have the required privileges to set a PIN for another user.',
+          });
+        }
+        targetUserId = payload.userId;
+      }
+
+      this.logger.log(`Setting PIN for user: ${targetUserId} (Requested by: ${user.sub})`);
+      
+      const kafkaResponse = await sendKafkaRequest(
+        this.kafkaProxy.send(
+          this.authKafkaClient,
+          'authentication.user.set_pin',
+          { userId: targetUserId, pin: payload.pin },
+        ),
+      );
+
+      return new ApiResponse(
+        'PIN configured successfully!',
+        kafkaResponse,
+        request.url,
+      );
+    } catch (error) {
+      const err = error as Error;
+      this.logger.error(`Error setting PIN: ${err.message}`, err.stack);
+      throw new RpcException(err as string | object);
+    }
+  }
 
   @Post('signin')
   @ApiOperation({

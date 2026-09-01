@@ -99,4 +99,25 @@ export class CreateIncidentRequest {
     email: string | null;
     cellPhone: string | null;
   } | null;
+
+  @ApiProperty({
+    example: 'ANTIGUO',
+    description: 'The physical condition of the meter (NUEVO, ANTIGUO, NO_IDENTIFICADO) - exclusively for meter readers',
+    required: false,
+  })
+  meterCondition?: string | null;
+
+  @ApiProperty({
+    example: 'MALO',
+    description: 'The physical state of the meter (BUENO, REGULAR, MALO, DESTRUIDO) - exclusively for meter readers',
+    required: false,
+  })
+  meterPhysicalState?: string | null;
+
+  @ApiProperty({
+    example: true,
+    description: 'Flag indicating if the incident requires immediate action - exclusively for meter readers',
+    required: false,
+  })
+  requiresImmediateAction?: boolean;
 }

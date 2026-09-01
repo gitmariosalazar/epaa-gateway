@@ -15,4 +15,8 @@ export interface IReadingLegacySyncPort {
     params: FindCurrentReadingParams,
     request: UpdateReadingLegacyRequest,
   ): void;
+  syncUpdateSpecialReadingLegacy(
+    params: FindCurrentReadingParams,
+    request: UpdateReadingLegacyRequest,
+  ): void;
 }

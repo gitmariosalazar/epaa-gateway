@@ -25,6 +25,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { UpdateReadingRequest } from '../../domain/schemas/dto/request/update-reading.request';
+import { UpdateSpecialReadingRequest } from '../../domain/schemas/dto/request/update-special-reading.request';
 import { CreateReadingRequest } from '../../domain/schemas/dto/request/create-reading.request';
 import {
   PendingReadingConnectionResponse,
@@ -48,6 +49,7 @@ import { NoveltyResponse } from '../../domain/schemas/dto/response/novelty.respo
 import { RequireAppKey } from '../../../../../../auth/decorator/require-app-key.decorator';
 import { CreateReadingUseCase } from '../../application/use-cases/create-reading.use-case';
 import { UpdateCurrentReadingUseCase } from '../../application/use-cases/update-current-reading.use-case';
+import { UpdateSpecialReadingUseCase } from '../../application/use-cases/update-special-reading.use-case';
 import { AccessTokenPayload } from '../../../../../../shared/utils/interfaces/user.payload';
 
 @Controller('Readings')
@@ -63,6 +65,7 @@ export class ReadingGatewayController {
     private readonly kafkaProxy: KafkaProxyService,
     private readonly createReadingUseCase: CreateReadingUseCase,
     private readonly updateCurrentReadingUseCase: UpdateCurrentReadingUseCase,
+    private readonly updateSpecialReadingUseCase: UpdateSpecialReadingUseCase,
   ) {}
 
   /** Extracts the authenticated user id set by AuthGuard onto the request. */
@@ -178,6 +181,58 @@ export class ReadingGatewayController {
       const err = error as Error;
       this.logger.error(
         `Error updating current reading with reading ID ${readingId}: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
+    }
+  }
+
+  @Put('update-special-reading/:readingId')
+  @ApiOperation({
+    summary: 'Method PUT - Update Special Reading by reading ID',
+    description: 'The endpoint allows you to update a Reading with special justification. Requires elevated privileges (module_special_unlocked).',
+  })
+  async updateSpecialReading(
+    @Param('readingId') readingId: string,
+    @Body() readingRequest: UpdateSpecialReadingRequest,
+    @Req() request: Request,
+  ): Promise<ApiResponse> {
+    try {
+      const userPayload: AccessTokenPayload = (request as any)['user'];
+      
+      // Verification of special unlocked module
+      if (!userPayload?.module_special_unlocked) {
+        throw new RpcException({
+          statusCode: 403,
+          message: 'You do not have the elevated privileges required for special reading adjustments. Please unlock the module first with your PIN.',
+        });
+      }
+
+      const updateUserId = userPayload?.sub;
+      const username = userPayload?.username;
+      
+      // Default to current month if not provided in request, but this is a special reading,
+      // it should be provided, or we pass a generic month. We'll pass current month as default for sync.
+      const date = new Date();
+      const currentMonth = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}`;
+
+      const response = await this.updateSpecialReadingUseCase.execute(
+        readingId,
+        readingRequest,
+        updateUserId,
+        username,
+        currentMonth
+      );
+
+      return new ApiResponse(
+        `Special reading with reading ID ${readingId} updated successfully!`,
+        response,
+        request.url,
+      );
+    } catch (error) {
+      const err = error as Error;
+      this.logger.error(
+        `Error updating special reading with reading ID ${readingId}: ${err.message}`,
         err.stack,
       );
       throw new RpcException(err as string | object);

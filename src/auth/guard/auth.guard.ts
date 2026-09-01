@@ -94,12 +94,12 @@ export class AuthGuard implements CanActivate {
       if (requiresAppKey) {
         return this.assertAppKey(request);
       }
-
+      /*
       this.logger.error(
         'Error verifying token in the gateway!',
         error instanceof Error ? error.stack : error,
       );
-
+*/
       if (error instanceof RpcException) throw error;
 
       throw new RpcException({

@@ -129,6 +129,10 @@ export interface IncidentDetailRowResponse {
   openDays: number | null;
   pendingDays: number | null;
 
+  // Condicion del medidor
+  meterCondition: string | null;
+  physicalState: string | null;
+
   // Auditoría básica
   createdAt: string; // ISO 8601 Date string
   updatedAt: string; // ISO 8601 Date string

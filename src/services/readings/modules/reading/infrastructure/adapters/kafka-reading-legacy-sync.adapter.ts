@@ -51,4 +51,21 @@ export class KafkaReadingLegacySyncAdapter implements IReadingLegacySyncPort {
       );
     }
   }
+
+  syncUpdateSpecialReadingLegacy(
+    params: FindCurrentReadingParams,
+    request: UpdateReadingLegacyRequest,
+  ): void {
+    try {
+      this.kafkaProxy.emit(
+        this.legacyReadingClient,
+        'epaa-legacy.reading.update-special-current-reading',
+        { params, request },
+      );
+    } catch (err) {
+      this.logger.error(
+        `Error syncing updated special reading to legacy: ${(err as Error).message}`,
+      );
+    }
+  }
 }

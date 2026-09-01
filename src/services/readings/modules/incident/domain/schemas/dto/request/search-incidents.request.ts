@@ -73,4 +73,12 @@ export class SearchIncidentsRequest {
     type: String,
   })
   externalUserId?: string | null;
+
+  @ApiProperty({
+    example: 'RUTA_LECTURA',
+    description: 'Filter by incident category code (optional)',
+    required: false,
+    type: String,
+  })
+  categoryCode?: string | null;
 }

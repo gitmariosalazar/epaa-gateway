@@ -465,6 +465,9 @@ export class IncidentGatewayController {
       latitude: this.parseOptionalNumber(body.latitude),
       longitude: this.parseOptionalNumber(body.longitude),
       reportClient: body.reportClient ? JSON.parse(body.reportClient) : null,
+      meterCondition: body.meterCondition || null,
+      meterPhysicalState: body.meterPhysicalState || null,
+      requiresImmediateAction: body.requiresImmediateAction ? this.parseBoolean(body.requiresImmediateAction) : false,
     };
   }
 

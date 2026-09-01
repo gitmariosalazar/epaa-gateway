@@ -192,4 +192,76 @@ export class MigrationLegacyGatewayController {
       throw new RpcException(err as string | object);
     }
   }
+  @Get('reconciliation/kpis')
+  @ApiOperation({
+    summary: 'Method GET - Reconciliation KPIs (Legacy)',
+    description:
+      'Returns the key performance indicators for the reconciliation process of a given month (YYYY-MM)',
+  })
+  async reconciliationKpis(
+    @Req() request: Request,
+    @Query('mesLectura') mesLectura: string,
+  ): Promise<ApiResponse> {
+    try {
+      this.logger.log(
+        `Sending reconciliation.kpis request: ${mesLectura}`,
+      );
+      const response = await sendKafkaRequest(
+        this.kafkaProxy.send(
+          this.kafkaClient,
+          'epaa-legacy.migration.reconciliation.kpis',
+          { mesLectura },
+        ),
+      );
+      return new ApiResponse(
+        'Reconciliation KPIs retrieved successfully!',
+        response,
+        request.url,
+      );
+    } catch (error) {
+      const err = error as Error;
+      this.logger.error(
+        `Error in reconciliationKpis: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
+    }
+  }
+
+  @Get('reconciliation/discrepancies-detail')
+  @ApiOperation({
+    summary: 'Method GET - Reconciliation Discrepancies Detail (Legacy)',
+    description:
+      'Returns a detailed grid of discrepancies with filtering capabilities for a given month (YYYY-MM). Filtros válidos: TODOS, DUPLICADOS, DIFERENTES, SOLO_POSTGRES.',
+  })
+  async reconciliationDiscrepanciesDetail(
+    @Req() request: Request,
+    @Query('mesLectura') mesLectura: string,
+    @Query('tipo_filtro') tipo_filtro: string,
+  ): Promise<ApiResponse> {
+    try {
+      this.logger.log(
+        `Sending reconciliation.discrepancies.detail request: ${mesLectura}, filtro: ${tipo_filtro}`,
+      );
+      const response = await sendKafkaRequest(
+        this.kafkaProxy.send(
+          this.kafkaClient,
+          'epaa-legacy.migration.reconciliation.discrepancies.detail',
+          { mesLectura, tipo_filtro },
+        ),
+      );
+      return new ApiResponse(
+        'Reconciliation discrepancies detail retrieved successfully!',
+        response,
+        request.url,
+      );
+    } catch (error) {
+      const err = error as Error;
+      this.logger.error(
+        `Error in reconciliationDiscrepanciesDetail: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
+    }
+  }
 }

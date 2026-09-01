@@ -8,6 +8,7 @@ import { KafkaEpaaLegacyModule } from '../../../../../../services/epaa-legacy/mo
 import { ReadingAuditGatewayController } from '../controller/reading-audit.gateway.controller';
 import { CreateReadingUseCase } from '../../application/use-cases/create-reading.use-case';
 import { UpdateCurrentReadingUseCase } from '../../application/use-cases/update-current-reading.use-case';
+import { UpdateSpecialReadingUseCase } from '../../application/use-cases/update-special-reading.use-case';
 import { READING_LEGACY_SYNC_PORT } from '../../application/ports/reading-legacy-sync.port';
 import { READING_REALTIME_NOTIFIER_PORT } from '../../application/ports/reading-realtime-notifier.port';
 import { KafkaReadingLegacySyncAdapter } from '../adapters/kafka-reading-legacy-sync.adapter';
@@ -59,6 +60,7 @@ import { RealtimeReadingNotifierAdapter } from '../adapters/realtime-reading-not
     // sin necesidad de registrar ReadingsWebsocketGateway aquí.
     CreateReadingUseCase,
     UpdateCurrentReadingUseCase,
+    UpdateSpecialReadingUseCase,
     {
       provide: READING_LEGACY_SYNC_PORT,
       useClass: KafkaReadingLegacySyncAdapter,
