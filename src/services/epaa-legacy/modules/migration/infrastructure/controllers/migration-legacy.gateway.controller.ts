@@ -1,4 +1,4 @@
-import { Controller, Get, Inject, Logger, Query, Req } from '@nestjs/common';
+import { Controller, Get, Post, Inject, Logger, Query, Req } from '@nestjs/common';
 import { ClientKafka, RpcException } from '@nestjs/microservices';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { KafkaProxyService } from '../../../../../../shared/kafka/kafka-proxy.service';
@@ -15,9 +15,9 @@ export class MigrationLegacyGatewayController {
     private readonly kafkaProxy: KafkaProxyService,
   ) {}
 
-  @Get('migrate')
+  @Post('migrate')
   @ApiOperation({
-    summary: 'Method GET - Migrate Lecturas (Legacy)',
+    summary: 'Method POST - Migrate Lecturas (Legacy)',
     description:
       'Migrates lecturas from PostgreSQL into the configured SQL Server target (2000 or 2022, selected by DATABASE_TYPE), then compares the same months and returns both results (migration + comparison)',
   })
@@ -51,9 +51,9 @@ export class MigrationLegacyGatewayController {
     }
   }
 
-  @Get('compare')
+  @Post('compare')
   @ApiOperation({
-    summary: 'Method GET - Compare Lecturas (Legacy)',
+    summary: 'Method POST - Compare Lecturas (Legacy)',
     description:
       'Compares lecturas between PostgreSQL and the configured SQL Server target (2000 or 2022, selected by DATABASE_TYPE)',
   })
