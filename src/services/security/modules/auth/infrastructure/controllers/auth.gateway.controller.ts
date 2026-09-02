@@ -91,7 +91,8 @@ export class AuthGatewayController {
   @AllowedUserTypes('employee')
   @ApiOperation({
     summary: 'Set or update security PIN',
-    description: 'Endpoint to configure a security PIN for the authenticated user, or for another user if you have admin privileges.',
+    description:
+      'Endpoint to configure a security PIN for the authenticated user, or for another user if you have admin privileges.',
   })
   async setPin(
     @Req() request: ExpressRequest,
@@ -103,20 +104,28 @@ export class AuthGatewayController {
 
       if (payload.userId && payload.userId !== user.sub) {
         const isAdmin = user.roles?.some(
-          (role) => role.toLowerCase() === 'admin' || role.toLowerCase() === 'administrador'
+          (role) =>
+            role.toLowerCase() === 'admin' ||
+            role.toLowerCase() === 'administrador' ||
+            role.toLowerCase() === 'superadmin' ||
+            role.toLowerCase().includes('super') ||
+            role.toLowerCase().includes('admin'),
         );
 
         if (!isAdmin) {
           throw new RpcException({
             statusCode: 403,
-            message: 'You do not have the required privileges to set a PIN for another user.',
+            message:
+              'You do not have the required privileges to set a PIN for another user.',
           });
         }
         targetUserId = payload.userId;
       }
 
-      this.logger.log(`Setting PIN for user: ${targetUserId} (Requested by: ${user.sub})`);
-      
+      this.logger.log(
+        `Setting PIN for user: ${targetUserId} (Requested by: ${user.sub})`,
+      );
+
       const kafkaResponse = await sendKafkaRequest(
         this.kafkaProxy.send(
           this.authKafkaClient,
