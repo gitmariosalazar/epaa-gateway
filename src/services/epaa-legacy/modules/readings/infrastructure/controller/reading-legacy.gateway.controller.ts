@@ -9,7 +9,7 @@ import {
   Put,
   Query,
   Req,
-  UseGuards
+  UseGuards,
 } from '@nestjs/common';
 import { ClientKafka, RpcException } from '@nestjs/microservices';
 import { KafkaProxyService } from '../../../../../../shared/kafka/kafka-proxy.service';
@@ -21,7 +21,10 @@ import { ApiResponse } from '../../../../../../shared/errors/responses/ApiRespon
 import { FindCurrentReadingParams } from '../../domain/schemas/dto/request/find-current-reading-params';
 import { UpdateReadingLegacyRequest } from '../../domain/schemas/dto/request/update.reading.request';
 import { AuthGuard } from '../../../../../../auth/guard/auth.guard';
-import { ReadingResponse } from '../../domain/schemas/dto/response/readings.response';
+import {
+  DashboardKpiResponse,
+  ReadingResponse,
+} from '../../domain/schemas/dto/response/readings.response';
 import { CalculateReadingValueParams } from '../../domain/schemas/dto/request/calculate-reading-value-params';
 
 @Controller('readings')
@@ -50,8 +53,10 @@ export class ReadingLegacyGatewayController {
       );
 
       const response: ReadingResponse = await sendKafkaRequest(
-        this.kafkaProxy.send(this.readingClient, 
-          'epaa-legacy.reading.find-current-reading', params,
+        this.kafkaProxy.send(
+          this.readingClient,
+          'epaa-legacy.reading.find-current-reading',
+          params,
         ),
       );
 
@@ -87,10 +92,14 @@ export class ReadingLegacyGatewayController {
         `Sending updateCurrentReading request: ${JSON.stringify(readingRequest)}`,
       );
       const response: ReadingResponse = await sendKafkaRequest(
-        this.kafkaProxy.send(this.readingClient, 'epaa-legacy.reading.update-current-reading', {
-          params: params,
-          request: readingRequest,
-        }),
+        this.kafkaProxy.send(
+          this.readingClient,
+          'epaa-legacy.reading.update-current-reading',
+          {
+            params: params,
+            request: readingRequest,
+          },
+        ),
       );
       return new ApiResponse(
         `Current reading updated successfully!`,
@@ -128,8 +137,10 @@ export class ReadingLegacyGatewayController {
       };
 
       const response: number = await sendKafkaRequest(
-        this.kafkaProxy.send(this.readingClient, 
-          'epaa-legacy.reading.calculate-reading-value', params,
+        this.kafkaProxy.send(
+          this.readingClient,
+          'epaa-legacy.reading.calculate-reading-value',
+          params,
         ),
       );
 
@@ -142,6 +153,50 @@ export class ReadingLegacyGatewayController {
       const err = error as Error;
       this.logger.error(
         `Error in calculateReadingValue: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
+    }
+  }
+
+  @Get('get-dashboard-kpis-by-period')
+  @ApiOperation({
+    summary: 'Method GET - Get Dashboard KPIs by Period (Legacy)',
+    description:
+      'The endpoint allows you to get dashboard KPIs by period (Legacy)',
+  })
+  async getDashboardKpisByPeriod(
+    @Req() request: Request,
+    @Query('year') year: number,
+    @Query('month') month: string,
+  ): Promise<ApiResponse> {
+    try {
+      this.logger.log(
+        `Sending getDashboardKpisByPeriod request: year=${year}, month=${month}`,
+      );
+
+      const params = {
+        year: Number(year),
+        month: month,
+      };
+
+      const response: DashboardKpiResponse[] = await sendKafkaRequest(
+        this.kafkaProxy.send(
+          this.readingClient,
+          'epaa-legacy.reading.get-dashboard-kpis-by-period',
+          params,
+        ),
+      );
+
+      return new ApiResponse(
+        `Dashboard KPIs retrieved successfully!`,
+        response,
+        request.url,
+      );
+    } catch (error) {
+      const err = error as Error;
+      this.logger.error(
+        `Error in getDashboardKpisByPeriod: ${err.message}`,
         err.stack,
       );
       throw new RpcException(err as string | object);
