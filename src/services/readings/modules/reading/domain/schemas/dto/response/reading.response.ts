@@ -43,6 +43,7 @@ export interface ReadingImagesResponse {
   novelty: string;
   consumption: number;
   observation: string;
+  updatedStatus: boolean;
 }
 
 export interface PendingReadingConnectionResponse {
@@ -86,6 +87,7 @@ export interface TakenReadingConnectionResponse {
   userCreatedName?: string | null;
   userUpdatedId?: string | null;
   userUpdatedName?: string | null;
+  updatedStatus?: boolean | null;
 }
 
 export interface ReadingNoveltyResponse {
