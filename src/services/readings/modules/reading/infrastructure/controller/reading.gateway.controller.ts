@@ -190,7 +190,8 @@ export class ReadingGatewayController {
   @Put('update-special-reading/:readingId')
   @ApiOperation({
     summary: 'Method PUT - Update Special Reading by reading ID',
-    description: 'The endpoint allows you to update a Reading with special justification. Requires elevated privileges (module_special_unlocked).',
+    description:
+      'The endpoint allows you to update a Reading with special justification. Requires elevated privileges (module_special_unlocked).',
   })
   async updateSpecialReading(
     @Param('readingId') readingId: string,
@@ -199,18 +200,19 @@ export class ReadingGatewayController {
   ): Promise<ApiResponse> {
     try {
       const userPayload: AccessTokenPayload = (request as any)['user'];
-      
+
       // Verification of special unlocked module
       if (!userPayload?.module_special_unlocked) {
         throw new RpcException({
           statusCode: 403,
-          message: 'You do not have the elevated privileges required for special reading adjustments. Please unlock the module first with your PIN.',
+          message:
+            'You do not have the elevated privileges required for special reading adjustments. Please unlock the module first with your PIN.',
         });
       }
 
       const updateUserId = userPayload?.sub;
       const username = userPayload?.username;
-      
+
       // Default to current month if not provided in request, but this is a special reading,
       // it should be provided, or we pass a generic month. We'll pass current month as default for sync.
       const date = new Date();
@@ -221,7 +223,7 @@ export class ReadingGatewayController {
         readingRequest,
         updateUserId,
         username,
-        currentMonth
+        currentMonth,
       );
 
       return new ApiResponse(
@@ -596,6 +598,42 @@ export class ReadingGatewayController {
       const err = error as Error;
       this.logger.error(
         `Error getting detailed reading info by cadastral key ${cadastralKey} and year/month ${yearAndMonth}: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err.message || err);
+    }
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard)
+  @Get('get-reading-adjustment-history-by-reading-id/:readingId')
+  @ApiOperation({
+    summary: 'Method GET - Get Reading Adjustment History by reading ID',
+    description:
+      'The endpoint allows you to get the adjustment history for a specific reading by its ID.',
+  })
+  @ApiParam({ name: 'readingId', type: Number, example: 123 })
+  async getReadingAdjustmentHistoryByReadingId(
+    @Req() request: Request,
+    @Param('readingId') readingId: number,
+  ): Promise<ApiResponse> {
+    try {
+      const response = await sendKafkaRequest(
+        this.kafkaProxy.send(
+          this.readingClient,
+          'reading.get-reading-adjustment-history-by-reading-id',
+          { readingId },
+        ),
+      );
+      return new ApiResponse(
+        `Reading adjustment history for reading ID ${readingId} retrieved successfully!`,
+        response,
+        request.url,
+      );
+    } catch (error) {
+      const err = error as Error;
+      this.logger.error(
+        `Error getting reading adjustment history by reading ID ${readingId}: ${err.message}`,
         err.stack,
       );
       throw new RpcException(err.message || err);
