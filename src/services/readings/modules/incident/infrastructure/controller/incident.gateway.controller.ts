@@ -349,10 +349,16 @@ export class IncidentGatewayController {
   async searchIncidents(
     @Query() filters: SearchIncidentsRequest,
     @Req() request: Request,
+    @Query('offset') offset?: number | null,
+    @Query('limit') limit?: number | null,
   ): Promise<ApiResponse> {
     try {
       const response: IncidentDetailRowResponse[] = await sendKafkaRequest(
-        this.kafkaProxy.send(this.incidentClient, 'incident.search', filters),
+        this.kafkaProxy.send(this.incidentClient, 'incident.search', {
+          ...filters,
+          limit: limit ?? 25,
+          offset: offset ?? 0,
+        }),
       );
 
       return new ApiResponse(
@@ -467,7 +473,9 @@ export class IncidentGatewayController {
       reportClient: body.reportClient ? JSON.parse(body.reportClient) : null,
       meterCondition: body.meterCondition || null,
       meterPhysicalState: body.meterPhysicalState || null,
-      requiresImmediateAction: body.requiresImmediateAction ? this.parseBoolean(body.requiresImmediateAction) : false,
+      requiresImmediateAction: body.requiresImmediateAction
+        ? this.parseBoolean(body.requiresImmediateAction)
+        : false,
     };
   }
 
