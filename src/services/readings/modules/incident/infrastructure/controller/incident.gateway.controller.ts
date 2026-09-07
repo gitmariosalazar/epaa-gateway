@@ -353,7 +353,7 @@ export class IncidentGatewayController {
     @Query('limit') limit?: number | null,
   ): Promise<ApiResponse> {
     try {
-      const response: IncidentDetailRowResponse[] = await sendKafkaRequest(
+      const response: { items: IncidentDetailRowResponse[]; totalCount: number } = await sendKafkaRequest(
         this.kafkaProxy.send(this.incidentClient, 'incident.search', {
           ...filters,
           limit: limit ?? 25,
@@ -363,8 +363,10 @@ export class IncidentGatewayController {
 
       return new ApiResponse(
         'Incidents searched successfully!',
-        response,
+        response.items,
         request.url,
+        200,
+        response.totalCount,
       );
     } catch (error) {
       const err = error as Error;
@@ -396,20 +398,28 @@ export class IncidentGatewayController {
       reportDate?: Date | null;
     },
     @Req() request: Request,
+    @Query('offset') offset?: number | null,
+    @Query('limit') limit?: number | null,
   ): Promise<ApiResponse> {
     try {
-      const response: IncidentDetailRowResponse[] = await sendKafkaRequest(
+      const response: { items: IncidentDetailRowResponse[]; totalCount: number } = await sendKafkaRequest(
         this.kafkaProxy.send(
           this.incidentClient,
           'incident.search-by-client-id',
-          filters,
+          {
+            ...filters,
+            limit: limit ?? 25,
+            offset: offset ?? 0,
+          },
         ),
       );
 
       return new ApiResponse(
         'Incidents searched successfully by client ID!',
-        response,
+        response.items,
         request.url,
+        200,
+        response.totalCount,
       );
     } catch (error) {
       const err = error as Error;
