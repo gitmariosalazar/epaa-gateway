@@ -5,12 +5,18 @@ import {
   Logger,
   Param,
   ParseIntPipe,
+  Query,
   Req,
-  UseGuards
+  UseGuards,
 } from '@nestjs/common';
 import { ClientKafka, RpcException } from '@nestjs/microservices';
 import { KafkaProxyService } from '../../../../../../shared/kafka/kafka-proxy.service';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiQuery,
+  ApiTags,
+} from '@nestjs/swagger';
 import { environments } from '../../../../../../settings/environments/environments';
 import { ApiResponse } from '../../../../../../shared/errors/responses/ApiResponse';
 import { sendKafkaRequest } from '../../../../../../shared/utils/kafka/send.kafka.request';
@@ -43,9 +49,13 @@ export class ReadingImagesGatewayController {
   ): Promise<ApiResponse> {
     try {
       const response: ReadingImagesResponse[] = await sendKafkaRequest(
-        this.kafkaProxy.send(this.readingClient, 'reading.find-reading-images-by-month', {
-          month,
-        }),
+        this.kafkaProxy.send(
+          this.readingClient,
+          'reading.find-reading-images-by-month',
+          {
+            month,
+          },
+        ),
       );
       return new ApiResponse(
         `Reading images for month ${month} found successfully!`,
@@ -75,8 +85,10 @@ export class ReadingImagesGatewayController {
   ): Promise<ApiResponse> {
     try {
       const response: ReadingImagesResponse[] = await sendKafkaRequest(
-        this.kafkaProxy.send(this.readingClient, 
-          'reading.find-reading-images-by-month-and-sector', { month, sector },
+        this.kafkaProxy.send(
+          this.readingClient,
+          'reading.find-reading-images-by-month-and-sector',
+          { month, sector },
         ),
       );
       return new ApiResponse(
@@ -106,8 +118,10 @@ export class ReadingImagesGatewayController {
   ): Promise<ApiResponse> {
     try {
       const response: ReadingImagesResponse[] = await sendKafkaRequest(
-        this.kafkaProxy.send(this.readingClient, 
-          'reading.find-readings-image-by-cadastral-key', cadastralKey,
+        this.kafkaProxy.send(
+          this.readingClient,
+          'reading.find-readings-image-by-cadastral-key',
+          cadastralKey,
         ),
       );
       return new ApiResponse(
@@ -133,7 +147,11 @@ export class ReadingImagesGatewayController {
   async findAllReadingImages(@Req() request: Request): Promise<ApiResponse> {
     try {
       const response: ReadingImagesResponse[] = await sendKafkaRequest(
-        this.kafkaProxy.send(this.readingClient, 'reading.find-all-reading-images', {}),
+        this.kafkaProxy.send(
+          this.readingClient,
+          'reading.find-all-reading-images',
+          {},
+        ),
       );
       return new ApiResponse(
         `All readings images found successfully!`,
@@ -144,6 +162,74 @@ export class ReadingImagesGatewayController {
       const err = error as Error;
       this.logger.error(
         `Error finding all reading images: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
+    }
+  }
+
+  @Get('find-reading-images-by-filter')
+  @ApiOperation({
+    summary: 'Method GET - Find Readings Images by filter',
+    description: 'The endpoint allows you to search Readings Images by filter',
+  })
+  @ApiQuery({
+    name: 'month',
+    required: false,
+    type: String,
+    example: '2026-02',
+    description: 'Reading month in YYYY-MM format',
+  })
+  @ApiQuery({
+    name: 'cadastralKey',
+    required: false,
+    type: String,
+    example: '01-01-001-001',
+    description: 'Cadastral key of the property',
+  })
+  @ApiQuery({
+    name: 'sector',
+    required: false,
+    type: Number,
+    example: 17,
+    description: 'Sector number',
+  })
+  @ApiQuery({
+    name: 'date',
+    required: false,
+    type: String,
+    example: '2026-02-15',
+    description: 'Exact reading date in YYYY-MM-DD format',
+  })
+  async findReadingImagesByFilter(
+    @Req() request: Request,
+    @Query('month') month?: string,
+    @Query('cadastralKey') cadastralKey?: string,
+    @Query('sector', new ParseIntPipe({ optional: true })) sector?: number,
+    @Query('date') date?: string,
+  ): Promise<ApiResponse> {
+    try {
+      const response: ReadingImagesResponse[] = await sendKafkaRequest(
+        this.kafkaProxy.send(
+          this.readingClient,
+          'reading.find-reading-images-by-filter',
+          {
+            month,
+            cadastralKey,
+            sector,
+            date,
+          },
+        ),
+      );
+      return new ApiResponse(
+        `Reading images found successfully with the provided filter!`,
+        response,
+        request.url,
+      );
+    } catch (error) {
+      const err = error as Error;
+      this.logger.error(
+        `Error finding reading images by filter: ${err.message}`,
         err.stack,
       );
       throw new RpcException(err as string | object);
