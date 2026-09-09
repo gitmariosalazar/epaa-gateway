@@ -4,11 +4,19 @@ import { ConnectionStateGatewayController } from '../controllers/connection-stat
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { environments } from '../../../../../../settings/environments/environments';
 import { KafkaConnectionsModule } from '../../../../kafka/kafka-connections.module';
+import { RealtimeModule } from '../../../../../../shared/realtime/realtime.module';
+import { RealtimeConnectionNotifierAdapter } from '../adapters/connection-reading-notifier.adapter';
+import { CONNECTION_REALTIME_NOTIFIER_PORT } from '../../application/ports/connection-realtime-notifier.port';
 
 @Module({
-  imports: [KafkaConnectionsModule],
+  imports: [KafkaConnectionsModule, RealtimeModule],
   controllers: [ConnectionGatewayController, ConnectionStateGatewayController],
-  providers: [],
+  providers: [
+    {
+      provide: CONNECTION_REALTIME_NOTIFIER_PORT,
+      useClass: RealtimeConnectionNotifierAdapter,
+    },
+  ],
   exports: [],
 })
 export class ConnectionGatewayModule {}

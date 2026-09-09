@@ -24,7 +24,7 @@ import {
   CloseAuditSectorResponse,
   InitializeAuditResponse,
 } from '../../domain/schemas/dto/response/audit-sector.response';
-import { RealtimeService } from '../../../../../../shared/realtime';
+import { IAuditRealtimeNotifierPort, AUDIT_REALTIME_NOTIFIER_PORT } from '../../application/ports/audit-realtime-notifier.port';
 
 @Controller('readings/audit')
 @ApiTags('Readings — Audit')
@@ -38,7 +38,8 @@ export class ReadingAuditGatewayController {
   constructor(
     @Inject(environments.READINGS_KAFKA_CLIENT)
     private readonly readingClient: ClientKafka,
-    private readonly realtimeService: RealtimeService,
+    @Inject(AUDIT_REALTIME_NOTIFIER_PORT)
+    private readonly auditRealtimeNotifier: IAuditRealtimeNotifierPort,
     private readonly kafkaProxy: KafkaProxyService,
   ) {}
 
@@ -169,7 +170,7 @@ export class ReadingAuditGatewayController {
         }),
       );
       // 📡 Notificar a todos los clientes Flutter conectados por WebSocket
-      this.realtimeService.notifyAuditUpdated({
+      this.auditRealtimeNotifier.notifyAuditUpdated({
         sectorId: sector,
         month,
         type: 'closed',

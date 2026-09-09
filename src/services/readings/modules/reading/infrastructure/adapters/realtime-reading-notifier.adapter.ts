@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { RealtimeService } from '../../../../../../shared/realtime';
-import { IReadingRealtimeNotifierPort } from '../../application/ports/reading-realtime-notifier.port';
+import { IReadingRealtimeNotifierPort, ReadingUpdatedPayload } from '../../application/ports/reading-realtime-notifier.port';
+import { ReadingRealtimeEvents } from '../../application/interfaces/reading-events.enum';
 
 /**
  * RealtimeReadingNotifierAdapter — infrastructure adapter (DIP/OCP).
@@ -15,7 +16,7 @@ export class RealtimeReadingNotifierAdapter implements IReadingRealtimeNotifierP
   notifyReadingCreated(sectorId: number): void {
     try {
       // Mes actual del servidor (no el mes de la lectura, que puede ser el anterior)
-      this.realtimeService.notifyReadingUpdated({
+      this.realtimeService.notify<ReadingUpdatedPayload>(ReadingRealtimeEvents.READING_UPDATED, {
         sectorId,
         month: new Date().toISOString().slice(0, 7),
         type: 'created',
@@ -29,7 +30,7 @@ export class RealtimeReadingNotifierAdapter implements IReadingRealtimeNotifierP
 
   notifyReadingUpdated(sectorId: number, month: string): void {
     try {
-      this.realtimeService.notifyReadingUpdated({
+      this.realtimeService.notify<ReadingUpdatedPayload>(ReadingRealtimeEvents.READING_UPDATED, {
         sectorId,
         month,
         type: 'updated',

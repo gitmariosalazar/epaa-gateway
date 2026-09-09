@@ -14,6 +14,9 @@ import { READING_REALTIME_NOTIFIER_PORT } from '../../application/ports/reading-
 import { KafkaReadingLegacySyncAdapter } from '../adapters/kafka-reading-legacy-sync.adapter';
 import { RealtimeReadingNotifierAdapter } from '../adapters/realtime-reading-notifier.adapter';
 
+import { RealtimeAuditNotifierAdapter } from '../adapters/realtime-audit-notifier.adapter';
+import { AUDIT_REALTIME_NOTIFIER_PORT } from '../../application/ports/audit-realtime-notifier.port';
+
 @Module({
   imports: [
     /**
@@ -56,8 +59,6 @@ import { RealtimeReadingNotifierAdapter } from '../adapters/realtime-reading-not
     ReadingAuditGatewayController,
   ],
   providers: [
-    // RealtimeService se inyecta directamente desde el RealtimeModule global
-    // sin necesidad de registrar ReadingsWebsocketGateway aquí.
     CreateReadingUseCase,
     UpdateCurrentReadingUseCase,
     UpdateSpecialReadingUseCase,
@@ -68,6 +69,10 @@ import { RealtimeReadingNotifierAdapter } from '../adapters/realtime-reading-not
     {
       provide: READING_REALTIME_NOTIFIER_PORT,
       useClass: RealtimeReadingNotifierAdapter,
+    },
+    {
+      provide: AUDIT_REALTIME_NOTIFIER_PORT,
+      useClass: RealtimeAuditNotifierAdapter,
     },
   ],
   exports: [ClientsModule],

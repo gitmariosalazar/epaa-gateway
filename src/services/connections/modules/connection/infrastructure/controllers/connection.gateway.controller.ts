@@ -35,6 +35,7 @@ import { AllowedUserTypes } from '../../../../../../auth/decorator/allowed-user-
 import {
   ConnectionAndPropertyResponse,
   ConnectionResponse,
+  MeterChangeResponse,
   PropertyWithClientResponse,
 } from '../../domain/schemas/dto/response/connection.response';
 import {
@@ -42,6 +43,10 @@ import {
   ConnectionDashboardResponse,
 } from '../../domain/schemas/dto/response/view-dashboard.response';
 import { AccessTokenPayload } from '../../../../../../shared/utils/interfaces/user.payload';
+import {
+  CONNECTION_REALTIME_NOTIFIER_PORT,
+  IConnectionRealtimeNotifierPort,
+} from '../../application/ports/connection-realtime-notifier.port';
 
 @Controller('connections')
 @ApiTags('Connections Gateway')
@@ -55,6 +60,8 @@ export class ConnectionGatewayController {
   constructor(
     @Inject(environments.CONNECTION_KAFKA_CLIENT)
     private readonly connectionKafkaClient: ClientKafka,
+    @Inject(CONNECTION_REALTIME_NOTIFIER_PORT)
+    private readonly connectionRealtimeNotifier: IConnectionRealtimeNotifierPort,
     private readonly kafkaProxy: KafkaProxyService,
   ) {}
 
@@ -170,6 +177,11 @@ export class ConnectionGatewayController {
           connection,
         ),
       );
+      this.connectionRealtimeNotifier.notifyConnectionCreated({
+        connectionId: response.connectionId,
+        sector: response.connectionSector,
+        action: 'created',
+      });
       return new ApiResponse(
         `Connection created successfully!`,
         response,
@@ -211,6 +223,13 @@ export class ConnectionGatewayController {
           },
         ),
       );
+
+      this.connectionRealtimeNotifier.notifyConnectionUpdated({
+        connectionId: response.connectionId,
+        sector: response.connectionSector,
+        action: 'updated',
+      });
+
       return new ApiResponse(
         `Connection updated successfully!`,
         response,
@@ -289,7 +308,7 @@ export class ConnectionGatewayController {
         `Received request to change meter for connection ${connectionId}`,
       );
 
-      const response = await sendKafkaRequest(
+      const response: MeterChangeResponse = await sendKafkaRequest(
         this.kafkaProxy.send(
           this.connectionKafkaClient,
           'connections.update-meter-by-reader',
@@ -300,6 +319,12 @@ export class ConnectionGatewayController {
           },
         ),
       );
+
+      this.connectionRealtimeNotifier.notifyConnectionUpdated({
+        connectionId: response.connectionId,
+        sector: Number(response.connectionId.split('-')[0]),
+        action: 'updated',
+      });
 
       return new ApiResponse(
         `Meter changed successfully for connection ${connectionId}!`,
@@ -379,7 +404,7 @@ export class ConnectionGatewayController {
         `Received request to change meter for connection ${connectionId}`,
       );
 
-      const response = await sendKafkaRequest(
+      const response: MeterChangeResponse = await sendKafkaRequest(
         this.kafkaProxy.send(
           this.connectionKafkaClient,
           'connections.change-meter',
@@ -390,6 +415,12 @@ export class ConnectionGatewayController {
           },
         ),
       );
+
+      this.connectionRealtimeNotifier.notifyConnectionUpdated({
+        connectionId: response.connectionId,
+        sector: Number(response.connectionId.split('-')[0]),
+        action: 'updated',
+      });
 
       return new ApiResponse(
         `Meter changed successfully for connection ${connectionId}!`,
