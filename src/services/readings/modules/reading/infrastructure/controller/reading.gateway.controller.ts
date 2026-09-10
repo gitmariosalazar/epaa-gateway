@@ -152,6 +152,40 @@ export class ReadingGatewayController {
     }
   }
 
+  @Get('find-reading-for-updated/:cadastralKey')
+  @ApiOperation({
+    summary: 'Method GET - Find Reading for Updated by cadastral key',
+    description:
+      'The endpoint allows you to search Reading for Updated by cadastral key',
+  })
+  async findReadingForUpdatedByCadastralKey(
+    @Req() request: Request,
+    @Param('cadastralKey') cadastralKey: string,
+    @Query('yearAndMonth') yearAndMonth?: string,
+  ): Promise<ApiResponse> {
+    try {
+      const response = await sendKafkaRequest(
+        this.kafkaProxy.send(
+          this.readingClient,
+          'reading.find-reading-for-updated',
+          { cadastralKey, yearAndMonth },
+        ),
+      );
+      return new ApiResponse(
+        `Reading for updated with cadastral key ${cadastralKey} found successfully!`,
+        response,
+        request.url,
+      );
+    } catch (error) {
+      const err = error as Error;
+      this.logger.error(
+        `Error finding reading for updated by cadastral key ${cadastralKey}: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
+    }
+  }
+
   @Put('update-current-reading/:readingId')
   @ApiOperation({
     summary: 'Method PUT - Update Current Reading by reading ID',
