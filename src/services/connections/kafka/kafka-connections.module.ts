@@ -8,11 +8,11 @@ const connectionKafkaClient = provideContextualKafkaClient(
     replyTopic: 'connection_topic.reply',
     client: {
       brokers: [environments.KAFKA_BROKER_URL],
-      clientId: environments.CONNECTION_KAFKA_CLIENT_ID,
+      clientId: `${environments.CONNECTION_KAFKA_CLIENT_ID}-gateway`,
       retry: { retries: 25, initialRetryTime: 1000 },
     },
     consumer: {
-      groupId: environments.CONNECTION_KAFKA_GROUP_ID,
+      groupId: `${environments.CONNECTION_KAFKA_GROUP_ID}-gateway`,
       sessionTimeout: 30000,
       heartbeatInterval: 10000,
       rebalanceTimeout: 60000,
