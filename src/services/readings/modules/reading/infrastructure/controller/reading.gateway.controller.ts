@@ -392,6 +392,9 @@ export class ReadingGatewayController {
   @Get([
     'get-taken-reading-estimates-or-average/:month',
     'get-taken-reading-estimates-or-average/:month/:sector',
+    'get-taken-reading-estimates-or-average/:month/:sector/:date',
+    'get-taken-reading-estimates-or-average/:month/:sector/:userId',
+    'get-taken-reading-estimates-or-average/:month/:sector/:userId/:date',
   ])
   @ApiOperation({
     summary: 'Method GET - Get Taken Reading Estimates or Average by month',
@@ -404,13 +407,14 @@ export class ReadingGatewayController {
     @Req() request: Request,
     @Param('sector', new ParseIntPipe({ optional: true })) sector?: number, // <-- 2. Opcional
     @Query('userId') userId?: string, // <-- changed to query
+    @Query('date') date?: string, // <-- added date as query parameter
   ): Promise<ApiResponse> {
     try {
       const response: TakenReadingConnectionResponse[] = await sendKafkaRequest(
         this.kafkaProxy.send(
           this.readingClient,
           'reading.get-taken-reading-estimates-or-average',
-          { month, sector, userId },
+          { month, sector, userId, date },
         ),
       );
       return new ApiResponse(
@@ -431,6 +435,9 @@ export class ReadingGatewayController {
   @Get([
     'get-taken-readings-by-month/:month',
     'get-taken-readings-by-month/:month/:sector',
+    'get-taken-readings-by-month/:month/:sector/:date',
+    'get-taken-readings-by-month/:month/:sector/:userId',
+    'get-taken-readings-by-month/:month/:sector/:userId/:date',
   ])
   @ApiOperation({
     summary: 'Method GET - Get Taken Readings by month',
@@ -442,6 +449,7 @@ export class ReadingGatewayController {
     @Req() request: Request,
     @Param('sector', new ParseIntPipe({ optional: true })) sector?: number, // <-- 2. Opcional
     @Query('userId') userId?: string, // <-- changed to query
+    @Query('date') date?: string, // <-- added date as query parameter
   ): Promise<ApiResponse> {
     try {
       const response: TakenReadingConnectionResponse[] = await sendKafkaRequest(
@@ -452,6 +460,7 @@ export class ReadingGatewayController {
             month,
             sector,
             userId,
+            date,
           },
         ),
       );

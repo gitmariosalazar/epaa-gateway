@@ -9,6 +9,7 @@ import {
 import { Server, Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
 import { Logger } from '@nestjs/common';
+import { environments } from '../../settings/environments/environments';
 
 // ── Orígenes CORS permitidos ──────────────────────────────────────────────────
 // En producción: CORS_ORIGINS=https://sigepaa-aa.com,https://app.sigepaa-aa.com
@@ -23,7 +24,10 @@ function resolveWsCorsOrigin(): string[] | boolean {
     return true;
   }
   // Parsear lista separada por comas, eliminando espacios
-  return raw.split(',').map((o) => o.trim()).filter(Boolean);
+  return raw
+    .split(',')
+    .map((o) => o.trim())
+    .filter(Boolean);
 }
 
 @WebSocketGateway({
@@ -55,7 +59,9 @@ export class RealtimeGateway
     try {
       const token = client.handshake.auth?.token as string;
       if (token) {
-        const payload = this.jwtService.verify(token);
+        const payload = this.jwtService.verify(token, {
+          secret: environments.JWT_ACCESS_TOKEN_SECRET,
+        });
         client.data.user = payload;
         this.logger.log(
           `Client connected: ${client.id} (user: ${payload.sub})`,
@@ -65,8 +71,11 @@ export class RealtimeGateway
           `Client connected without authentication: ${client.id}`,
         );
       }
-    } catch (err) {
-      this.logger.warn(`Invalid token, disconnecting: ${client.id}`);
+    } catch (error) {
+      const reason = error instanceof Error ? error.message : 'unknown error';
+      this.logger.warn(
+        `Invalid token, disconnecting: ${client.id} (${reason})`,
+      );
       client.disconnect(true);
     }
   }
