@@ -353,7 +353,10 @@ export class IncidentGatewayController {
     @Query('limit') limit?: number | null,
   ): Promise<ApiResponse> {
     try {
-      const response: { items: IncidentDetailRowResponse[]; totalCount: number } = await sendKafkaRequest(
+      const response: {
+        items: IncidentDetailRowResponse[];
+        totalCount: number;
+      } = await sendKafkaRequest(
         this.kafkaProxy.send(this.incidentClient, 'incident.search', {
           ...filters,
           limit: limit ?? 25,
@@ -396,13 +399,17 @@ export class IncidentGatewayController {
       sector?: string | null;
       reference?: string | null;
       reportDate?: Date | null;
+      reportRangeDate?: { start: Date; end: Date } | null;
     },
     @Req() request: Request,
     @Query('offset') offset?: number | null,
     @Query('limit') limit?: number | null,
   ): Promise<ApiResponse> {
     try {
-      const response: { items: IncidentDetailRowResponse[]; totalCount: number } = await sendKafkaRequest(
+      const response: {
+        items: IncidentDetailRowResponse[];
+        totalCount: number;
+      } = await sendKafkaRequest(
         this.kafkaProxy.send(
           this.incidentClient,
           'incident.search-by-client-id',

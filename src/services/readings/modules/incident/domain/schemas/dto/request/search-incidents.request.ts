@@ -60,6 +60,14 @@ export class SearchIncidentsRequest {
   reportDate?: Date;
 
   @ApiProperty({
+    example: { start: '2023-06-01', end: '2023-06-30' },
+    description: 'Filter by report range date (optional)',
+    required: false,
+    type: Object,
+  })
+  reportRangeDate?: { start: Date; end: Date } | null;
+
+  @ApiProperty({
     example: 'a7718257-9d2c-48d1-a888-4c016e5b9d22',
     description: 'Filter by internal user unique identifier (optional)',
     required: false,
