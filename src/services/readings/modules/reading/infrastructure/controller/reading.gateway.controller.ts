@@ -450,6 +450,7 @@ export class ReadingGatewayController {
     @Param('sector', new ParseIntPipe({ optional: true })) sector?: number, // <-- 2. Opcional
     @Query('userId') userId?: string, // <-- changed to query
     @Query('date') date?: string, // <-- added date as query parameter
+    @Query('failed') failed?: boolean, // <-- added failed as query parameter
   ): Promise<ApiResponse> {
     try {
       const response: TakenReadingConnectionResponse[] = await sendKafkaRequest(
@@ -461,6 +462,7 @@ export class ReadingGatewayController {
             sector,
             userId,
             date,
+            failed,
           },
         ),
       );
