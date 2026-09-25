@@ -238,4 +238,48 @@ export class ReadingLegacyGatewayController {
       throw new RpcException(err as string | object);
     }
   }
+
+  @Get('get-dashboard-kpis-by-year-and-sector')
+  @ApiOperation({
+    summary: 'Method GET - Get Dashboard KPIs by Year and Sector (Legacy)',
+    description:
+      'The endpoint allows you to get annual dashboard KPIs grouped by sector (Legacy)',
+  })
+  async getDashboardKpisByYearAndSector(
+    @Req() request: Request,
+    @Query('year') year: number,
+    @Query('sector') sector: string,
+  ): Promise<ApiResponse> {
+    try {
+      this.logger.log(
+        `Sending getDashboardKpisByYearAndSector request: year=${year}, sector=${sector}`,
+      );
+
+      const params = {
+        year: Number(year),
+        sector: sector,
+      };
+
+      const response: DashboardKpiResponse[] = await sendKafkaRequest(
+        this.kafkaProxy.send(
+          this.readingClient,
+          'epaa-legacy.reading.get-dashboard-kpis-by-year-and-sector',
+          params,
+        ),
+      );
+
+      return new ApiResponse(
+        `Annual dashboard KPIs by sector retrieved successfully!`,
+        response,
+        request.url,
+      );
+    } catch (error) {
+      const err = error as Error;
+      this.logger.error(
+        `Error in getDashboardKpisByYearAndSector: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
+    }
+  }
 }

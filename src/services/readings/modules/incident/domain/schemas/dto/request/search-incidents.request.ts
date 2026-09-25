@@ -89,4 +89,12 @@ export class SearchIncidentsRequest {
     type: String,
   })
   categoryCode?: string | null;
+
+  @ApiProperty({
+    example: 1,
+    description: 'Filter by incident type unique identifier (optional)',
+    required: false,
+    type: Number,
+  })
+  incidentTypeId?: number | null;
 }

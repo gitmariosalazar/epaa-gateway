@@ -83,6 +83,14 @@ export class CreateReadingRequest {
   previousMonthReading!: string;
 
   @ApiProperty({
+    example: '2025-06',
+    description: 'Current month reading in YYYY-MM format',
+    required: true,
+    type: String,
+  })
+  currentMonthReading!: string;
+
+  @ApiProperty({
     example: { lat: -2.1701, lng: -79.9224 },
     description: 'GPS coordinates captured at reading time',
     required: false,
