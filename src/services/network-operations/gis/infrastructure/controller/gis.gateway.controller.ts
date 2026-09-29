@@ -31,6 +31,7 @@ import { AccessTokenPayload } from '../../../../../shared/utils/interfaces/user.
 import { ApiResponse } from '../../../../../shared/errors/responses/ApiResponse';
 import { sendKafkaRequest } from '../../../../../shared/utils/kafka/send.kafka.request';
 import { MapGeojsonResponse } from '../../domain/schemas/dto/response/map-geojson';
+import { ScadaTelemetryResponse } from '../../domain/schemas/dto/response/scada-telemetry';
 
 @Controller('NetworkMap')
 @ApiTags('NetworkMap')
@@ -81,6 +82,32 @@ export class GisGatewayController {
       const err = error as Error;
       this.logger.error(
         `Error retrieving network map: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
+    }
+  }
+
+  @Get('get-scada-telemetry')
+  @ApiOperation({
+    summary: 'Method GET - Retrieve SCADA telemetry data',
+    description:
+      'The endpoint allows you to retrieve SCADA telemetry data for the network',
+  })
+  async getScadaTelemetry(@Req() request: Request): Promise<ApiResponse> {
+    try {
+      const response: ScadaTelemetryResponse[] = await sendKafkaRequest(
+        this.kafkaProxy.send(this.readingClient, 'gis.scada.telemetry', {}),
+      );
+      return new ApiResponse(
+        `SCADA telemetry data retrieved successfully!`,
+        response,
+        request.url,
+      );
+    } catch (error) {
+      const err = error as Error;
+      this.logger.error(
+        `Error retrieving SCADA telemetry data: ${err.message}`,
         err.stack,
       );
       throw new RpcException(err as string | object);
