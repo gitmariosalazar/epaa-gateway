@@ -22,7 +22,10 @@ import {
   ApiConsumes,
   ApiBody,
 } from '@nestjs/swagger';
-import { FilesInterceptor } from '@nestjs/platform-express';
+import {
+  FilesInterceptor,
+  FileFieldsInterceptor,
+} from '@nestjs/platform-express';
 import { environments } from '../../../../../../settings/environments/environments';
 import { ClientKafka, RpcException } from '@nestjs/microservices';
 import { KafkaProxyService } from '../../../../../../shared/kafka/kafka-proxy.service';
@@ -37,6 +40,7 @@ import {
   ConnectionResponse,
   MeterChangeResponse,
   PropertyWithClientResponse,
+  UpdateConnectionBasicResponse,
 } from '../../domain/schemas/dto/response/connection.response';
 import {
   ClientDashboardResponse,
@@ -232,6 +236,127 @@ export class ConnectionGatewayController {
 
       return new ApiResponse(
         `Connection updated successfully!`,
+        response,
+        request.url,
+      );
+    } catch (error) {
+      throw new RpcException(error as string | object);
+    }
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard)
+  @Put('update-connection-basic/:connectionId')
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'photosFacade', maxCount: 10 },
+      { name: 'photosMeter', maxCount: 10 },
+    ]),
+  )
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        meterNumber: {
+          type: 'string',
+          description: 'Nuevo número de medidor (opcional)',
+          example: 'MTR-789012',
+        },
+        description: {
+          type: 'string',
+          description:
+            'Observación del cambio (opcional). Se guarda como "observaciones" en el historial de medidores cuando meterNumber cambia.',
+          example: 'Medidor nuevo',
+        },
+        photosFacadeDescriptions: {
+          type: 'string',
+          description:
+            'JSON string con un array de descripciones alineado por índice a "photosFacade" (opcional). Ej: ["Fachada frontal"]',
+        },
+        photosMeterDescriptions: {
+          type: 'string',
+          description:
+            'JSON string con un array de descripciones alineado por índice a "photosMeter" (opcional). Ej: ["Medidor instalado"]',
+        },
+        photosFacade: {
+          type: 'array',
+          items: { type: 'string', format: 'binary' },
+          description: 'Fotos de la fachada de la conexión (opcional, máx. 10)',
+        },
+        photosMeter: {
+          type: 'array',
+          items: { type: 'string', format: 'binary' },
+          description: 'Fotos del medidor (opcional, máx. 10)',
+        },
+      },
+    },
+  })
+  @ApiOperation({
+    summary:
+      'Method PUT - Basic update of a connection (meter number + facade/meter photos)',
+    description:
+      'Actualiza opcionalmente el número de medidor de una acometida y adjunta fotos de fachada/medidor clasificadas por tipo_foto en foto_acometida. Si el número de medidor cambia, se registra automáticamente en historial_medidores (igual que change-meter), pero NO se guarda evidencia en foto_cambio_medidor (esa tabla es exclusiva del flujo de change-meter).',
+  })
+  async updateConnectionBasic(
+    @Req() request: Request,
+    @Param('connectionId') connectionId: string,
+    @Body() body: Record<string, string>,
+    @UploadedFiles()
+    files: {
+      photosFacade?: Express.Multer.File[];
+      photosMeter?: Express.Multer.File[];
+    },
+  ): Promise<ApiResponse> {
+    try {
+      const buildPhotos = (
+        list?: Express.Multer.File[],
+        descriptionsRaw?: string,
+      ) => {
+        const descriptions: string[] = descriptionsRaw
+          ? JSON.parse(descriptionsRaw)
+          : [];
+        return (list ?? []).map((file, index) => ({
+          fileBase64: `data:${file.mimetype};base64,${file.buffer.toString('base64')}`,
+          originalName: file.originalname,
+          mimeType: file.mimetype,
+          description: descriptions[index] ?? null,
+        }));
+      };
+
+      const photosFacade = buildPhotos(
+        files?.photosFacade,
+        body.photosFacadeDescriptions,
+      );
+      const photosMeter = buildPhotos(
+        files?.photosMeter,
+        body.photosMeterDescriptions,
+      );
+
+      const authUser: AccessTokenPayload =
+        ((request as any)['user'] as AccessTokenPayload) ?? {};
+
+      this.logger.log(
+        `Received request to basic-update connection ${connectionId}`,
+      );
+
+      const response: UpdateConnectionBasicResponse = await sendKafkaRequest(
+        this.kafkaProxy.send(
+          this.connectionKafkaClient,
+          'connections.update-connection-basic',
+          {
+            connectionId,
+            meterNumber: body.meterNumber,
+            description: body.description,
+            photosFacade,
+            photosMeter,
+            userId: authUser?.sub,
+          },
+        ),
+      );
+
+      return new ApiResponse(
+        `Connection ${connectionId} updated successfully (basic update)!`,
         response,
         request.url,
       );

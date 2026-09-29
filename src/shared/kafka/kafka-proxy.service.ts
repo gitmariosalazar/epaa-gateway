@@ -71,6 +71,8 @@ export class KafkaProxyService {
     'collector-performance-kpi': 'epaa_database_legacy_topic',
     'daily-collector-detail': 'epaa_database_legacy_topic',
     documents: 'documents_topic',
+    network_operations: 'network_operations_topic',
+    gis: 'network_operations_topic',
   };
 
   /**

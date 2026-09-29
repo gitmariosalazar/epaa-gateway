@@ -142,6 +142,11 @@ interface EnvironmentVariables {
   TRASH_RATE_KAFKA_CLIENT: string;
   TRASH_RATE_KAFKA_GROUP_ID: string;
 
+  // Network Operations Kafka clients
+  GATEWAY_NETWORK_OPERATIONS_KAFKA_CLIENT: string;
+  GATEWAY_NETWORK_OPERATIONS_KAFKA_CLIENT_ID: string;
+  GATEWAY_NETWORK_OPERATIONS_KAFKA_GROUP_ID: string;
+
   // Documents Service Kafka clients
   GATEWAY_DOCUMENTS_KAFKA_CLIENT: string;
   GATEWAY_DOCUMENTS_KAFKA_CLIENT_ID: string;
@@ -293,6 +298,11 @@ const envVarsSchema: Joi.ObjectSchema<EnvironmentVariables> = Joi.object({
   TRASH_RATE_KAFKA_CLIENT_ID: Joi.string().required(),
   TRASH_RATE_KAFKA_CLIENT: Joi.string().required(),
   TRASH_RATE_KAFKA_GROUP_ID: Joi.string().required(),
+
+  // Network Operations Kafka clients
+  GATEWAY_NETWORK_OPERATIONS_KAFKA_CLIENT: Joi.string().required(),
+  GATEWAY_NETWORK_OPERATIONS_KAFKA_CLIENT_ID: Joi.string().required(),
+  GATEWAY_NETWORK_OPERATIONS_KAFKA_GROUP_ID: Joi.string().required(),
 
   // Documents Service Kafka clients
   GATEWAY_DOCUMENTS_KAFKA_CLIENT: Joi.string().required(),
@@ -545,6 +555,17 @@ export const environments = {
   TRASH_RATE_KAFKA_CLIENT_ID: envVars.TRASH_RATE_KAFKA_CLIENT_ID,
   TRASH_RATE_KAFKA_CLIENT: envVars.TRASH_RATE_KAFKA_CLIENT,
   TRASH_RATE_KAFKA_GROUP_ID: envVars.TRASH_RATE_KAFKA_GROUP_ID,
+
+  // Network Operations Kafka clients
+  GATEWAY_NETWORK_OPERATIONS_KAFKA_CLIENT:
+    envVars.GATEWAY_NETWORK_OPERATIONS_KAFKA_CLIENT ||
+    'GATEWAY_NETWORK_OPERATIONS_KAFKA_CLIENT',
+  GATEWAY_NETWORK_OPERATIONS_KAFKA_CLIENT_ID:
+    envVars.GATEWAY_NETWORK_OPERATIONS_KAFKA_CLIENT_ID ||
+    'network-operations-gateway-client',
+  GATEWAY_NETWORK_OPERATIONS_KAFKA_GROUP_ID:
+    envVars.GATEWAY_NETWORK_OPERATIONS_KAFKA_GROUP_ID ||
+    'network-operations-gateway-group',
 
   // Documents Service Kafka clients
   GATEWAY_DOCUMENTS_KAFKA_CLIENT: envVars.GATEWAY_DOCUMENTS_KAFKA_CLIENT,

@@ -45,6 +45,7 @@ import { KafkaProxyModule } from './shared/kafka/kafka-proxy.module';
 import { NotificationGatewayModule } from './services/notifications/modules/infrastructure/notification.gateway.module';
 import { DocumentsFactoryModule } from './services/documents/factory/documents-factory.module';
 import { ImageServeModule } from './shared/files/files-serve.module';
+import { NetworkOperationsGatewayModule } from './services/network-operations/gis/infrastructure/modules/gis.gateway.module';
 
 @Module({
   imports: [
@@ -91,6 +92,7 @@ import { ImageServeModule } from './shared/files/files-serve.module';
     DocumentsFactoryModule,
     ImageServeModule,
     AuthCoreModule,
+    NetworkOperationsGatewayModule,
     JwtModule.register({
       global: true,
       secret: process.env.JWT_SECRET,

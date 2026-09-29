@@ -260,3 +260,18 @@ export interface MeterChangeResponse {
   historialMedidorId: string;
   photos: MeterChangePhotoResponse[];
 }
+
+export interface UpdatedBasicConnectionPhoto {
+  photoConnectionId: number;
+  photoUrl: string;
+  photoType: 'FACHADA' | 'MEDIDOR';
+  description?: string | null;
+}
+
+export interface UpdateConnectionBasicResponse {
+  connectionId: string;
+  meterNumber: string | null;
+  historialMedidorId?: string | null;
+  photosFacade: UpdatedBasicConnectionPhoto[];
+  photosMeter: UpdatedBasicConnectionPhoto[];
+}
