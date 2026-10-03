@@ -490,6 +490,7 @@ export class IncidentGatewayController {
       reportClient: body.reportClient ? JSON.parse(body.reportClient) : null,
       meterCondition: body.meterCondition || null,
       meterPhysicalState: body.meterPhysicalState || null,
+      incidentCategory: body.incidentCategory || null,
       requiresImmediateAction: body.requiresImmediateAction
         ? this.parseBoolean(body.requiresImmediateAction)
         : false,

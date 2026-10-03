@@ -2,6 +2,14 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class SearchIncidentsRequest {
   @ApiProperty({
+    example: [1, 2, 3],
+    description: 'Array of permitted category IDs (required)',
+    required: true,
+    type: [Number],
+  })
+  categoriesPermit!: number[]; // Array of permitted category IDs [1, 2, 3, ...] or only [1]
+
+  @ApiProperty({
     example: '14-293',
     description: 'Filter by connection unique identifier (optional)',
     required: false,

@@ -88,7 +88,7 @@ export class CreateIncidentRequest {
       firstName: 'Carlos',
       lastName: 'Salazar',
       email: 'mariosalaza@gmail.com',
-      cellPhone: '3132584575'
+      cellPhone: '3132584575',
     },
     description: 'Anonymous reporter data if the user is not registered',
     required: false,
@@ -102,22 +102,32 @@ export class CreateIncidentRequest {
 
   @ApiProperty({
     example: 'ANTIGUO',
-    description: 'The physical condition of the meter (NUEVO, ANTIGUO, NO_IDENTIFICADO) - exclusively for meter readers',
+    description:
+      'The physical condition of the meter (NUEVO, ANTIGUO, NO_IDENTIFICADO) - exclusively for meter readers',
     required: false,
   })
   meterCondition?: string | null;
 
   @ApiProperty({
     example: 'MALO',
-    description: 'The physical state of the meter (BUENO, REGULAR, MALO, DESTRUIDO) - exclusively for meter readers',
+    description:
+      'The physical state of the meter (BUENO, REGULAR, MALO, DESTRUIDO) - exclusively for meter readers',
     required: false,
   })
   meterPhysicalState?: string | null;
 
   @ApiProperty({
     example: true,
-    description: 'Flag indicating if the incident requires immediate action - exclusively for meter readers',
+    description:
+      'Flag indicating if the incident requires immediate action - exclusively for meter readers',
     required: false,
   })
   requiresImmediateAction?: boolean;
+
+  @ApiProperty({
+    example: 'RUTA LECTURA',
+    description: 'The category of the incident (optional)',
+    required: false,
+  })
+  incidentCategory?: string | null;
 }
