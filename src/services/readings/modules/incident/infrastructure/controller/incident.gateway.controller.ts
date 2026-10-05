@@ -471,6 +471,11 @@ export class IncidentGatewayController {
   private parseCreateIncidentBody(
     body: Record<string, string>,
   ): CreateIncidentRequest {
+    if (!body.reportDescription) {
+      body.reportDescription = `Condición de medidor: ${
+        body.meterCondition ?? ''
+      }, Estado físico del medidor: ${body.meterPhysicalState ?? ''}`;
+    }
     if (!body.incidentTypeId || !body.reportDescription || !body.reportOrigin) {
       throw new BadRequestException(
         'incidentTypeId, reportDescription y reportOrigin son obligatorios',
