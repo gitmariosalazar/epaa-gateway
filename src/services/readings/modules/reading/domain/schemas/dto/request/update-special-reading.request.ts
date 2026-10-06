@@ -1,5 +1,22 @@
 import { ApiProperty } from '@nestjs/swagger';
 
+export class PhotoInputDto {
+  @ApiProperty({
+    example: 'https://storage.example.com/photos/evidence-1.jpg',
+    description: 'URL de la foto de evidencia',
+    type: String,
+  })
+  photoUrl: string;
+
+  @ApiProperty({
+    example: 'Foto de evidencia del medidor previo al ajuste',
+    description: 'Descripción opcional de la foto de evidencia',
+    type: String,
+    required: false,
+  })
+  description?: string;
+}
+
 export class UpdateSpecialReadingRequest {
   @ApiProperty({
     example: 1,
@@ -76,4 +93,28 @@ export class UpdateSpecialReadingRequest {
     required: false,
   })
   averageConsumption?: number;
+
+  @ApiProperty({
+    description:
+      'Fotos de evidencia (URLs en string o DTOs con photoUrl y descripción)',
+    required: false,
+    type: [PhotoInputDto],
+  })
+  photos?: (string | PhotoInputDto)[];
+
+  @ApiProperty({
+    description:
+      'Alias opcional para fotos de evidencia (URLs en string o DTOs)',
+    required: false,
+    type: [PhotoInputDto],
+  })
+  evidencePhotos?: (string | PhotoInputDto)[];
+
+  @ApiProperty({
+    description:
+      'Alias opcional para imágenes de evidencia (URLs en string o DTOs)',
+    required: false,
+    type: [PhotoInputDto],
+  })
+  images?: (string | PhotoInputDto)[];
 }

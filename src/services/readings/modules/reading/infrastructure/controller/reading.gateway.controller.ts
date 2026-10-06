@@ -11,9 +11,14 @@ import {
   Put,
   Query,
   Req,
+  UploadedFiles,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
+import { FilesInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname, join } from 'path';
+import { renameSync } from 'fs';
 import { ClientKafka, RpcException } from '@nestjs/microservices';
 import {
   ApiBearerAuth,
@@ -51,6 +56,8 @@ import { CreateReadingUseCase } from '../../application/use-cases/create-reading
 import { UpdateCurrentReadingUseCase } from '../../application/use-cases/update-current-reading.use-case';
 import { UpdateSpecialReadingUseCase } from '../../application/use-cases/update-special-reading.use-case';
 import { AccessTokenPayload } from '../../../../../../shared/utils/interfaces/user.payload';
+
+const READINGS_IMAGES_DIR = '/home/sigepaa/sigepaa/images/readings';
 
 @Controller('Readings')
 @ApiTags('Readings')
@@ -222,6 +229,22 @@ export class ReadingGatewayController {
   }
 
   @Put('update-special-reading/:readingId')
+  @UseInterceptors(
+    FilesInterceptor('images', 10, {
+      storage: diskStorage({
+        destination: READINGS_IMAGES_DIR,
+        filename: (_req, file, cb) => {
+          const suffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+          cb(null, `temp-${suffix}${extname(file.originalname)}`);
+        },
+      }),
+      fileFilter: (_req, file, cb) =>
+        file.mimetype.startsWith('image/')
+          ? cb(null, true)
+          : cb(new Error('Only image files are allowed!'), false),
+    }),
+  )
+  @ApiConsumes('multipart/form-data')
   @ApiOperation({
     summary: 'Method PUT - Update Special Reading by reading ID',
     description:
@@ -229,11 +252,17 @@ export class ReadingGatewayController {
   })
   async updateSpecialReading(
     @Param('readingId') readingId: string,
-    @Body() readingRequest: UpdateSpecialReadingRequest,
+    @Body() body: Record<string, any>,
+    @UploadedFiles() images: Express.Multer.File[],
     @Req() request: Request,
   ): Promise<ApiResponse> {
     try {
       const userPayload: AccessTokenPayload = (request as any)['user'];
+      const readingRequest = this.buildSpecialReadingRequest(
+        body,
+        readingId,
+        images,
+      );
 
       // Verification of special unlocked module
       if (!userPayload?.module_special_unlocked) {
@@ -683,5 +712,57 @@ export class ReadingGatewayController {
       );
       throw new RpcException(err.message || err);
     }
+  }
+
+  // Multipart envía todo como string: se convierten los campos numéricos y
+  // las imágenes se renombran a `${readingId}-...` generando su photoUrl.
+  private buildSpecialReadingRequest(
+    body: Record<string, any>,
+    readingId: string,
+    images: Express.Multer.File[] = [],
+  ): UpdateSpecialReadingRequest {
+    const num = (v: any) =>
+      v === undefined || v === null || v === '' ? undefined : Number(v);
+
+    const uploadedPhotos = images.map((image) => {
+      const finalFilename = `${readingId}-${Date.now()}-${Math.round(Math.random() * 1e9)}${extname(image.filename)}`;
+      renameSync(image.path, join(READINGS_IMAGES_DIR, finalFilename));
+      return {
+        photoUrl: `$/images/readings/${finalFilename}`,
+        description: body.description || undefined,
+      };
+    });
+
+    let bodyPhotos: any[] = [];
+    const rawPhotos = body.photos ?? body.evidencePhotos ?? body.images;
+    if (rawPhotos) {
+      if (typeof rawPhotos === 'string') {
+        try {
+          bodyPhotos = JSON.parse(rawPhotos);
+        } catch {
+          bodyPhotos = [rawPhotos];
+        }
+      } else if (Array.isArray(rawPhotos)) {
+        bodyPhotos = rawPhotos;
+      }
+    }
+
+    const sanitizedBodyPhotos = bodyPhotos.filter((item) => {
+      const url = typeof item === 'string' ? item : item?.photoUrl;
+      return url && typeof url === 'string' && !url.startsWith('data:image/');
+    });
+
+    const finalPhotos = [...uploadedPhotos, ...sanitizedBodyPhotos];
+
+    return {
+      ...body,
+      tipoAjusteId: num(body.tipoAjusteId),
+      previousReading: num(body.previousReading),
+      currentReading: num(body.currentReading),
+      averageConsumption: num(body.averageConsumption),
+      photos: finalPhotos.length > 0 ? finalPhotos : undefined,
+      evidencePhotos: finalPhotos.length > 0 ? finalPhotos : undefined,
+      images: finalPhotos.length > 0 ? finalPhotos : undefined,
+    } as UpdateSpecialReadingRequest;
   }
 }

@@ -1,3 +1,5 @@
+import { PhotoReadingResponse } from '../../../../../images-readings/domain/schemas/dto/response/photo-reading.response';
+
 export interface ReadingResponse {
   readingId: number;
   connectionId: string;
@@ -15,6 +17,7 @@ export interface ReadingResponse {
   incomeCode: number | null;
   locationCapture?: { lat: number; lng: number } | null;
   readingCode?: string;
+  photos?: PhotoReadingResponse[];
 }
 
 export interface ReadingHistoryResponse {

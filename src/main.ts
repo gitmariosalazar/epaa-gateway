@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
+import { json, urlencoded } from 'express';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { environments } from './settings/environments/environments';
@@ -10,7 +11,10 @@ import { RpcCustomExceptionFilter } from './shared/errors/exception/GlobalExcept
 
 async function bootstrap() {
   const logger: Logger = new Logger('Main');
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { bodyParser: false });
+
+  app.use(json({ limit: '50mb' }));
+  app.use(urlencoded({ limit: '50mb', extended: true }));
 
   app.use(cookieParser());
   app.use(morgan('dev'));
