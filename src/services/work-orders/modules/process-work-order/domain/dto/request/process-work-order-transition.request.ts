@@ -26,4 +26,13 @@ export class ProcessWorkOrderTransitionRequest {
     description: 'Optional comment',
   })
   comment?: string;
+
+  @ApiProperty({
+    example:
+      'Se instaló el medidor, se verificaron conexiones y se dejó el área limpia.',
+    required: false,
+    description:
+      'Description of the work performed when completing the work order',
+  })
+  finalizationDescription?: string;
 }

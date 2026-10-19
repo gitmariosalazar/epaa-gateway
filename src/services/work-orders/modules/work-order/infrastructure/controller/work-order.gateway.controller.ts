@@ -12,9 +12,18 @@ import {
   Put,
   Query,
   Req,
+  UploadedFiles,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { FilesInterceptor } from '@nestjs/platform-express';
+import {
+  ApiTags,
+  ApiOperation, ApiQuery,
+  ApiBearerAuth,
+  ApiConsumes,
+  ApiBody,
+} from '@nestjs/swagger';
 import { environments } from '../../../../../../settings/environments/environments';
 import { ClientKafka, RpcException } from '@nestjs/microservices';
 import { ApiResponse } from '../../../../../../shared/errors/responses/ApiResponse';
@@ -22,7 +31,13 @@ import { sendKafkaRequest } from '../../../../../../shared/utils/kafka/send.kafk
 import { CreateWorkOrderRequest } from '../../domain/schemas/dto/request/create.work-order.request';
 import { AuthGuard } from '../../../../../../auth/guard/auth.guard';
 import { KafkaProxyService } from '../../../../../../shared/kafka/kafka-proxy.service';
-
+import {
+  WORK_ORDER_IMAGES_FIELD,
+  WORK_ORDER_IMAGES_MAX_FILES,
+  removeUploadedFiles,
+  toWorkOrderImageUrl,
+  workOrderImagesMulterOptions,
+} from '../upload/work-order-images.upload';
 
 @Controller('work-orders')
 @ApiTags('Work Orders')
@@ -37,15 +52,69 @@ export class WorkOrderGatewayController {
     private readonly kafkaProxy: KafkaProxyService,
   ) {}
 
-
-
   @Post('create-work-order')
-  @ApiOperation({ summary: 'Create a new work order' })
+  @UseInterceptors(
+    FilesInterceptor(
+      WORK_ORDER_IMAGES_FIELD,
+      WORK_ORDER_IMAGES_MAX_FILES,
+      workOrderImagesMulterOptions,
+    ),
+  )
+  @ApiConsumes('multipart/form-data')
+  @ApiOperation({
+    summary: 'Create a new work order (optionally with images)',
+    description:
+      'Creates a work order. Images are uploaded to the server (max 10, 10MB each, JPEG/PNG/GIF/WebP/BMP) and registered as attachments of the order.',
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      required: [
+        'workTypeId',
+        'priorityId',
+        'status',
+        'description',
+        'location',
+        'cadastralKey',
+        'createdUserId',
+        'clientId',
+      ],
+      properties: {
+        orderCode: { type: 'string', example: 'WO-12345' },
+        workTypeId: { type: 'integer', example: 2 },
+        priorityId: { type: 'integer', example: 3 },
+        clientId: { type: 'string', example: '1003938477' },
+        status: { type: 'integer', example: 1 },
+        description: {
+          type: 'string',
+          example: 'Fix the leaking pipe in the basement.',
+        },
+        location: { type: 'string', example: '123 Main St, Springfield' },
+        createdUserId: {
+          type: 'string',
+          example: 'e3400d18-86e1-4eee-9a8b-3e7eaf812a95',
+        },
+        coordinates: { type: 'string', example: '40.7128° N, 74.0060° W' },
+        metadata: { type: 'string', example: '{"key":"value"}' },
+        cadastralKey: { type: 'string', example: 'ABC123XYZ' },
+        images: {
+          type: 'array',
+          items: { type: 'string', format: 'binary' },
+          description: 'Imágenes de la orden (opcional, máx. 10)',
+        },
+      },
+    },
+  })
   async createWorkOrder(
     @Body() workOrder: CreateWorkOrderRequest,
+    @UploadedFiles() files: Express.Multer.File[],
     @Req() request: Request,
   ): Promise<ApiResponse> {
+    const uploadedFiles = files ?? [];
     try {
+      // Nunca se confía en URLs enviadas por el cliente: se generan desde los archivos subidos.
+      workOrder.images = uploadedFiles.map(toWorkOrderImageUrl);
+
       const response = await sendKafkaRequest(
         this.kafkaProxy.send(
           this.workOrderKafkaClient,
@@ -59,6 +128,7 @@ export class WorkOrderGatewayController {
         request.url,
       );
     } catch (error) {
+      await removeUploadedFiles(uploadedFiles);
       const err = error as Error;
       this.logger.error(`Error in createWorkOrder: ${err.message}`, err.stack);
       throw new RpcException(err as string | object);
@@ -74,10 +144,14 @@ export class WorkOrderGatewayController {
   ): Promise<ApiResponse> {
     try {
       const response = await sendKafkaRequest(
-        this.kafkaProxy.send(this.workOrderKafkaClient, 'work-orders.update-work-order', {
-          orderCode,
-          workOrder,
-        }),
+        this.kafkaProxy.send(
+          this.workOrderKafkaClient,
+          'work-orders.update-work-order',
+          {
+            orderCode,
+            workOrder,
+          },
+        ),
       );
       return new ApiResponse(
         `Work order updated successfully`,
@@ -148,17 +222,24 @@ export class WorkOrderGatewayController {
 
   @Get('get-all-work-orders')
   @ApiOperation({ summary: 'Get all work orders' })
+  @ApiQuery({ name: 'searchValue', required: false, type: String })
   async getAllWorkOrders(
     @Req() request: Request,
+    @Query('searchValue') searchValue?: string,
     @Query('limit') limit?: number,
     @Query('offset') offset?: number,
   ): Promise<ApiResponse> {
     try {
       const response = await sendKafkaRequest(
-        this.kafkaProxy.send(this.workOrderKafkaClient, 'work-orders.get-all-work-orders', {
-          limit,
-          offset,
-        }),
+        this.kafkaProxy.send(
+          this.workOrderKafkaClient,
+          'work-orders.get-all-work-orders',
+          {
+            searchValue,
+            limit,
+            offset,
+          },
+        ),
       );
       return new ApiResponse(
         `All work orders retrieved successfully`,
@@ -180,6 +261,7 @@ export class WorkOrderGatewayController {
   })
   async getAllWorkOrdersFullDetails(
     @Req() request: Request,
+    @Query('searchValue') searchValue?: string,
     @Query('limit') limit?: number,
     @Query('offset') offset?: number,
   ): Promise<ApiResponse> {
@@ -188,7 +270,7 @@ export class WorkOrderGatewayController {
         this.kafkaProxy.send(
           this.workOrderKafkaClient,
           'work-orders.get-all-work-orders-full-details',
-          { limit, offset },
+          { searchValue, limit, offset },
         ),
       );
       return new ApiResponse(
@@ -214,6 +296,7 @@ export class WorkOrderGatewayController {
   })
   async getWorkOrderStatistics(
     @Req() request: Request,
+    @Query('searchValue') searchValue?: string,
     @Query('limit') limit?: number,
     @Query('offset') offset?: number,
   ): Promise<ApiResponse> {
@@ -222,7 +305,7 @@ export class WorkOrderGatewayController {
         this.kafkaProxy.send(
           this.workOrderKafkaClient,
           'work-orders.get-work-order-statistics',
-          { limit, offset },
+          { searchValue, limit, offset },
         ),
       );
       return new ApiResponse(
@@ -287,10 +370,14 @@ export class WorkOrderGatewayController {
   ): Promise<ApiResponse> {
     try {
       const response = await sendKafkaRequest(
-        this.kafkaProxy.send(this.workOrderKafkaClient, 'work-orders.get-work-order-materials', {
-          limit,
-          offset,
-        }),
+        this.kafkaProxy.send(
+          this.workOrderKafkaClient,
+          'work-orders.get-work-order-materials',
+          {
+            limit,
+            offset,
+          },
+        ),
       );
       return new ApiResponse(
         `Work order materials retrieved successfully`,
@@ -409,22 +496,27 @@ export class WorkOrderGatewayController {
     }
   }
 
-  @Get('find-work-orders-full-details-by-order-code/:orderCode')
+  @Get('find-work-orders-full-details-by-order-code')
   @ApiOperation({
-    summary: 'Find work orders full details by order code',
+    summary: 'Find work order full details',
     description:
-      'Retrieve full details of a work order using its order code, including assignments, materials, observations, and attachments.',
+      'Retrieve full details of a work order filtering by any combination of order code, client card id and cadastral key. All filters are optional but at least one is required.',
   })
+  @ApiQuery({ name: 'orderCode', required: false, type: String })
+  @ApiQuery({ name: 'cardId', required: false, type: String })
+  @ApiQuery({ name: 'cadastralKey', required: false, type: String })
   async findWorkOrdersFullDetailsByOrderCode(
     @Req() request: Request,
-    @Param('orderCode') orderCode: string,
+    @Query('orderCode') orderCode?: string,
+    @Query('cardId') cardId?: string,
+    @Query('cadastralKey') cadastralKey?: string,
   ): Promise<ApiResponse> {
     try {
       const response = await sendKafkaRequest(
         this.kafkaProxy.send(
           this.workOrderKafkaClient,
           'work-orders.find-work-orders-full-details-by-order-code',
-          orderCode,
+          { orderCode, cardId, cadastralKey },
         ),
       );
       return new ApiResponse(

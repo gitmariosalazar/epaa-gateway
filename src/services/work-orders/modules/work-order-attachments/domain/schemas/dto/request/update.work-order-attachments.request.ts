@@ -29,16 +29,25 @@ export class UpdateWorkOrderAttachmentsRequest {
     type: String,
   })
   fileUrl?: string;
+  @ApiProperty({
+    example: 'TRABAJO_TERMINADO',
+    description: 'Evidence stage code',
+    required: false,
+    type: String,
+  })
+  evidenceStageCode?: string;
 
   constructor(
     workOrderId: number,
     fileName?: string,
     fileType?: string,
     fileUrl?: string,
+    evidenceStageCode?: string,
   ) {
     this.workOrderId = workOrderId;
     this.fileName = fileName;
     this.fileType = fileType;
     this.fileUrl = fileUrl;
+    this.evidenceStageCode = evidenceStageCode;
   }
 }

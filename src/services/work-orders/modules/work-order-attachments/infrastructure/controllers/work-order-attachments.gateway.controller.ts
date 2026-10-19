@@ -106,17 +106,22 @@ export class WorkOrderAttachmentsGatewayController {
           description: 'Archivos adjuntos: imágenes o PDFs (máx 10)',
         },
         workOrderId: { type: 'string', example: '1' },
+        evidenceStageCode: { type: 'string', example: 'REPORTE_INICIAL' },
         descripcion: {
           type: 'string',
           example: 'Foto del daño o informe en PDF',
         },
       },
-      required: ['workOrderId', 'images'],
+      required: ['workOrderId', 'images', 'evidenceStageCode'],
     },
   })
   async addWorkOrderAttachment(
     @UploadedFiles() files: Array<Express.Multer.File>,
-    @Body() body: { workOrderId: string; descripcion?: string },
+    @Body() body: {
+      workOrderId: string;
+      evidenceStageCode: string;
+      descripcion?: string;
+    },
     @Req() request: Request,
   ): Promise<ApiResponse> {
     if (!files || files.length === 0) {
@@ -135,6 +140,7 @@ export class WorkOrderAttachmentsGatewayController {
           file.originalname, // Nombre original (visible para el usuario)
           file.mimetype, // image/jpeg o application/pdf
           `${baseUrl}/${file.filename}`, // URL accesible públicamente
+          body.evidenceStageCode,
         );
 
         const result = await sendKafkaRequest(

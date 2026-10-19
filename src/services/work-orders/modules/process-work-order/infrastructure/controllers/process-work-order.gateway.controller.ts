@@ -601,6 +601,12 @@ export class ProcessWorkOrderGatewayController {
           format: 'uuid',
           example: 'b2c3d4e5-f6a7-4b6c-9d8e-1f2a3b4c5d6e',
         },
+        evidenceStageCode: {
+          type: 'string',
+          example: 'EN_PROCESO',
+          description:
+            'Etapa de evidencia: REPORTE_INICIAL, EN_PROCESO, TRABAJO_TERMINADO, CONFORMIDAD_CLIENTE, INSPECCION_SEGURIDAD',
+        },
         files: {
           type: 'array',
           items: { type: 'string', format: 'binary' },
@@ -611,7 +617,12 @@ export class ProcessWorkOrderGatewayController {
     },
   })
   async addWorkOrderAttachment(
-    @Body() body: { workOrderId: string; createdByUserId: string },
+    @Body()
+    body: {
+      workOrderId: string;
+      createdByUserId: string;
+      evidenceStageCode?: string;
+    },
     @UploadedFiles() files: Express.Multer.File[],
     @Req() request: Request,
   ): Promise<ApiResponse> {
@@ -643,6 +654,7 @@ export class ProcessWorkOrderGatewayController {
               fileName: file.originalname,
               fileType: file.mimetype,
               fileUrl,
+              evidenceStageCode: body.evidenceStageCode,
             },
           ),
         );
@@ -810,7 +822,7 @@ export class ProcessWorkOrderGatewayController {
   @ApiOperation({
     summary: 'Complete a work order',
     description:
-      'Fase 6 - Paso 1 (Finalizacion y cierre): formaliza el cierre administrativo de la OT y registra fecha de completacion.',
+      'Fase 6 - Paso 1 (Finalizacion y cierre): formaliza el cierre administrativo de la OT, registra usuario y fecha, y requiere finalizationDescription.',
   })
   @ApiBody({ type: ProcessWorkOrderTransitionRequest })
   async completeWorkOrder(
@@ -826,6 +838,7 @@ export class ProcessWorkOrderGatewayController {
             ...payload,
             userId: this.extractAuthUserId(request),
             newStatus: 'COMPLETADA',
+            finalizationDescription: payload.finalizationDescription?.trim(),
           },
         ),
       );

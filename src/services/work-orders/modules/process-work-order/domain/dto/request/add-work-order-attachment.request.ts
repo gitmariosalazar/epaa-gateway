@@ -19,6 +19,14 @@ export class AddWorkOrderAttachmentRequest {
   createdByUserId!: string;
 
   @ApiProperty({
+    example: 'EN_PROCESO',
+    required: false,
+    description:
+      'Etapa de evidencia (REPORTE_INICIAL, EN_PROCESO, TRABAJO_TERMINADO, CONFORMIDAD_CLIENTE, INSPECCION_SEGURIDAD)',
+  })
+  evidenceStageCode?: string;
+
+  @ApiProperty({
     type: 'array',
     items: { type: 'string', format: 'binary' },
     description:
