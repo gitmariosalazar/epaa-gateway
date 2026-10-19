@@ -27,6 +27,15 @@ export class CreateReadingLegacyRequest {
     required: true,
   })
   novelty!: string;
+
+  @ApiProperty({
+    example: 'GOOD',
+    description: 'Meter status',
+    required: false,
+    nullable: true,
+  })
+  meterStatus!: string | null;
+
   sector!: number;
   account!: number;
   year!: number;

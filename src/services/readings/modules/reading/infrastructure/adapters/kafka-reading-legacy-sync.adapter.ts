@@ -12,7 +12,9 @@ import { IReadingLegacySyncPort } from '../../application/ports/reading-legacy-s
  * FIRE-AND-FORGET: a legacy sync failure must never fail the primary reading flow.
  */
 @Injectable()
-export class KafkaReadingLegacySyncAdapter implements IReadingLegacySyncPort {
+export class KafkaReadingLegacySyncAdapter
+  implements IReadingLegacySyncPort
+{
   private readonly logger = new Logger(KafkaReadingLegacySyncAdapter.name);
 
   constructor(

@@ -6,7 +6,7 @@ export class PhotoInputDto {
     description: 'URL de la foto de evidencia',
     type: String,
   })
-  photoUrl: string;
+  photoUrl!: string;
 
   @ApiProperty({
     example: 'Foto de evidencia del medidor previo al ajuste',
@@ -23,14 +23,14 @@ export class UpdateSpecialReadingRequest {
     description: 'ID del tipo de ajuste especial',
     type: Number,
   })
-  tipoAjusteId: number;
+  tipoAjusteId!: number;
 
   @ApiProperty({
     example: 'Ajuste por daño de medidor',
     description: 'Justificación del ajuste',
     type: String,
   })
-  justificacion: string;
+  justificacion!: string;
 
   @ApiProperty({
     example: 100,
@@ -71,6 +71,14 @@ export class UpdateSpecialReadingRequest {
     required: false,
   })
   novelty?: string | null;
+
+  @ApiProperty({
+    example: 'GOOD',
+    description: 'Meter status',
+    required: false,
+    nullable: true,
+  })
+  meterStatus!: string | null;
 
   @ApiProperty({
     example: 1,

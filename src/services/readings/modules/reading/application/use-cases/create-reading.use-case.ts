@@ -57,6 +57,7 @@ export class CreateReadingUseCase {
     const legacyReading = ReadingLegacyMapper.toCreateReadingLegacyRequest(
       response,
       username,
+      readingRequest.meterStatus ?? null,
     );
     this.legacySync.syncCreateReadingLegacy(legacyReading);
     this.realtimeNotifier.notifyReadingCreated(response.sector ?? 0);

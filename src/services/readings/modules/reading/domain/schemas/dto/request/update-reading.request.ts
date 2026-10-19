@@ -26,6 +26,15 @@ export class UpdateReadingRequest {
     required: false,
   })
   novelty!: string | null;
+
+  @ApiProperty({
+    example: 'GOOD',
+    description: 'Meter status',
+    required: false,
+    nullable: true,
+  })
+  meterStatus!: string | null;
+
   @ApiProperty({
     example: 1256,
     description: 'The income code associated with the reading',

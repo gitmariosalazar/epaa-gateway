@@ -12,12 +12,14 @@ export class ReadingLegacyMapper {
   static toCreateReadingLegacyRequest(
     response: ReadingResponse,
     username: string | undefined,
+    meterStatus: string | null,
   ): CreateReadingLegacyRequest {
     const reading = new CreateReadingLegacyRequest();
     reading.previousReading = parseFloat(response.previousReading!.toString());
     reading.currentReading = parseFloat(response.currentReading!.toString());
     reading.cadastralKey = response.cadastralKey!;
     reading.novelty = response.novelty!;
+    reading.meterStatus = meterStatus;
     reading.account = parseInt(response.account!.toString());
     reading.sector = parseInt(response.sector!.toString());
     reading.rentalIncomeCode = null;

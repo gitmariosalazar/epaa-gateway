@@ -67,6 +67,15 @@ export class CreateReadingRequest {
     required: false,
   })
   novelty!: string | null;
+
+  @ApiProperty({
+    example: 'GOOD',
+    description: 'Meter status',
+    required: false,
+    nullable: true,
+  })
+  meterStatus!: string | null;
+
   @ApiProperty({
     example: 95,
     description: 'Average consumption',
