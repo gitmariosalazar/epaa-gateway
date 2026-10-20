@@ -99,11 +99,41 @@ export class RpcCustomExceptionFilter implements RpcExceptionFilter {
     } else {
       // Manejar otros tipos de errores (no RpcException)
       this.logger.error(
-        `Unexpected error caught: ${exception.message}`,
-        exception.stack,
+        `Unexpected error caught: ${exception?.message || exception}`,
+        exception?.stack,
       );
-      statusCodeValue = statusCode.INTERNAL_SERVER_ERROR;
-      message = [exception.message || 'An unexpected error occurred'];
+
+      let extractedStatus =
+        exception?.statusCode ||
+        exception?.status ||
+        exception?.error?.statusCode ||
+        exception?.error?.status;
+
+      let extractedMessage =
+        exception?.message ||
+        exception?.error?.message ||
+        'An unexpected error occurred';
+
+      // En ocasiones el mensaje de Kafka o RpcException se serializa como un string JSON
+      if (
+        typeof extractedMessage === 'string' &&
+        extractedMessage.startsWith('{')
+      ) {
+        try {
+          const parsed = JSON.parse(extractedMessage);
+          if (parsed.statusCode && !extractedStatus) {
+            extractedStatus = parsed.statusCode;
+          }
+          if (parsed.message) {
+            extractedMessage = parsed.message;
+          }
+        } catch {
+          // Ignorar si no es JSON válido
+        }
+      }
+
+      statusCodeValue = extractedStatus || statusCode.INTERNAL_SERVER_ERROR;
+      message = this.toMessageArray(extractedMessage);
     }
 
     // Crear respuesta con ApiResponse
