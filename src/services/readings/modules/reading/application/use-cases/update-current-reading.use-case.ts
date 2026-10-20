@@ -53,6 +53,7 @@ export class UpdateCurrentReadingUseCase {
         response,
         readingMonth,
         username,
+        readingRequest.meterStatus ?? null,
       );
     this.legacySync.syncUpdateReadingLegacy(params, request);
     this.realtimeNotifier.notifyReadingUpdated(

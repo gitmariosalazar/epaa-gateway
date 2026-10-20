@@ -43,6 +43,7 @@ export class ReadingLegacyMapper {
     response: ReadingResponse,
     readingMonth: string,
     username: string | undefined,
+    meterStatus: string | null = null,
   ): {
     request: UpdateReadingLegacyRequest;
     params: FindCurrentReadingParams;
@@ -61,6 +62,7 @@ export class ReadingLegacyMapper {
     request.cadastralKey = response.cadastralKey ?? '';
     request.readingId = response.readingId?.toString() ?? '';
     request.username = username ?? '';
+    request.meterStatus = meterStatus;
 
     const params = new FindCurrentReadingParams();
     params.sector = request.sector!;

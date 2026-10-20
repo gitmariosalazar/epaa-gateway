@@ -47,8 +47,8 @@ export class UpdateSpecialReadingUseCase {
         response,
         readingMonth,
         username,
+        readingRequest.meterStatus ?? null,
       );
-    console.log(params);
     this.legacySync.syncUpdateSpecialReadingLegacy(params, request);
     this.realtimeNotifier.notifyReadingUpdated(
       response.sector ?? 0,

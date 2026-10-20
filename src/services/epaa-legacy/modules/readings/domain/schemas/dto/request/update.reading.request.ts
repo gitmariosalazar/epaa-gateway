@@ -58,6 +58,13 @@ export class UpdateReadingLegacyRequest {
   })
   novelty!: string | null;
   @ApiProperty({
+    description: 'Meter status',
+    example: null,
+    type: String,
+    required: false,
+  })
+  meterStatus?: string | null;
+  @ApiProperty({
     description: 'Rental income code',
     example: null,
     type: Number,

@@ -922,7 +922,7 @@ export class ProcessWorkOrderGatewayController {
       'Consulta el tracking completo de la OT para su visualizacion en el portal del cliente.',
   })
   async getOrdenTrabajoTrackingByNumeroOrden(
-    @Query('numeroOrden') numeroOrden: string,
+    @Query('searchValue') searchValue: string,
     @Req() request: Request,
   ): Promise<ApiResponse> {
     try {
@@ -930,7 +930,7 @@ export class ProcessWorkOrderGatewayController {
         this.kafkaProxy.send(
           this.workOrderKafkaClient,
           'work-orders.process-work-order.get-tracking-by-numero-orden',
-          { numeroOrden },
+          { searchValue },
         ),
       );
       return new ApiResponse(
@@ -1133,6 +1133,7 @@ export class ProcessWorkOrderGatewayController {
   })
   async getAllWorkOrders(
     @Req() request: Request,
+    @Query('searchValue') searchValue?: string,
     @Query('limit') limit?: string,
     @Query('offset') offset?: string,
   ): Promise<ApiResponse> {
@@ -1145,7 +1146,7 @@ export class ProcessWorkOrderGatewayController {
       this.kafkaProxy.send(
         this.workOrderKafkaClient,
         'work-orders.process-work-order.get-all-work-orders',
-        { limit: parsedLimit, offset: parsedOffset },
+        { searchValue, limit: parsedLimit, offset: parsedOffset },
       ),
     );
     return new ApiResponse(
