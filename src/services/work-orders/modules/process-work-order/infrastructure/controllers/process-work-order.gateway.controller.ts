@@ -1014,10 +1014,6 @@ export class ProcessWorkOrderGatewayController {
     @Body() payload: AddWorkersBatchToWorkOrderRequest,
     @Req() request: Request,
   ): Promise<ApiResponse> {
-    console.log(
-      'PAYLOAD RECEIVED IN GATEWAY:',
-      JSON.stringify(payload, null, 2),
-    );
     try {
       const response = await sendKafkaRequest(
         this.kafkaProxy.send(

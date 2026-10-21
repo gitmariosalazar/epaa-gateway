@@ -7,7 +7,7 @@ import {
   ParseIntPipe,
   Query,
   Req,
-  UseGuards
+  UseGuards,
 } from '@nestjs/common';
 import { ClientKafka, RpcException } from '@nestjs/microservices';
 import { KafkaProxyService } from '../../../../../../shared/kafka/kafka-proxy.service';
@@ -53,7 +53,11 @@ export class ReadingReportDashboardGatewayController {
   ): Promise<ApiResponse> {
     try {
       const response: DashboardMetrics = await sendKafkaRequest(
-        this.kafkaProxy.send(this.readingClient, 'reading.dashboard.metrics', date),
+        this.kafkaProxy.send(
+          this.readingClient,
+          'reading.dashboard.metrics',
+          date,
+        ),
       );
       return new ApiResponse(
         `Dashboard metrics found successfully!`,
@@ -80,7 +84,6 @@ export class ReadingReportDashboardGatewayController {
     @Param('date') date: string,
   ): Promise<ApiResponse> {
     try {
-      console.log(`date`, date);
       const response: DailyReadingsReport[] = await sendKafkaRequest(
         this.kafkaProxy.send(this.readingClient, 'reading.report.daily', date),
       );
@@ -140,10 +143,14 @@ export class ReadingReportDashboardGatewayController {
   ): Promise<ApiResponse> {
     try {
       const response: ConnectionLastReadingsReport[] = await sendKafkaRequest(
-        this.kafkaProxy.send(this.readingClient, 'reading.report.connection.last-10', {
-          cadastralKey,
-          limit,
-        }),
+        this.kafkaProxy.send(
+          this.readingClient,
+          'reading.report.connection.last-10',
+          {
+            cadastralKey,
+            limit,
+          },
+        ),
       );
       return new ApiResponse(
         `Connection last readings report found successfully!`,
@@ -171,7 +178,11 @@ export class ReadingReportDashboardGatewayController {
   ): Promise<ApiResponse> {
     try {
       const response: GlobalStatsReport[] = await sendKafkaRequest(
-        this.kafkaProxy.send(this.readingClient, 'reading.report.stats.global', month),
+        this.kafkaProxy.send(
+          this.readingClient,
+          'reading.report.stats.global',
+          month,
+        ),
       );
       return new ApiResponse(
         `Global stats report found successfully!`,
@@ -199,7 +210,11 @@ export class ReadingReportDashboardGatewayController {
   ): Promise<ApiResponse> {
     try {
       const response: DailyStatsReport[] = await sendKafkaRequest(
-        this.kafkaProxy.send(this.readingClient, 'reading.report.stats.daily', month),
+        this.kafkaProxy.send(
+          this.readingClient,
+          'reading.report.stats.daily',
+          month,
+        ),
       );
       return new ApiResponse(
         `Daily stats report found successfully!`,
@@ -227,7 +242,11 @@ export class ReadingReportDashboardGatewayController {
   ): Promise<ApiResponse> {
     try {
       const response: SectorStatsReport[] = await sendKafkaRequest(
-        this.kafkaProxy.send(this.readingClient, 'reading.report.stats.sector', month),
+        this.kafkaProxy.send(
+          this.readingClient,
+          'reading.report.stats.sector',
+          month,
+        ),
       );
       return new ApiResponse(
         `Sector stats report found successfully!`,
@@ -255,7 +274,11 @@ export class ReadingReportDashboardGatewayController {
   ): Promise<ApiResponse> {
     try {
       const response: NoveltyStatsReport[] = await sendKafkaRequest(
-        this.kafkaProxy.send(this.readingClient, 'reading.report.stats.novelty', month),
+        this.kafkaProxy.send(
+          this.readingClient,
+          'reading.report.stats.novelty',
+          month,
+        ),
       );
       return new ApiResponse(
         `Novelty stats report found successfully!`,
@@ -283,7 +306,11 @@ export class ReadingReportDashboardGatewayController {
   ): Promise<ApiResponse> {
     try {
       const response: AdvancedReportReadingsResponse[] = await sendKafkaRequest(
-        this.kafkaProxy.send(this.readingClient, 'reading.report.advanced-monthly', month),
+        this.kafkaProxy.send(
+          this.readingClient,
+          'reading.report.advanced-monthly',
+          month,
+        ),
       );
       return new ApiResponse(
         `Advanced report readings found successfully!`,

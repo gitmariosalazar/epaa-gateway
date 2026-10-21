@@ -11,7 +11,7 @@ import {
   Put,
   Query,
   Req,
-  UseGuards
+  UseGuards,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { environments } from '../../../../../../settings/environments/environments';
@@ -46,8 +46,10 @@ export class WorkOrderHistoryGatewayController {
     @Req() request: Request,
   ): Promise<ApiResponse> {
     const response = await sendKafkaRequest(
-      this.kafkaProxy.send(this.workHistoryKafkaClient, 
-        'work-orders-histories.create-work-order-history', workOrderHistory,
+      this.kafkaProxy.send(
+        this.workHistoryKafkaClient,
+        'work-orders-histories.create-work-order-history',
+        workOrderHistory,
       ),
     );
 
@@ -71,8 +73,10 @@ export class WorkOrderHistoryGatewayController {
   ): Promise<ApiResponse> {
     try {
       const response = await sendKafkaRequest(
-        this.kafkaProxy.send(this.workHistoryKafkaClient, 
-          'work-orders-histories.update-work-order-history', { workOrderHistoryId, workOrderHistory },
+        this.kafkaProxy.send(
+          this.workHistoryKafkaClient,
+          'work-orders-histories.update-work-order-history',
+          { workOrderHistoryId, workOrderHistory },
         ),
       );
 
@@ -102,8 +106,10 @@ export class WorkOrderHistoryGatewayController {
   ): Promise<ApiResponse> {
     try {
       const response = await sendKafkaRequest(
-        this.kafkaProxy.send(this.workHistoryKafkaClient, 
-          'work-orders-histories.get-work-order-history-by-id', workOrderHistoryId,
+        this.kafkaProxy.send(
+          this.workHistoryKafkaClient,
+          'work-orders-histories.get-work-order-history-by-id',
+          workOrderHistoryId,
         ),
       );
 
@@ -134,8 +140,10 @@ export class WorkOrderHistoryGatewayController {
   ): Promise<ApiResponse> {
     try {
       const response = await sendKafkaRequest(
-        this.kafkaProxy.send(this.workHistoryKafkaClient, 
-          'work-orders-histories.get-work-order-histories-by-work-order-id', workOrderId,
+        this.kafkaProxy.send(
+          this.workHistoryKafkaClient,
+          'work-orders-histories.get-work-order-histories-by-work-order-id',
+          workOrderId,
         ),
       );
 
@@ -164,8 +172,10 @@ export class WorkOrderHistoryGatewayController {
   ): Promise<ApiResponse> {
     try {
       const response = await sendKafkaRequest(
-        this.kafkaProxy.send(this.workHistoryKafkaClient, 
-          'work-orders-histories.get-all-work-order-histories', {},
+        this.kafkaProxy.send(
+          this.workHistoryKafkaClient,
+          'work-orders-histories.get-all-work-order-histories',
+          {},
         ),
       );
       return new ApiResponse(
@@ -197,11 +207,12 @@ export class WorkOrderHistoryGatewayController {
     try {
       const pagination = { limit, offset };
       const response = await sendKafkaRequest(
-        this.kafkaProxy.send(this.workHistoryKafkaClient, 
-          'work-orders-histories.find-all-view-histories-work-orders', pagination,
+        this.kafkaProxy.send(
+          this.workHistoryKafkaClient,
+          'work-orders-histories.find-all-view-histories-work-orders',
+          pagination,
         ),
       );
-      console.log(response);
       return new ApiResponse(
         `View histories of work orders retrieved successfully.`,
         response,
@@ -232,8 +243,10 @@ export class WorkOrderHistoryGatewayController {
     try {
       const pagination = { limit, offset };
       const response = await sendKafkaRequest(
-        this.kafkaProxy.send(this.workHistoryKafkaClient, 
-          'work-orders-histories.find-all-view-histories-work-orders-by-order-code', { orderCode, pagination },
+        this.kafkaProxy.send(
+          this.workHistoryKafkaClient,
+          'work-orders-histories.find-all-view-histories-work-orders-by-order-code',
+          { orderCode, pagination },
         ),
       );
 

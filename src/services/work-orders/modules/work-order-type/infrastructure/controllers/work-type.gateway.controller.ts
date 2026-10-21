@@ -11,7 +11,7 @@ import {
   Put,
   Query,
   Req,
-  UseGuards
+  UseGuards,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { environments } from '../../../../../../settings/environments/environments';
@@ -35,7 +35,6 @@ export class WorkTypeGatewayController {
     private readonly kafkaProxy: KafkaProxyService,
   ) {}
 
-  
   @Post('create-work-type')
   @ApiOperation({
     summary: 'Method POST - Create a new work type',
@@ -51,7 +50,11 @@ export class WorkTypeGatewayController {
         `Received request to create work type: ${JSON.stringify(workType)}`,
       );
       const response = await sendKafkaRequest(
-        this.kafkaProxy.send(this.workTypeKafkaClient, 'work-type.create-work-type', workType),
+        this.kafkaProxy.send(
+          this.workTypeKafkaClient,
+          'work-type.create-work-type',
+          workType,
+        ),
       );
       this.logger.log(
         `Work type created successfully: ${JSON.stringify(response)}`,
@@ -84,10 +87,14 @@ export class WorkTypeGatewayController {
         `Received request to update work type: ${JSON.stringify(workType)}`,
       );
       const response = await sendKafkaRequest(
-        this.kafkaProxy.send(this.workTypeKafkaClient, 'work-type.update-work-type', {
-          workTypeId,
-          workType,
-        }),
+        this.kafkaProxy.send(
+          this.workTypeKafkaClient,
+          'work-type.update-work-type',
+          {
+            workTypeId,
+            workType,
+          },
+        ),
       );
       this.logger.log(
         `Work type updated successfully: ${JSON.stringify(response)}`,
@@ -117,8 +124,10 @@ export class WorkTypeGatewayController {
     try {
       this.logger.log(`Received request to get work type by ID: ${workTypeId}`);
       const response = await sendKafkaRequest(
-        this.kafkaProxy.send(this.workTypeKafkaClient, 
-          'work-type.get-work-type-by-id', workTypeId,
+        this.kafkaProxy.send(
+          this.workTypeKafkaClient,
+          'work-type.get-work-type-by-id',
+          workTypeId,
         ),
       );
       this.logger.log(
@@ -146,7 +155,11 @@ export class WorkTypeGatewayController {
     try {
       this.logger.log(`Received request to get all work type types`);
       const response = await sendKafkaRequest(
-        this.kafkaProxy.send(this.workTypeKafkaClient, 'work-type.get-all-work-types', {}),
+        this.kafkaProxy.send(
+          this.workTypeKafkaClient,
+          'work-type.get-all-work-types',
+          {},
+        ),
       );
       this.logger.log(
         `Work type types retrieved successfully: ${JSON.stringify(response)}`,
@@ -181,8 +194,10 @@ export class WorkTypeGatewayController {
         `Received request to verify work type exists by name: ${workTypeName}`,
       );
       const response = await sendKafkaRequest(
-        this.kafkaProxy.send(this.workTypeKafkaClient, 
-          'work-type.verify-work-type-exists-by-name', workTypeName,
+        this.kafkaProxy.send(
+          this.workTypeKafkaClient,
+          'work-type.verify-work-type-exists-by-name',
+          workTypeName,
         ),
       );
       this.logger.log(
@@ -220,8 +235,10 @@ export class WorkTypeGatewayController {
         `Received request to find work types by department ID: ${departmentId}`,
       );
       const response = await sendKafkaRequest(
-        this.kafkaProxy.send(this.workTypeKafkaClient, 
-          'work-type.find-work-types-by-department-id', departmentId,
+        this.kafkaProxy.send(
+          this.workTypeKafkaClient,
+          'work-type.find-work-types-by-department-id',
+          departmentId,
         ),
       );
       this.logger.log(
@@ -236,6 +253,40 @@ export class WorkTypeGatewayController {
       const err = error as Error;
       this.logger.error(
         `Error in findWorkTypesByDepartmentId: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
+    }
+  }
+
+  @Get('get-all-departments')
+  @ApiOperation({
+    summary: 'Method GET - Get all departments',
+    description:
+      'The endpoint allows you to retrieve all departments in the system',
+  })
+  async getAllDepartments(@Req() request: Request): Promise<ApiResponse> {
+    try {
+      this.logger.log(`Received request to get all departments`);
+      const response = await sendKafkaRequest(
+        this.kafkaProxy.send(
+          this.workTypeKafkaClient,
+          'work-type.get-all-departments',
+          {},
+        ),
+      );
+      this.logger.log(
+        `Departments retrieved successfully: ${JSON.stringify(response)}`,
+      );
+      return new ApiResponse(
+        `Departments retrieved successfully!`,
+        response,
+        request.url,
+      );
+    } catch (error) {
+      const err = error as Error;
+      this.logger.error(
+        `Error in getAllDepartments: ${err.message}`,
         err.stack,
       );
       throw new RpcException(err as string | object);

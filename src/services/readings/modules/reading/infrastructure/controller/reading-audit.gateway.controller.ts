@@ -9,7 +9,7 @@ import {
   Post,
   Query,
   Req,
-  UseGuards
+  UseGuards,
 } from '@nestjs/common';
 import { ClientKafka, RpcException } from '@nestjs/microservices';
 import { KafkaProxyService } from '../../../../../../shared/kafka/kafka-proxy.service';
@@ -24,7 +24,10 @@ import {
   CloseAuditSectorResponse,
   InitializeAuditResponse,
 } from '../../domain/schemas/dto/response/audit-sector.response';
-import { IAuditRealtimeNotifierPort, AUDIT_REALTIME_NOTIFIER_PORT } from '../../application/ports/audit-realtime-notifier.port';
+import {
+  IAuditRealtimeNotifierPort,
+  AUDIT_REALTIME_NOTIFIER_PORT,
+} from '../../application/ports/audit-realtime-notifier.port';
 
 @Controller('readings/audit')
 @ApiTags('Readings — Audit')
@@ -58,7 +61,11 @@ export class ReadingAuditGatewayController {
     try {
       this.logger.log(`Initializing monthly audit for period: ${month}`);
       const response: InitializeAuditResponse = await sendKafkaRequest(
-        this.kafkaProxy.send(this.readingClient, 'reading.audit.initialize-monthly', month),
+        this.kafkaProxy.send(
+          this.readingClient,
+          'reading.audit.initialize-monthly',
+          month,
+        ),
       );
       return new ApiResponse(
         `Monthly audit initialized: ${response.sectorsGenerated} sectors created for ${response.period}`,
@@ -88,9 +95,12 @@ export class ReadingAuditGatewayController {
     @Param('month') month: string,
   ): Promise<ApiResponse> {
     try {
-      this.logger.log(`Fetching audit for month: ${month}`);
       const response: AuditSectorResponse[] = await sendKafkaRequest(
-        this.kafkaProxy.send(this.readingClient, 'reading.audit.by-month', month),
+        this.kafkaProxy.send(
+          this.readingClient,
+          'reading.audit.by-month',
+          month,
+        ),
       );
       return new ApiResponse(
         `Audit for month ${month} retrieved successfully!`,
@@ -123,10 +133,14 @@ export class ReadingAuditGatewayController {
     try {
       this.logger.log(`Fetching audit for sector ${sector}, month: ${month}`);
       const response: AuditSectorResponse | null = await sendKafkaRequest(
-        this.kafkaProxy.send(this.readingClient, 'reading.audit.by-sector-and-month', {
-          sector,
-          month,
-        }),
+        this.kafkaProxy.send(
+          this.readingClient,
+          'reading.audit.by-sector-and-month',
+          {
+            sector,
+            month,
+          },
+        ),
       );
       return new ApiResponse(
         `Audit for sector ${sector} / ${month} retrieved successfully!`,
@@ -209,10 +223,14 @@ export class ReadingAuditGatewayController {
         `Fetching audit history for sector ${sector}, last ${months ?? 12} months`,
       );
       const response: AuditSectorHistoryResponse[] = await sendKafkaRequest(
-        this.kafkaProxy.send(this.readingClient, 'reading.audit.history-by-sector', {
-          sector,
-          months: months ? Number(months) : 12,
-        }),
+        this.kafkaProxy.send(
+          this.readingClient,
+          'reading.audit.history-by-sector',
+          {
+            sector,
+            months: months ? Number(months) : 12,
+          },
+        ),
       );
       return new ApiResponse(
         `Audit history for sector ${sector} retrieved successfully!`,
