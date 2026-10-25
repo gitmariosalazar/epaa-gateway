@@ -130,3 +130,16 @@ export interface ReadingNoveltyResponse {
   userUpdatedId?: string | null;
   userUpdatedName?: string | null;
 }
+
+export interface CalculateReadingValueResponse {
+  cadastralKey: string;
+  consumption: number;
+  waterConsumptionValue: number; // o subtotalValue
+  baseRate: number; // o baseTariff
+  rateName: string; // o tariffName
+  sewerageValue: number; // o sewageValue
+  others: number;
+  additionalCost: number;
+  fixedRatePerM3: number;
+  total: number;
+}

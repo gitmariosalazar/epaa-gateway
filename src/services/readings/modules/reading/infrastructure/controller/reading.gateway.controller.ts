@@ -6,6 +6,7 @@ import {
   Logger,
   OnModuleInit,
   Param,
+  ParseFloatPipe,
   ParseIntPipe,
   Post,
   Put,
@@ -33,6 +34,7 @@ import { UpdateReadingRequest } from '../../domain/schemas/dto/request/update-re
 import { UpdateSpecialReadingRequest } from '../../domain/schemas/dto/request/update-special-reading.request';
 import { CreateReadingRequest } from '../../domain/schemas/dto/request/create-reading.request';
 import {
+  CalculateReadingValueResponse,
   PendingReadingConnectionResponse,
   ReadingHistoryResponse,
   ReadingNoveltyResponse,
@@ -764,5 +766,41 @@ export class ReadingGatewayController {
       evidencePhotos: finalPhotos.length > 0 ? finalPhotos : undefined,
       images: finalPhotos.length > 0 ? finalPhotos : undefined,
     } as UpdateSpecialReadingRequest;
+  }
+
+  @ApiBearerAuth()
+  @Get('calculate-reading-value')
+  @ApiQuery({ name: 'cadastralKey', required: true })
+  @ApiQuery({ name: 'consumption', required: true })
+  async calculateReadingValue(
+    @Query('cadastralKey') cadastralKey: string,
+    @Query('consumption', ParseFloatPipe) consumption: number,
+    @Req() request: Request,
+  ) {
+    try {
+      const data = { cadastralKey, consumption };
+      console.log(
+        `[calculateReadingValue] Parámetros recibidos → cadastralKey: "${data.cadastralKey}", consumption: ${data.consumption}`,
+      );
+      const response: CalculateReadingValueResponse = await sendKafkaRequest(
+        this.kafkaProxy.send(
+          this.readingClient,
+          'reading.calculate-reading-value',
+          data,
+        ),
+      );
+      return new ApiResponse(
+        `Reading value for cadastral key ${data.cadastralKey} calculated successfully!`,
+        response,
+        request.url,
+      );
+    } catch (error) {
+      const err = error as Error;
+      this.logger.error(
+        `Error calculating reading value for cadastral key ${cadastralKey}: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err.message || err);
+    }
   }
 }
