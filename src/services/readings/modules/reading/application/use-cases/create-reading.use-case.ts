@@ -54,10 +54,26 @@ export class CreateReadingUseCase {
       });
     }
 
+    let readingMonth = readingRequest.currentMonthReading;
+    if (
+      !readingMonth &&
+      readingRequest.previousMonthReading &&
+      readingRequest.previousMonthReading.includes('-')
+    ) {
+      const [year, month] = readingRequest.previousMonthReading
+        .split('-')
+        .map(Number);
+      if (!isNaN(year) && !isNaN(month)) {
+        const nextDate = new Date(year, month, 1);
+        readingMonth = `${nextDate.getFullYear()}-${String(nextDate.getMonth() + 1).padStart(2, '0')}`;
+      }
+    }
+
     const legacyReading = ReadingLegacyMapper.toCreateReadingLegacyRequest(
       response,
       username,
       readingRequest.meterStatus ?? null,
+      readingMonth,
     );
     this.legacySync.syncCreateReadingLegacy(legacyReading);
     this.realtimeNotifier.notifyReadingCreated(response.sector ?? 0);

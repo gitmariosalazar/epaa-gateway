@@ -13,6 +13,7 @@ export class ReadingLegacyMapper {
     response: ReadingResponse,
     username: string | undefined,
     meterStatus: string | null,
+    readingMonth?: string | null,
   ): CreateReadingLegacyRequest {
     const reading = new CreateReadingLegacyRequest();
     reading.previousReading = parseFloat(response.previousReading!.toString());
@@ -29,12 +30,29 @@ export class ReadingLegacyMapper {
       ? response.readingCode.toString()
       : '';
     reading.username = username ?? '';
-    reading.year = response.readingDate
-      ? new Date(response.readingDate).getFullYear()
-      : new Date().getFullYear();
-    reading.month = response.readingDate
-      ? MONTHS[new Date(response.readingDate).getMonth() + 1]
-      : MONTHS[new Date().getMonth() + 1];
+
+    if (readingMonth && readingMonth.includes('-')) {
+      const [yearPart, monthPart] = readingMonth.split('-');
+      const parsedMonth = MONTHS[parseInt(monthPart, 10)];
+      reading.year =
+        Number(yearPart) ||
+        (response.readingDate
+          ? new Date(response.readingDate).getFullYear()
+          : new Date().getFullYear());
+      reading.month =
+        parsedMonth ??
+        (response.readingDate
+          ? MONTHS[new Date(response.readingDate).getMonth() + 1]
+          : MONTHS[new Date().getMonth() + 1]);
+    } else {
+      reading.year = response.readingDate
+        ? new Date(response.readingDate).getFullYear()
+        : new Date().getFullYear();
+      reading.month = response.readingDate
+        ? MONTHS[new Date(response.readingDate).getMonth() + 1]
+        : MONTHS[new Date().getMonth() + 1];
+    }
+
     reading.readingValue = null;
     return reading;
   }

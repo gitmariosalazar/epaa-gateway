@@ -9,6 +9,9 @@ import { ReadingAuditGatewayController } from '../controller/reading-audit.gatew
 import { CreateReadingUseCase } from '../../application/use-cases/create-reading.use-case';
 import { UpdateCurrentReadingUseCase } from '../../application/use-cases/update-current-reading.use-case';
 import { UpdateSpecialReadingUseCase } from '../../application/use-cases/update-special-reading.use-case';
+import { ApplyPaymentAgreementUseCase } from '../../application/use-cases/apply-payment-agreement.use-case';
+import { DistributeEmelnorteTrashRateUseCase } from '../../application/use-cases/distribute-emelnorte-trash-rate.use-case';
+import { AssignConnectionTrashRateUseCase } from '../../application/use-cases/assign-connection-trash-rate.use-case';
 import { READING_LEGACY_SYNC_PORT } from '../../application/ports/reading-legacy-sync.port';
 import { READING_REALTIME_NOTIFIER_PORT } from '../../application/ports/reading-realtime-notifier.port';
 import { KafkaReadingLegacySyncAdapter } from '../adapters/kafka-reading-legacy-sync.adapter';
@@ -62,6 +65,9 @@ import { AUDIT_REALTIME_NOTIFIER_PORT } from '../../application/ports/audit-real
     CreateReadingUseCase,
     UpdateCurrentReadingUseCase,
     UpdateSpecialReadingUseCase,
+    ApplyPaymentAgreementUseCase,
+    DistributeEmelnorteTrashRateUseCase,
+    AssignConnectionTrashRateUseCase,
     {
       provide: READING_LEGACY_SYNC_PORT,
       useClass: KafkaReadingLegacySyncAdapter,

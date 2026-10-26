@@ -57,6 +57,12 @@ import { RequireAppKey } from '../../../../../../auth/decorator/require-app-key.
 import { CreateReadingUseCase } from '../../application/use-cases/create-reading.use-case';
 import { UpdateCurrentReadingUseCase } from '../../application/use-cases/update-current-reading.use-case';
 import { UpdateSpecialReadingUseCase } from '../../application/use-cases/update-special-reading.use-case';
+import { ApplyPaymentAgreementUseCase } from '../../application/use-cases/apply-payment-agreement.use-case';
+import { DistributeEmelnorteTrashRateUseCase } from '../../application/use-cases/distribute-emelnorte-trash-rate.use-case';
+import { AssignConnectionTrashRateUseCase } from '../../application/use-cases/assign-connection-trash-rate.use-case';
+import { ApplyPaymentAgreementRequest } from '../../domain/schemas/dto/request/apply-payment-agreement.request';
+import { DistributeEmelnorteTrashRateRequest } from '../../domain/schemas/dto/request/distribute-emelnorte-trash-rate.request';
+import { AssignConnectionTrashRateRequest } from '../../domain/schemas/dto/request/assign-connection-trash-rate.request';
 import { AccessTokenPayload } from '../../../../../../shared/utils/interfaces/user.payload';
 
 const READINGS_IMAGES_DIR = '/home/sigepaa/sigepaa/images/readings';
@@ -75,6 +81,9 @@ export class ReadingGatewayController {
     private readonly createReadingUseCase: CreateReadingUseCase,
     private readonly updateCurrentReadingUseCase: UpdateCurrentReadingUseCase,
     private readonly updateSpecialReadingUseCase: UpdateSpecialReadingUseCase,
+    private readonly applyPaymentAgreementUseCase: ApplyPaymentAgreementUseCase,
+    private readonly distributeEmelnorteTrashRateUseCase: DistributeEmelnorteTrashRateUseCase,
+    private readonly assignConnectionTrashRateUseCase: AssignConnectionTrashRateUseCase,
   ) {}
 
   /** Extracts the authenticated user id set by AuthGuard onto the request. */
@@ -798,6 +807,90 @@ export class ReadingGatewayController {
       const err = error as Error;
       this.logger.error(
         `Error calculating reading value for cadastral key ${cadastralKey}: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err.message || err);
+    }
+  }
+
+  @Post('apply-payment-agreement')
+  @ApiOperation({
+    summary: 'Method POST - Apply payment agreement (Convenio de Pago)',
+    description:
+      'Applies a payment agreement to selected reading invoices, setting trash rate or other designated concepts to 0.00 and tracking deferrals.',
+  })
+  async applyPaymentAgreement(
+    @Body() body: ApplyPaymentAgreementRequest,
+    @Req() request: Request,
+  ): Promise<ApiResponse> {
+    try {
+      const response = await this.applyPaymentAgreementUseCase.execute(body);
+      return new ApiResponse(
+        `Payment agreement ${body.agreementCode} applied successfully!`,
+        response,
+        request.url,
+      );
+    } catch (error) {
+      const err = error as Error;
+      this.logger.error(
+        `Error applying payment agreement ${body?.agreementCode}: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err.message || err);
+    }
+  }
+
+  @Post('distribute-emelnorte-trash-rate')
+  @ApiOperation({
+    summary:
+      'Method POST - Distribute EMELNORTE September trash rate among active connections',
+    description:
+      'Splits the September trash rate total proportionally with penny remainder balancing across active connections.',
+  })
+  async distributeEmelnorteTrashRate(
+    @Body() body: DistributeEmelnorteTrashRateRequest,
+    @Req() request: Request,
+  ): Promise<ApiResponse> {
+    try {
+      const response =
+        await this.distributeEmelnorteTrashRateUseCase.execute(body);
+      return new ApiResponse(
+        `EMELNORTE trash rate for client ${body.clientId} distributed successfully!`,
+        response,
+        request.url,
+      );
+    } catch (error) {
+      const err = error as Error;
+      this.logger.error(
+        `Error distributing EMELNORTE trash rate for client ${body?.clientId}: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err.message || err);
+    }
+  }
+
+  @Post('assign-connection-trash-rate')
+  @ApiOperation({
+    summary: 'Method POST - Assign individual trash rate to a connection',
+    description:
+      'Assigns a versioned trash rate to a new or reactivated connection based on category and tiered consumption table.',
+  })
+  async assignConnectionTrashRate(
+    @Body() body: AssignConnectionTrashRateRequest,
+    @Req() request: Request,
+  ): Promise<ApiResponse> {
+    try {
+      const response =
+        await this.assignConnectionTrashRateUseCase.execute(body);
+      return new ApiResponse(
+        `Trash rate for connection ${body.connectionId} assigned successfully!`,
+        response,
+        request.url,
+      );
+    } catch (error) {
+      const err = error as Error;
+      this.logger.error(
+        `Error assigning trash rate for connection ${body?.connectionId}: ${err.message}`,
         err.stack,
       );
       throw new RpcException(err.message || err);
