@@ -64,6 +64,7 @@ import { ApplyPaymentAgreementRequest } from '../../domain/schemas/dto/request/a
 import { DistributeEmelnorteTrashRateRequest } from '../../domain/schemas/dto/request/distribute-emelnorte-trash-rate.request';
 import { AssignConnectionTrashRateRequest } from '../../domain/schemas/dto/request/assign-connection-trash-rate.request';
 import { AccessTokenPayload } from '../../../../../../shared/utils/interfaces/user.payload';
+import { LecturistLocationQueryDto } from '../../domain/schemas/dto/request/LecturistLocationQueryDto';
 
 const READINGS_IMAGES_DIR = '/home/sigepaa/sigepaa/images/readings';
 
@@ -393,16 +394,24 @@ export class ReadingGatewayController {
   ])
   @ApiOperation({
     summary: 'Method GET - Get Pending Readings by month',
-    description: 'The endpoint allows you to get Pending Readings by month',
+    description:
+      'The endpoint allows you to get Pending Readings by month sorted by proximity if coords provided',
   })
-  @ApiParam({ name: 'sector', required: false, type: Number })
+  @ApiParam({ name: 'month', required: true, type: String, example: '2026-10' })
+  @ApiParam({ name: 'sector', required: false, type: Number, example: 5 })
   async getPendingReadingsByMonth(
     @Req() request: Request,
     @Param('month') month: string,
-    // 2. Le dices al Pipe que es opcional, y le pones el ? al tipado de TS
     @Param('sector', new ParseIntPipe({ optional: true })) sector?: number,
+    @Query() locationDto?: LecturistLocationQueryDto,
   ): Promise<ApiResponse> {
     try {
+      // Reconstruye el objeto solo si ambas coordenadas existen
+      const lecturistLocation =
+        locationDto?.lat != null && locationDto?.lng != null
+          ? { lat: locationDto.lat, lng: locationDto.lng }
+          : null;
+
       const response: PendingReadingConnectionResponse[] =
         await sendKafkaRequest(
           this.kafkaProxy.send(
@@ -410,10 +419,12 @@ export class ReadingGatewayController {
             'reading.get-pending-readings-by-month',
             {
               month,
-              sector, // Si no viene, pasará como undefined correctamente
+              sector,
+              lecturistLocation,
             },
           ),
         );
+
       return new ApiResponse(
         `Pending readings with month ${month} and sector ${sector || 'ALL'} found successfully!`,
         response,
@@ -425,7 +436,8 @@ export class ReadingGatewayController {
         `Error getting pending readings by month ${month} and sector ${sector || 'ALL'}: ${err.message}`,
         err.stack,
       );
-      throw new RpcException(err as string | object);
+      // En el Gateway REST lanza HttpException o relanza el error capturado por tu ExceptionFilter
+      throw error;
     }
   }
 

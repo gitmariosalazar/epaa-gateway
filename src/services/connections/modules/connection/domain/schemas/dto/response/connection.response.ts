@@ -42,6 +42,7 @@ export interface LastReadingResponse {
   readingValueCurrent: number | null;
   readingValuePreview: number | null;
   novelty: string | null;
+  locationReading: string | null;
 }
 
 export interface PropertyWithClientResponse {

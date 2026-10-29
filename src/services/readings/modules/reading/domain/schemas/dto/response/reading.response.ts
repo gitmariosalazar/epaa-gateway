@@ -32,6 +32,7 @@ export interface ReadingHistoryResponse {
   consumption: number;
   observation: string;
   readingValue: number;
+  locationReading?: { lat: number; lng: number } | null;
 }
 
 export interface ReadingImagesResponse {
@@ -59,6 +60,9 @@ export interface PendingReadingConnectionResponse {
   cardId: string;
   rateName: string;
   averageConsumption: number;
+  locationConnection?: { lat: number; lng: number } | null;
+  lastReading?: ReadingHistoryResponse | null;
+  distanceMeters?: number | null;
 }
 
 export interface TakenReadingConnectionResponse {
