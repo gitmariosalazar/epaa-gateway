@@ -4,8 +4,9 @@ import {
   Inject,
   Logger,
   Param,
+  Query,
   Req,
-  UseGuards
+  UseGuards,
 } from '@nestjs/common';
 import { ClientKafka, RpcException } from '@nestjs/microservices';
 import { KafkaProxyService } from '../../../../../../shared/kafka/kafka-proxy.service';
@@ -37,8 +38,10 @@ export class ObservationsGatewayController {
   ): Promise<ApiResponse> {
     try {
       const response: ObservationDetailsResponse = await sendKafkaRequest(
-        this.kafkaProxy.send(this.observationsClient, 
-          'observation-reading.get-observation-details-by-cadastral-key', { cadastralKey },
+        this.kafkaProxy.send(
+          this.observationsClient,
+          'observation-reading.get-observation-details-by-cadastral-key',
+          { cadastralKey },
         ),
       );
       return new ApiResponse(
@@ -56,11 +59,16 @@ export class ObservationsGatewayController {
     }
   }
   @Get('get-observations')
-  async getObservations(@Req() request: Request): Promise<ApiResponse> {
+  async getObservations(
+    @Req() request: Request,
+    @Query('month') month: string,
+  ): Promise<ApiResponse> {
     try {
       const response: ObservationDetailsResponse[] = await sendKafkaRequest(
-        this.kafkaProxy.send(this.observationsClient, 
-          'observation-reading.get-observations', {},
+        this.kafkaProxy.send(
+          this.observationsClient,
+          'observation-reading.get-observations',
+          { month },
         ),
       );
       return new ApiResponse(
