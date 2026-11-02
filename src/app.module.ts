@@ -3,6 +3,7 @@ import { HomeModule } from './app/module/app.module';
 import { QRCodeGatewayModule } from './services/qrcode/modules/qrcode/infrastructure/modules/qrcode.gateway.module';
 import { QRCodeKafkaModule } from './shared/kafka/qrcode.kafka.module';
 import { ReadingGatewayModule } from './services/readings/modules/reading/infrastructure/modules/reading.gateway.module';
+import { ReadingRoutesGatewayModule } from './services/readings/modules/reading-routes/infrastructure/modules/reading-routes.gateway.module';
 import { ReadingLegacyModule } from './services/epaa-legacy/modules/readings/infrastructure/modules/reading.gateway.module';
 import { ObservationsGatewayModule } from './services/readings/modules/observations/infrastructure/modules/observations.gateway.module';
 import { PhotoReadingGatewayModule } from './services/readings/modules/images-readings/infrastructure/modules/photo-reading.gateway.module';
@@ -56,6 +57,7 @@ import { NetworkOperationsGatewayModule } from './services/network-operations/gi
     QRCodeKafkaModule,
     QRCodeGatewayModule,
     ReadingGatewayModule,
+    ReadingRoutesGatewayModule,
     ReadingLegacyModule,
     ObservationsGatewayModule,
     PhotoReadingGatewayModule,

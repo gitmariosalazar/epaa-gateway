@@ -157,9 +157,6 @@ export class AuthGatewayController {
     @Res({ passthrough: true }) res: Response,
   ): Promise<ApiResponse> {
     try {
-      this.logger.log(
-        `Signing in user: ${payload.username_or_email} - ${payload.password ? 'with password' : 'without password'}`,
-      );
       const kafkaResponse: AuthResponse = await sendKafkaRequest(
         this.kafkaProxy.send(
           this.authKafkaClient,
@@ -215,7 +212,6 @@ export class AuthGatewayController {
     @Res({ passthrough: true }) res: Response,
   ): Promise<ApiResponse> {
     try {
-      this.logger.log(`Signing in customer: ${payload.username_or_email}`);
       const kafkaResponse: AuthResponse = await sendKafkaRequest(
         this.kafkaProxy.send(
           this.authKafkaClient,
