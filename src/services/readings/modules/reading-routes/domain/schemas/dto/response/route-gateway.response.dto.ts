@@ -21,7 +21,9 @@ export class BatchDispatchResponseDto {
   @ApiProperty({ example: true })
   success: boolean;
 
-  @ApiProperty({ example: 'Despacho matutino ejecutado exitosamente para 14 rutas.' })
+  @ApiProperty({
+    example: 'Despacho matutino ejecutado exitosamente para 14 rutas.',
+  })
   message: string;
 
   @ApiProperty({ example: '2026-11' })
@@ -73,10 +75,16 @@ export class ResolvedRouteResponseDto {
   })
   metodoResolucion: string;
 
-  @ApiProperty({ example: 0.0, description: 'Distancia en metros al polígono (0 si está contenido)' })
+  @ApiProperty({
+    example: 0.0,
+    description: 'Distancia en metros al polígono (0 si está contenido)',
+  })
   distanciaMetros: number;
 
-  @ApiProperty({ example: 159, description: 'Nuevo orden sugerido si se inserta en esta ruta' })
+  @ApiProperty({
+    example: 159,
+    description: 'Nuevo orden sugerido si se inserta en esta ruta',
+  })
   ordenSugerido: number;
 }
 
