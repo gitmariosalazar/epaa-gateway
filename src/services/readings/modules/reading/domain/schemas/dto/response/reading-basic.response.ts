@@ -58,6 +58,7 @@ export interface ReadingInfoResponse {
   images?: { id: number; path: string; novelty: string }[];
   observations?: { id: number; title: string; observation: string }[];
   readingLocation?: { lat: number; lng: number } | null;
+  hasFacade?: boolean;
 }
 
 export interface UserReadingActionAuditSqlResul {
