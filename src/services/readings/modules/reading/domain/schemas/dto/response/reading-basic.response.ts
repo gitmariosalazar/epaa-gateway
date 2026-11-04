@@ -43,6 +43,7 @@ export interface ReadingInfoResponse {
   account: number;
   readingValue: number;
   averageConsumption: number;
+  averageValue: number;
   meterNumber: string;
   rateId: number;
   rateName: string;
