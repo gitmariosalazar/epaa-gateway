@@ -1,6 +1,7 @@
 import {
   Controller,
   Get,
+  Post,
   Inject,
   Logger,
   Param,
@@ -47,6 +48,37 @@ export class AccountingLegacyGatewayController {
     private readonly kafkaClient: ClientKafka,
     private readonly kafkaProxy: KafkaProxyService,
   ) {}
+
+  @Post('execute-daily-interest')
+  @ApiOperation({
+    summary: 'Method POST - Execute Daily Interest Update (Legacy)',
+    description:
+      'Dispara manualmente la ejecución del procedimiento sp_ActualizarInteresesDiarios en SQL Server Legacy.',
+  })
+  async executeDailyInterest(@Req() request: Request): Promise<ApiResponse> {
+    try {
+      this.logger.log('Sending executeDailyInterest request via Kafka');
+      const response = await sendKafkaRequest(
+        this.kafkaProxy.send(
+          this.kafkaClient,
+          'epaa-legacy.accounting.execute-daily-interest',
+          {},
+        ),
+      );
+      return new ApiResponse(
+        'Daily interest executed successfully!',
+        response,
+        request.url,
+      );
+    } catch (error) {
+      const err = error as Error;
+      this.logger.error(
+        `Error in executeDailyInterest: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
+    }
+  }
 
   @Get('find-pending-reading-by-card-id/:cardId')
   @ApiOperation({

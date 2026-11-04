@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ScheduleModule } from '@nestjs/schedule';
 import { HomeModule } from './app/module/app.module';
 import { QRCodeGatewayModule } from './services/qrcode/modules/qrcode/infrastructure/modules/qrcode.gateway.module';
 import { QRCodeKafkaModule } from './shared/kafka/qrcode.kafka.module';
@@ -51,6 +52,7 @@ import { NetworkOperationsGatewayModule } from './services/network-operations/gi
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     HomeModule,
     KafkaProxyModule,
     RealtimeModule, // ← WebSocket global: RealtimeService disponible en TODA la app
