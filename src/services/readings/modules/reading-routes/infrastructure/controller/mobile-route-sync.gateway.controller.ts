@@ -13,7 +13,7 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { ClientKafka } from '@nestjs/microservices';
+import { ClientKafka, RpcException } from '@nestjs/microservices';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -24,12 +24,20 @@ import {
 } from '@nestjs/swagger';
 import { Request } from 'express';
 import { environments } from '../../../../../../settings/environments/environments';
+import { statusCode } from '../../../../../../settings/environments/status-code';
 import { ApiResponse } from '../../../../../../shared/errors/responses/ApiResponse';
 import { sendKafkaRequest } from '../../../../../../shared/utils/kafka/send.kafka.request';
 import { AuthGuard } from '../../../../../../auth/guard/auth.guard';
 import { KafkaProxyService } from '../../../../../../shared/kafka/kafka-proxy.service';
-import { SyncMobileReadingsBatchRequestDto } from '../../domain/schemas/dto/request/route-gateway.request.dto';
-import { LecturistDailyKpiResponseDto } from '../../domain/schemas/dto/response/route-gateway.response.dto';
+import { AccessTokenPayload } from '../../../../../../shared/utils/interfaces/user.payload';
+import {
+  GetMyAssignedRoutesQueryDto,
+  SyncMobileReadingsBatchRequestDto,
+} from '../../domain/schemas/dto/request/route-gateway.request.dto';
+import {
+  LecturistDailyKpiResponseDto,
+  MobileAssignedRouteResponseDto,
+} from '../../domain/schemas/dto/response/route-gateway.response.dto';
 
 @Controller(['mobile/reading-routes', 'api/v1/mobile/reading-routes'])
 @ApiTags('Rutas - Sincronización Móvil Offline')
@@ -46,9 +54,82 @@ export class MobileRouteSyncGatewayController {
     private readonly kafkaProxy: KafkaProxyService,
   ) {}
 
+  /**
+   * Extrae y valida el UUID del lecturista autenticado desde el JWT (claim 'sub').
+   * Aplica Fail-Fast y evita fallbacks inseguros.
+   */
   private extractUserId(request: Request): string {
-    const user: any = (request as any)['user'];
-    return user?.sub || user?.id || '00000000-0000-0000-0000-000000000001';
+    const user = (request as unknown as { user?: AccessTokenPayload }).user;
+    const userId = user?.sub;
+
+    if (!userId || typeof userId !== 'string' || userId.trim() === '') {
+      throw new RpcException({
+        statusCode: statusCode.UNAUTHORIZED,
+        message:
+          'No se pudo determinar la identidad del usuario autenticado en el token de autorización.',
+      });
+    }
+
+    return userId.trim();
+  }
+
+  @Get('my-routes')
+  @ApiOperation({
+    summary: 'Consultar rutas de lectura asignadas al lecturista autenticado',
+    description:
+      'Retorna únicamente las asignaciones programadas para el lecturista autenticado extraído de forma segura desde el token JWT.',
+  })
+  @ApiQuery({
+    name: 'fecha',
+    required: false,
+    type: String,
+    description: 'Fecha programada de lectura (YYYY-MM-DD)',
+  })
+  @ApiQuery({
+    name: 'periodo',
+    required: false,
+    type: String,
+    description: 'Periodo de lectura (YYYY-MM)',
+  })
+  @SwaggerApiResponse({
+    status: 200,
+    type: [MobileAssignedRouteResponseDto],
+    description: 'Listado de rutas asignadas obtenido exitosamente',
+  })
+  async getMyRoutes(
+    @Query() query: GetMyAssignedRoutesQueryDto,
+    @Req() request: Request,
+  ): Promise<ApiResponse> {
+    try {
+      const usuarioId = this.extractUserId(request);
+      this.logger.log(
+        `Consultando rutas asignadas para lecturista: ${usuarioId} (fecha: ${query.fecha ?? 'todas'}, periodo: ${query.periodo ?? 'actual'})`,
+      );
+
+      const response: MobileAssignedRouteResponseDto[] =
+        await sendKafkaRequest<MobileAssignedRouteResponseDto[]>(
+          this.kafkaProxy.send(
+            this.readingClient,
+            'reading-routes.mobile.get-my-routes',
+            {
+              usuarioId,
+              fecha: query.fecha,
+              periodoMes: query.periodo,
+            },
+          ),
+        );
+
+      return new ApiResponse(
+        'Rutas asignadas obtenidas exitosamente',
+        response,
+        request.originalUrl || request.url,
+        HttpStatus.OK,
+      );
+    } catch (error) {
+      const err = error as Error;
+      this.logger.error(`Error en getMyRoutes: ${err.message}`, err.stack);
+      throw error;
+    }
   }
 
   @Get('pack/:assignmentId')

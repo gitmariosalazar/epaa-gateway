@@ -266,3 +266,24 @@ export class FindReadingRoutesQueryDto {
   @IsInt()
   limit?: number;
 }
+
+export class GetMyAssignedRoutesQueryDto {
+  @ApiPropertyOptional({
+    description: 'Fecha programada de lectura (YYYY-MM-DD)',
+    example: '2026-11-04',
+  })
+  @IsOptional()
+  @IsDateString()
+  fecha?: string;
+
+  @ApiPropertyOptional({
+    description: 'Periodo de lectura en formato YYYY-MM',
+    example: '2026-11',
+  })
+  @IsOptional()
+  @Matches(/^\d{4}-(0[1-9]|1[0-2])$/, {
+    message: 'El periodo debe tener el formato YYYY-MM (ej. 2026-11)',
+  })
+  periodo?: string;
+}
+

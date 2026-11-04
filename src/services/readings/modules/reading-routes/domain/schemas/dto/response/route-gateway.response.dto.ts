@@ -136,3 +136,70 @@ export class LecturistDailyKpiResponseDto {
   @ApiPropertyOptional({ example: '2026-11-03T13:42:10.000Z' })
   horaUltimaLectura?: string | null;
 }
+
+export class MobileAssignedRouteResponseDto {
+  @ApiProperty({ example: 12, description: 'ID único de la asignación' })
+  idAsignacion: number;
+
+  @ApiProperty({ example: 5, description: 'ID de la ruta de lectura' })
+  rutaId: number;
+
+  @ApiProperty({ example: 'SEC01-R01', description: 'Código único de la ruta' })
+  codigoRuta: string;
+
+  @ApiProperty({ example: 'Sector 1 - San José', description: 'Nombre de la ruta' })
+  nombreRuta: string;
+
+  @ApiPropertyOptional({ example: 1, description: 'Sector comercial / hidráulico' })
+  sector?: number;
+
+  @ApiProperty({ example: 'c3a2f8b0-8c29-4d69-a1d2-092931481234', description: 'UUID del lecturista asignado' })
+  usuarioId: string;
+
+  @ApiPropertyOptional({ example: 'Carlos Andrés Mendoza', description: 'Nombre completo del lecturista' })
+  nombreLecturista?: string;
+
+  @ApiPropertyOptional({ example: '1001600780', description: 'Cédula o identificación del lecturista' })
+  identificacionUsuario?: string;
+
+  @ApiProperty({ example: '2026-11', description: 'Periodo de lectura (YYYY-MM)' })
+  periodoMes: string;
+
+  @ApiProperty({ example: '2026-11-04', description: 'Fecha programada de lectura' })
+  fechaProgramada: string;
+
+  @ApiPropertyOptional({ example: '2026-11-04T08:15:00.000Z', description: 'Fecha/hora de inicio de lectura' })
+  fechaInicio?: string | null;
+
+  @ApiPropertyOptional({ example: null, description: 'Fecha/hora de cierre de lectura' })
+  fechaCierre?: string | null;
+
+  @ApiProperty({
+    example: 'ASIGNADA',
+    enum: ['ASIGNADA', 'EN_PROCESO', 'PAUSADA', 'COMPLETADA', 'REASIGNADA'],
+    description: 'Estado actual de la asignación',
+  })
+  estado: string;
+
+  @ApiProperty({ example: 158, description: 'Total de predios/acometidas en la ruta' })
+  totalPredios: number;
+
+  @ApiProperty({ example: 45, description: 'Predios leídos exitosamente' })
+  prediosLeidos: number;
+
+  @ApiProperty({ example: 3, description: 'Predios con novedad registrada' })
+  prediosConNovedad: number;
+
+  @ApiProperty({ example: 110, description: 'Predios aún pendientes' })
+  prediosPendientes: number;
+
+  @ApiProperty({ example: 30.38, description: 'Porcentaje de avance actual (0 - 100)' })
+  porcentajeAvance: number;
+
+  @ApiProperty({ example: false, description: 'Indica si es una reasignación en caliente' })
+  esReasignacion: boolean;
+
+  @ApiPropertyOptional({ example: null, description: 'Observación o motivo de reasignación' })
+  motivoReasignacion?: string | null;
+}
+
