@@ -27,6 +27,7 @@ import {
   RolesGuard,
   Permissions,
 } from '../../../../../../auth';
+import { extractUserParams } from '../../../../utils/extract-user-params.util';
 
 @Controller('work-order-histories')
 @ApiTags('Work Order Histories')
@@ -113,11 +114,12 @@ export class WorkOrderHistoryGatewayController {
     @Req() request: Request,
   ): Promise<ApiResponse> {
     try {
+      const user = extractUserParams(request);
       const response = await sendKafkaRequest(
         this.kafkaProxy.send(
           this.workHistoryKafkaClient,
           'work-orders-histories.get-work-order-history-by-id',
-          workOrderHistoryId,
+          { workOrderHistoryId, user },
         ),
       );
 
@@ -148,11 +150,12 @@ export class WorkOrderHistoryGatewayController {
     @Req() request: Request,
   ): Promise<ApiResponse> {
     try {
+      const user = extractUserParams(request);
       const response = await sendKafkaRequest(
         this.kafkaProxy.send(
           this.workHistoryKafkaClient,
           'work-orders-histories.get-work-order-histories-by-work-order-id',
-          workOrderId,
+          { workOrderId, user },
         ),
       );
 
@@ -181,11 +184,12 @@ export class WorkOrderHistoryGatewayController {
     @Req() request: Request,
   ): Promise<ApiResponse> {
     try {
+      const user = extractUserParams(request);
       const response = await sendKafkaRequest(
         this.kafkaProxy.send(
           this.workHistoryKafkaClient,
           'work-orders-histories.get-all-work-order-histories',
-          {},
+          { user },
         ),
       );
       return new ApiResponse(
@@ -216,7 +220,8 @@ export class WorkOrderHistoryGatewayController {
     @Query('offset') offset?: number,
   ): Promise<ApiResponse> {
     try {
-      const pagination = { limit, offset };
+      const user = extractUserParams(request);
+      const pagination = { limit, offset, user };
       const response = await sendKafkaRequest(
         this.kafkaProxy.send(
           this.workHistoryKafkaClient,
@@ -253,12 +258,13 @@ export class WorkOrderHistoryGatewayController {
     @Query('offset') offset?: number,
   ): Promise<ApiResponse> {
     try {
+      const user = extractUserParams(request);
       const pagination = { limit, offset };
       const response = await sendKafkaRequest(
         this.kafkaProxy.send(
           this.workHistoryKafkaClient,
           'work-orders-histories.find-all-view-histories-work-orders-by-order-code',
-          { orderCode, pagination },
+          { orderCode, pagination, user },
         ),
       );
 

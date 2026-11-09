@@ -57,6 +57,7 @@ import { AdvanceWorkOrderStateRequest } from '../../domain/dto/request/advance-w
 import { AddWorkOrderMaterialsBatchRequest } from '../../domain/dto/request/add-work-order-materials-batch.request';
 import { AddWorkersBatchToWorkOrderRequest } from '../../domain/dto/request/add-workers-batch-to-work-order.request';
 import { AccessTokenPayload } from '../../../../../../shared/utils/interfaces/user.payload';
+import { extractUserParams } from '../../../../utils/extract-user-params.util';
 
 const WORK_ORDERS_UPLOAD_DIR = '/home/sigepaa/sigepaa/images/work_orders';
 
@@ -928,11 +929,12 @@ export class ProcessWorkOrderGatewayController {
     @Query('numeroOrden') numeroOrden: string,
     @Req() request: Request,
   ): Promise<ApiResponse> {
+    const user = extractUserParams(request);
     const response = await sendKafkaRequest(
       this.kafkaProxy.send(
         this.workOrderKafkaClient,
         'work-orders.process-work-order.get-detalle-by-numero-orden',
-        { numeroOrden },
+        { numeroOrden, user },
       ),
     );
     return new ApiResponse(
@@ -954,11 +956,12 @@ export class ProcessWorkOrderGatewayController {
     @Req() request: Request,
   ): Promise<ApiResponse> {
     try {
+      const user = extractUserParams(request);
       const response = await sendKafkaRequest(
         this.kafkaProxy.send(
           this.workOrderKafkaClient,
           'work-orders.process-work-order.get-tracking-by-numero-orden',
-          { searchValue },
+          { searchValue, user },
         ),
       );
       return new ApiResponse(
@@ -982,11 +985,12 @@ export class ProcessWorkOrderGatewayController {
     @Query('solicitudId') solicitudId: string,
     @Req() request: Request,
   ): Promise<ApiResponse> {
+    const user = extractUserParams(request);
     const response = await sendKafkaRequest(
       this.kafkaProxy.send(
         this.workOrderKafkaClient,
         'work-orders.process-work-order.get-ordenes-by-solicitud-id',
-        { solicitudId },
+        { solicitudId, user },
       ),
     );
     return new ApiResponse(
@@ -1171,12 +1175,13 @@ export class ProcessWorkOrderGatewayController {
     //    offset >= 0 (ya aceptado por el microservicio tras el fix).
     const parsedLimit = limit ? Math.max(1, parseInt(limit, 10)) : 100;
     const parsedOffset = offset ? Math.max(0, parseInt(offset, 10)) : 0;
+    const user = extractUserParams(request);
 
     const response = await sendKafkaRequest(
       this.kafkaProxy.send(
         this.workOrderKafkaClient,
         'work-orders.process-work-order.get-all-work-orders',
-        { searchValue, limit: parsedLimit, offset: parsedOffset },
+        { searchValue, limit: parsedLimit, offset: parsedOffset, user },
       ),
     );
     return new ApiResponse(

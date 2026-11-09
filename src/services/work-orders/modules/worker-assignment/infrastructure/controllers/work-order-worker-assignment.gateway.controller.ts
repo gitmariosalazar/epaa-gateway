@@ -22,6 +22,7 @@ import {
   RolesGuard,
   Permissions,
 } from '../../../../../../auth';
+import { extractUserParams } from '../../../../utils/extract-user-params.util';
 
 @Controller('work-order-worker-assignment')
 @ApiTags('work-order-worker-assignment')
@@ -92,9 +93,10 @@ export class WorkOrderWorkerAssignmentGatewayController
     @Param('workerId') workerId: string,
   ): Promise<ApiResponse> {
     try {
+      const user = extractUserParams(request);
       const response = await sendKafkaRequest(
         this.kafkaProxy.send(this.workOrderWorkerAssignmentKafkaClient, 
-          'assignment-worker.find_worker_assignment_by_worker_id', workerId,
+          'assignment-worker.find_worker_assignment_by_worker_id', { workerId, user },
         ),
       );
       return new ApiResponse('', response, request.url);
@@ -120,9 +122,10 @@ export class WorkOrderWorkerAssignmentGatewayController
     @Param('workOrderId') workOrderId: string,
   ): Promise<ApiResponse> {
     try {
+      const user = extractUserParams(request);
       const response = await sendKafkaRequest(
         this.kafkaProxy.send(this.workOrderWorkerAssignmentKafkaClient, 
-          'assignment-worker.find_worker_assignments_by_work_order_id', workOrderId,
+          'assignment-worker.find_worker_assignments_by_work_order_id', { workOrderId, user },
         ),
       );
       return new ApiResponse('', response, request.url);
