@@ -29,7 +29,12 @@ import { environments } from '../../../../../../settings/environments/environmen
 import { KafkaProxyService } from '../../../../../../shared/kafka/kafka-proxy.service';
 import { ApiResponse } from '../../../../../../shared/errors/responses/ApiResponse';
 import { sendKafkaRequest } from '../../../../../../shared/utils/kafka/send.kafka.request';
-import { AuthGuard } from '../../../../../../auth/guard/auth.guard';
+import {
+  AuthGuard,
+  PermissionsGuard,
+  RolesGuard,
+  Permissions,
+} from '../../../../../../auth';
 import { CreateWorkOrderRequest } from '../../domain/dto/request/create-work-order.request';
 import { CreateWorkOrderFromIncidentRequest } from '../../domain/dto/request/create-work-order-from-incident.request';
 import { ProcessWorkOrderTransitionRequest } from '../../domain/dto/request/process-work-order-transition.request';
@@ -70,7 +75,7 @@ const workOrderAttachmentInterceptor = FilesInterceptor('files', 10, {
 @Controller('process-work-orders')
 @ApiTags('Process Work Orders')
 @ApiBearerAuth()
-@UseGuards(AuthGuard)
+@UseGuards(AuthGuard, PermissionsGuard, RolesGuard)
 export class ProcessWorkOrderGatewayController {
   private readonly logger = new Logger(ProcessWorkOrderGatewayController.name);
 
@@ -89,6 +94,7 @@ export class ProcessWorkOrderGatewayController {
   }
 
   @Post('create-work-order')
+  @Permissions(67)
   @ApiOperation({
     summary: 'Create a work order',
     description:
@@ -120,6 +126,7 @@ export class ProcessWorkOrderGatewayController {
   }
 
   @Post('create-work-order-from-incident')
+  @Permissions(67)
   @ApiOperation({
     summary: 'Create a work order from an incident',
     description:
@@ -162,6 +169,7 @@ export class ProcessWorkOrderGatewayController {
   }
 
   @Post('receive-work-order')
+  @Permissions(75, 68)
   @ApiOperation({
     summary: 'Receive a work order',
     description:
@@ -197,6 +205,7 @@ export class ProcessWorkOrderGatewayController {
   }
 
   @Post('assign-work-order-to-crew')
+  @Permissions(68, 83, 75)
   @ApiOperation({
     summary: 'Assign a work order to a crew',
     description:
@@ -231,6 +240,7 @@ export class ProcessWorkOrderGatewayController {
   }
 
   @Post('assign-work-order-to-worker')
+  @Permissions(68, 83, 75)
   @ApiOperation({
     summary: 'Assign a work order to a worker',
     description:
@@ -265,6 +275,7 @@ export class ProcessWorkOrderGatewayController {
   }
 
   @Post('start-preparation')
+  @Permissions(77, 76)
   @ApiOperation({
     summary: 'Start preparation',
     description:
@@ -300,6 +311,7 @@ export class ProcessWorkOrderGatewayController {
   }
 
   @Post('create-preparation-inspection')
+  @Permissions(77)
   @ApiOperation({
     summary: 'Create preparation inspection',
     description:
@@ -334,6 +346,7 @@ export class ProcessWorkOrderGatewayController {
   }
 
   @Post('add-preparation-inspection-detail')
+  @Permissions(77)
   @ApiOperation({
     summary: 'Add preparation inspection detail',
     description:
@@ -368,6 +381,7 @@ export class ProcessWorkOrderGatewayController {
   }
 
   @Post('resolve-preparation-inspection')
+  @Permissions(77)
   @ApiOperation({
     summary: 'Resolve preparation inspection',
     description:
@@ -407,6 +421,7 @@ export class ProcessWorkOrderGatewayController {
   }
 
   @Post('start-execution')
+  @Permissions(76)
   @ApiOperation({
     summary: 'Start field execution',
     description:
@@ -442,6 +457,7 @@ export class ProcessWorkOrderGatewayController {
   }
 
   @Post('add-work-order-material')
+  @Permissions(79)
   @ApiOperation({
     summary: 'Add work order material',
     description:
@@ -476,6 +492,7 @@ export class ProcessWorkOrderGatewayController {
   }
 
   @Post('add-work-order-materials-batch')
+  @Permissions(79)
   @ApiOperation({
     summary: 'Add work order materials in batch',
     description:
@@ -510,6 +527,7 @@ export class ProcessWorkOrderGatewayController {
   }
 
   @Post('add-additional-cost')
+  @Permissions(80)
   @ApiOperation({
     summary: 'Add additional cost',
     description:
@@ -544,6 +562,7 @@ export class ProcessWorkOrderGatewayController {
   }
 
   @Post('add-additional-costs-batch')
+  @Permissions(80)
   @ApiOperation({
     summary: 'Add additional costs in batch',
     description:
@@ -578,6 +597,7 @@ export class ProcessWorkOrderGatewayController {
   }
 
   @Post('add-work-order-attachment')
+  @Permissions(85)
   @UseInterceptors(workOrderAttachmentInterceptor)
   @ApiConsumes('multipart/form-data')
   @ApiOperation({
@@ -677,6 +697,7 @@ export class ProcessWorkOrderGatewayController {
   }
 
   @Post('finish-execution')
+  @Permissions(76, 69)
   @ApiOperation({
     summary: 'Finish field execution',
     description:
@@ -712,6 +733,7 @@ export class ProcessWorkOrderGatewayController {
   }
 
   @Post('create-quality-control')
+  @Permissions(78)
   @ApiOperation({
     summary: 'Create quality control',
     description:
@@ -746,6 +768,7 @@ export class ProcessWorkOrderGatewayController {
   }
 
   @Post('add-quality-control-detail')
+  @Permissions(78)
   @ApiOperation({
     summary: 'Add quality control detail',
     description:
@@ -780,6 +803,7 @@ export class ProcessWorkOrderGatewayController {
   }
 
   @Post('resolve-quality-control')
+  @Permissions(78)
   @ApiOperation({
     summary: 'Resolve quality control',
     description:
@@ -819,6 +843,7 @@ export class ProcessWorkOrderGatewayController {
   }
 
   @Post('complete-work-order')
+  @Permissions(69)
   @ApiOperation({
     summary: 'Complete a work order',
     description:
@@ -858,6 +883,7 @@ export class ProcessWorkOrderGatewayController {
   }
 
   @Post('register-satisfaction-survey')
+  @Permissions(69, 86, 66)
   @ApiOperation({
     summary: 'Register satisfaction survey',
     description:
@@ -892,6 +918,7 @@ export class ProcessWorkOrderGatewayController {
   }
 
   @Get('get-detalle-by-numero-orden')
+  @Permissions(66)
   @ApiOperation({
     summary: 'Get work order detail by order number',
     description:
@@ -916,6 +943,7 @@ export class ProcessWorkOrderGatewayController {
   }
 
   @Get('get-tracking-by-numero-orden')
+  @Permissions(66)
   @ApiOperation({
     summary: 'Get work order tracking by order number',
     description:
@@ -944,6 +972,7 @@ export class ProcessWorkOrderGatewayController {
   }
 
   @Get('get-ordenes-by-solicitud-id')
+  @Permissions(66)
   @ApiOperation({
     summary: 'Get work orders by request ID',
     description:
@@ -970,6 +999,7 @@ export class ProcessWorkOrderGatewayController {
   // ─── Personal asignado directamente a la OT ──────────────────────────────────────
 
   @Post('add-worker')
+  @Permissions(83, 68)
   @ApiOperation({
     summary: 'Agregar trabajador a OT',
     description:
@@ -1004,6 +1034,7 @@ export class ProcessWorkOrderGatewayController {
   }
 
   @Post('add-workers-batch')
+  @Permissions(83, 68)
   @ApiOperation({
     summary: 'Agregar trabajadores a OT en lote',
     description:
@@ -1038,6 +1069,7 @@ export class ProcessWorkOrderGatewayController {
   }
 
   @Post('remove-worker')
+  @Permissions(83, 68)
   @ApiOperation({
     summary: 'Remover trabajador de OT',
     description: 'Remueve (borrado lógico) un trabajador asignado a una OT.',
@@ -1083,6 +1115,7 @@ export class ProcessWorkOrderGatewayController {
    * pasa el `newStatus` exactamente como lo envía el cliente autenticado.
    */
   @Post('advance-state')
+  @Permissions(75, 76, 77, 78, 68, 69, 82)
   @ApiOperation({
     summary: 'Advance work order to any valid state',
     description:
@@ -1122,6 +1155,7 @@ export class ProcessWorkOrderGatewayController {
   }
 
   @Get('get-all-work-orders')
+  @Permissions(66, 88, 89)
   @ApiOperation({
     summary: 'Get all work orders with pagination',
     description:

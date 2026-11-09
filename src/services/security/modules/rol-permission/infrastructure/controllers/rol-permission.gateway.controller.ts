@@ -17,10 +17,13 @@ import { KafkaProxyService } from '../../../../../../shared/kafka/kafka-proxy.se
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { environments } from '../../../../../../settings/environments/environments';
 import { CreateRolPermissionRequest } from '../../domain/schemas/dto/request/create.rol-permission.request';
+import { AssignPermissionsBatchRequest } from '../../domain/schemas/dto/request/assign-permissions-batch.request';
 import { ApiResponse } from '../../../../../../shared/errors/responses/ApiResponse';
 import { sendKafkaRequest } from '../../../../../../shared/utils/kafka/send.kafka.request';
 import { AuthGuard } from '../../../../../../auth/guard/auth.guard';
 import { RolPermissionResponse } from '../../domain/schemas/dto/response/rol-permission.response';
+import { PermissionsInvalidationService } from '../../../../../../auth/services/permissions-invalidation.service';
+import { RealtimeService } from '../../../../../../shared/realtime/realtime.service';
 
 @Controller('rol-permission')
 @ApiTags('Rol-Permission')
@@ -32,6 +35,8 @@ export class RolPermissionGatewayController {
     @Inject(environments.GATEWAY_ROL_PERMISSION_KAFKA_CLIENT)
     private readonly clientKafka: ClientKafka,
     private readonly kafkaProxy: KafkaProxyService,
+    private readonly invalidationService: PermissionsInvalidationService,
+    private readonly realtimeService: RealtimeService,
   ) {}
 
   @Post('create-rol-permission')
@@ -50,6 +55,9 @@ export class RolPermissionGatewayController {
           'authentication.rol_permission.create_rol_permission', rolPermission,
         ),
       );
+
+      this.invalidationService.invalidateAll();
+      this.realtimeService.notify('permissions_updated', {});
 
       return new ApiResponse(
         'Rol-Permission created successfully',
@@ -118,6 +126,9 @@ export class RolPermissionGatewayController {
           'authentication.rol_permission.delete_rol_permission', rolPermissionId,
         ),
       );
+
+      this.invalidationService.invalidateAll();
+      this.realtimeService.notify('permissions_updated', {});
 
       return new ApiResponse(
         'Rol-Permission deleted successfully',
@@ -224,6 +235,77 @@ export class RolPermissionGatewayController {
       const err = error as Error;
       this.logger.error(
         `Error verifying rol-permission existence: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
+    }
+  }
+
+  @Post('assign-permissions-batch')
+  @ApiOperation({
+    summary: 'Assign multiple permissions to a role in batch',
+    description:
+      'Assigns a list of permissions to a role in a single operation via Kafka.',
+  })
+  async assignPermissionsBatchGateway(
+    @Req() request: Request,
+    @Body() payload: AssignPermissionsBatchRequest,
+  ): Promise<ApiResponse> {
+    try {
+      const response: boolean = await sendKafkaRequest(
+        this.kafkaProxy.send(
+          this.clientKafka,
+          'authentication.rol_permission.assign_permissions_batch',
+          payload,
+        ),
+      );
+
+      this.invalidationService.invalidateAll();
+      this.realtimeService.notify('permissions_updated', {});
+
+      return new ApiResponse(
+        'Permissions assigned to role in batch successfully',
+        response,
+        request.url,
+      );
+    } catch (error) {
+      const err = error as Error;
+      this.logger.error(
+        `Error assigning permissions in batch: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
+    }
+  }
+
+  @Get('get-permissions-by-rol-id/:rolId')
+  @ApiOperation({
+    summary: 'Get all permissions assigned to a role',
+    description:
+      'Retrieves the list of permission assignments for a specified role ID.',
+  })
+  async getPermissionsByRolIdGateway(
+    @Req() request: Request,
+    @Param('rolId', ParseIntPipe) rolId: number,
+  ): Promise<ApiResponse> {
+    try {
+      const response: RolPermissionResponse[] = await sendKafkaRequest(
+        this.kafkaProxy.send(
+          this.clientKafka,
+          'authentication.rol_permission.get_permissions_by_rol_id',
+          rolId,
+        ),
+      );
+
+      return new ApiResponse(
+        'Role permissions retrieved successfully',
+        response,
+        request.url,
+      );
+    } catch (error) {
+      const err = error as Error;
+      this.logger.error(
+        `Error getting permissions by role ID: ${err.message}`,
         err.stack,
       );
       throw new RpcException(err as string | object);

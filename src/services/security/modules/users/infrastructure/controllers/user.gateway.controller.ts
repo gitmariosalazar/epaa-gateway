@@ -38,7 +38,10 @@ import {
   AssignPermissionToUserRequest,
   RemovePermissionFromUserRequest,
 } from '../../domain/schemas/dto/request/assign-permission-to-user.request';
+import { AssignPermissionsBatchToUserRequest } from '../../domain/schemas/dto/request/assign-permissions-batch-to-user.request';
 import { AllowedUserTypes } from '../../../../../../auth/decorator/allowed-user-types.decorator';
+import { PermissionsInvalidationService } from '../../../../../../auth/services/permissions-invalidation.service';
+import { RealtimeService } from '../../../../../../shared/realtime/realtime.service';
 
 @Controller('users-gateway')
 @ApiTags('Users-Gateway')
@@ -50,6 +53,8 @@ export class UserGatewayController {
     @Inject(environments.GATEWAY_USERS_KAFKA_CLIENT)
     private readonly clientKafka: ClientKafka,
     private readonly kafkaProxy: KafkaProxyService,
+    private readonly invalidationService: PermissionsInvalidationService,
+    private readonly realtimeService: RealtimeService,
   ) {}
 
   @Post('create-user')
@@ -720,6 +725,11 @@ export class UserGatewayController {
         ),
       );
 
+      this.invalidationService.invalidateUser(assignRoleToUserRequest.userId);
+      this.realtimeService.notify('permissions_updated', {
+        userId: assignRoleToUserRequest.userId,
+      });
+
       return new ApiResponse(
         'Role assigned to user successfully',
         null,
@@ -754,6 +764,13 @@ export class UserGatewayController {
         ),
       );
 
+      this.invalidationService.invalidateUser(
+        assignPermissionToUserRequest.userId,
+      );
+      this.realtimeService.notify('permissions_updated', {
+        userId: assignPermissionToUserRequest.userId,
+      });
+
       return new ApiResponse(
         'Permission assigned to user successfully',
         null,
@@ -763,6 +780,45 @@ export class UserGatewayController {
       const err = error as Error;
       this.logger.error(
         `Error assigning permission to user: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
+    }
+  }
+
+  @Post('assign-permissions-batch-to-user')
+  @ApiOperation({
+    summary: 'Assign batch permissions to user',
+    description:
+      'Assigns multiple permissions with optional expiration dates to a user in the authentication service.',
+  })
+  async assignPermissionsBatchToUser(
+    @Body() dto: AssignPermissionsBatchToUserRequest,
+    @Req() request: Request,
+  ): Promise<ApiResponse> {
+    try {
+      await sendKafkaRequest(
+        this.kafkaProxy.send(
+          this.clientKafka,
+          'authentication.user.assign_permissions_batch_to_user',
+          dto,
+        ),
+      );
+
+      this.invalidationService.invalidateUser(dto.userId);
+      this.realtimeService.notify('permissions_updated', {
+        userId: dto.userId,
+      });
+
+      return new ApiResponse(
+        'Permissions batch assigned to user successfully',
+        null,
+        request.url,
+      );
+    } catch (error) {
+      const err = error as Error;
+      this.logger.error(
+        `Error assigning permissions batch to user: ${err.message}`,
         err.stack,
       );
       throw new RpcException(err as string | object);
@@ -789,6 +845,9 @@ export class UserGatewayController {
           removeRoleFromUserRequest,
         ),
       );
+
+      this.invalidationService.invalidateUser(userId);
+      this.realtimeService.notify('permissions_updated', { userId });
 
       return new ApiResponse(
         'Role removed from user successfully',
@@ -826,6 +885,9 @@ export class UserGatewayController {
           removePermissionFromUserRequest,
         ),
       );
+
+      this.invalidationService.invalidateUser(userId);
+      this.realtimeService.notify('permissions_updated', { userId });
 
       return new ApiResponse(
         'Permission removed from user successfully',

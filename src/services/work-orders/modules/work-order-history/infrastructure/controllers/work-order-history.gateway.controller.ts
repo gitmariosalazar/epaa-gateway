@@ -21,12 +21,17 @@ import { ApiResponse } from '../../../../../../shared/errors/responses/ApiRespon
 import { sendKafkaRequest } from '../../../../../../shared/utils/kafka/send.kafka.request';
 import { CreateWorkHistoryRequest } from '../../domain/schemas/dto/request/creeate.work-order-history.request';
 import { UpdateWorkOrderHistoryRequest } from '../../domain/schemas/dto/request/update.work-order-history.request';
-import { AuthGuard } from '../../../../../../auth/guard/auth.guard';
+import {
+  AuthGuard,
+  PermissionsGuard,
+  RolesGuard,
+  Permissions,
+} from '../../../../../../auth';
 
 @Controller('work-order-histories')
 @ApiTags('Work Order Histories')
 @ApiBearerAuth()
-@UseGuards(AuthGuard)
+@UseGuards(AuthGuard, PermissionsGuard, RolesGuard)
 export class WorkOrderHistoryGatewayController {
   private readonly logger = new Logger(WorkOrderHistoryGatewayController.name);
 
@@ -37,6 +42,7 @@ export class WorkOrderHistoryGatewayController {
   ) {}
 
   @Post('create-work-order-history')
+  @Permissions(86, 67, 76)
   @ApiOperation({
     summary: 'Create a new work order history',
     description: 'Creates a new work order history record in the system.',
@@ -61,6 +67,7 @@ export class WorkOrderHistoryGatewayController {
   }
 
   @Put('update-work-order-history/:workOrderHistoryId')
+  @Permissions(86, 87, 69)
   @ApiOperation({
     summary: 'Update an existing work order history',
     description:
@@ -96,6 +103,7 @@ export class WorkOrderHistoryGatewayController {
   }
 
   @Get('get-work-order-history-by-id/:workOrderHistoryId')
+  @Permissions(66)
   @ApiOperation({
     summary: 'Get a work order history by its ID',
     description: 'Retrieves a work order history record by its unique ID.',
@@ -129,6 +137,7 @@ export class WorkOrderHistoryGatewayController {
   }
 
   @Get('get-work-order-histories-by-work-order-id/:workOrderId')
+  @Permissions(66)
   @ApiOperation({
     summary: 'Get work order histories by work order ID',
     description:
@@ -163,6 +172,7 @@ export class WorkOrderHistoryGatewayController {
   }
 
   @Get('get-all-work-order-histories')
+  @Permissions(66, 88)
   @ApiOperation({
     summary: 'Get all work order histories',
     description: 'Retrieves all work order history records in the system.',
@@ -194,6 +204,7 @@ export class WorkOrderHistoryGatewayController {
   }
 
   @Get('find-all-view-histories-work-orders')
+  @Permissions(66, 88, 89)
   @ApiOperation({
     summary: 'Find all view histories of work orders',
     description:
@@ -229,6 +240,7 @@ export class WorkOrderHistoryGatewayController {
   }
 
   @Get('find-all-view-histories-work-orders-by-order-code/:orderCode')
+  @Permissions(66, 88, 89)
   @ApiOperation({
     summary: 'Find all view histories of work orders by order code',
     description:

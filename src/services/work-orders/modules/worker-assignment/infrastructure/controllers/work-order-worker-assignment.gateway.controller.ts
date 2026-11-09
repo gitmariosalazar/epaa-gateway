@@ -16,12 +16,17 @@ import { KafkaProxyService } from '../../../../../../shared/kafka/kafka-proxy.se
 import { ApiResponse } from '../../../../../../shared/errors/responses/ApiResponse';
 import { CreateWorkOrderWorkerAssignmentRequest } from '../../domain/schemas/dto/request/create-work-order-worker-assignment.request';
 import { sendKafkaRequest } from '../../../../../../shared/utils/kafka/send.kafka.request';
-import { AuthGuard } from '../../../../../../auth/guard/auth.guard';
+import {
+  AuthGuard,
+  PermissionsGuard,
+  RolesGuard,
+  Permissions,
+} from '../../../../../../auth';
 
 @Controller('work-order-worker-assignment')
 @ApiTags('work-order-worker-assignment')
 @ApiBearerAuth()
-@UseGuards(AuthGuard)
+@UseGuards(AuthGuard, PermissionsGuard, RolesGuard)
 export class WorkOrderWorkerAssignmentGatewayController
 {
   private readonly logger = new Logger(
@@ -34,6 +39,7 @@ export class WorkOrderWorkerAssignmentGatewayController
   ) {}
 
   @Post('add-work-order-worker-assignments')
+  @Permissions(83, 68, 75)
   @ApiOperation({
     summary: 'Add worker assignments to work orders',
     description:
@@ -75,6 +81,7 @@ export class WorkOrderWorkerAssignmentGatewayController
   }
 
   @Get('find-worker-assignment-by-worker-id/:workerId')
+  @Permissions(66, 83, 89)
   @ApiOperation({
     summary: 'Find worker assignment by worker ID',
     description:
@@ -102,6 +109,7 @@ export class WorkOrderWorkerAssignmentGatewayController
   }
 
   @Get('find-worker-assignments-by-work-order-id/:workOrderId')
+  @Permissions(66, 83)
   @ApiOperation({
     summary: 'Find worker assignments by work order ID',
     description:

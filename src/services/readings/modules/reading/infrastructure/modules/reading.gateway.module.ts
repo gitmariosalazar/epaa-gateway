@@ -3,6 +3,7 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
 import { ReadingGatewayController } from '../controller/reading.gateway.controller';
 import { environments } from '../../../../../../settings/environments/environments';
 import { ReadingReportDashboardGatewayController } from '../controller/reading.report-dashboard.gateway.controller';
+import { ReadingAnalyticsGatewayController } from '../controller/reading-analytics.gateway.controller';
 import { ReadingImagesGatewayController } from '../controller/reading-images.gateway.controller';
 import { KafkaEpaaLegacyModule } from '../../../../../../services/epaa-legacy/modules/kafka/kafka-epaa-legacy.module';
 import { ReadingAuditGatewayController } from '../controller/reading-audit.gateway.controller';
@@ -58,6 +59,7 @@ import { AUDIT_REALTIME_NOTIFIER_PORT } from '../../application/ports/audit-real
   controllers: [
     ReadingGatewayController,
     ReadingReportDashboardGatewayController,
+    ReadingAnalyticsGatewayController,
     ReadingImagesGatewayController,
     ReadingAuditGatewayController,
   ],

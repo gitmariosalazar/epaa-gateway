@@ -29,7 +29,12 @@ import { ClientKafka, RpcException } from '@nestjs/microservices';
 import { ApiResponse } from '../../../../../../shared/errors/responses/ApiResponse';
 import { sendKafkaRequest } from '../../../../../../shared/utils/kafka/send.kafka.request';
 import { CreateWorkOrderRequest } from '../../domain/schemas/dto/request/create.work-order.request';
-import { AuthGuard } from '../../../../../../auth/guard/auth.guard';
+import {
+  AuthGuard,
+  PermissionsGuard,
+  RolesGuard,
+  Permissions,
+} from '../../../../../../auth';
 import { KafkaProxyService } from '../../../../../../shared/kafka/kafka-proxy.service';
 import {
   WORK_ORDER_IMAGES_FIELD,
@@ -42,7 +47,7 @@ import {
 @Controller('work-orders')
 @ApiTags('Work Orders')
 @ApiBearerAuth()
-@UseGuards(AuthGuard)
+@UseGuards(AuthGuard, PermissionsGuard, RolesGuard)
 export class WorkOrderGatewayController {
   private readonly logger = new Logger(WorkOrderGatewayController.name);
 
@@ -53,6 +58,7 @@ export class WorkOrderGatewayController {
   ) {}
 
   @Post('create-work-order')
+  @Permissions(67)
   @UseInterceptors(
     FilesInterceptor(
       WORK_ORDER_IMAGES_FIELD,
@@ -136,6 +142,7 @@ export class WorkOrderGatewayController {
   }
 
   @Put('update-work-order/:orderCode')
+  @Permissions(67, 68, 75)
   @ApiOperation({ summary: 'Update an existing work order' })
   async updateWorkOrder(
     @Param('orderCode') orderCode: string,
@@ -166,6 +173,7 @@ export class WorkOrderGatewayController {
   }
 
   @Get('get-work-order-by-order-code/:orderCode')
+  @Permissions(66)
   @ApiOperation({ summary: 'Get a work order by its ID' })
   async getWorkOrderById(
     @Param('orderCode') orderCode: string,
@@ -192,6 +200,7 @@ export class WorkOrderGatewayController {
   }
 
   @Get('get-work-orders-by-client-id/:clientId')
+  @Permissions(66)
   @ApiOperation({ summary: 'Get work orders by client ID' })
   async getWorkOrdersByClientId(
     @Param('clientId') clientId: string,
@@ -221,6 +230,7 @@ export class WorkOrderGatewayController {
   }
 
   @Get('get-all-work-orders')
+  @Permissions(66, 88, 89)
   @ApiOperation({ summary: 'Get all work orders' })
   @ApiQuery({ name: 'searchValue', required: false, type: String })
   async getAllWorkOrders(
@@ -254,6 +264,7 @@ export class WorkOrderGatewayController {
   }
 
   @Get('get-all-work-orders-full-details')
+  @Permissions(66, 88, 89)
   @ApiOperation({
     summary: 'Get all work orders with full details',
     description:
@@ -289,6 +300,7 @@ export class WorkOrderGatewayController {
   }
 
   @Get('get-work-order-statistics')
+  @Permissions(88, 89)
   @ApiOperation({
     summary: 'Get work order statistics',
     description:
@@ -324,6 +336,7 @@ export class WorkOrderGatewayController {
   }
 
   @Get('get-work-order-assignments')
+  @Permissions(66, 83)
   @ApiOperation({
     summary: 'Get work order assignments',
     description:
@@ -358,6 +371,7 @@ export class WorkOrderGatewayController {
   }
 
   @Get('get-work-order-materials')
+  @Permissions(66, 79)
   @ApiOperation({
     summary: 'Get work order materials',
     description:
@@ -395,6 +409,7 @@ export class WorkOrderGatewayController {
   }
 
   @Get('get-work-order-observations')
+  @Permissions(66, 86)
   @ApiOperation({
     summary: 'Get work order observations',
     description:
@@ -429,6 +444,7 @@ export class WorkOrderGatewayController {
   }
 
   @Get('get-work-order-attachments')
+  @Permissions(66, 85)
   @ApiOperation({
     summary: 'Get work order attachments',
     description:
@@ -463,6 +479,7 @@ export class WorkOrderGatewayController {
   }
 
   @Get('get-work-orders-by-client')
+  @Permissions(66)
   @ApiOperation({
     summary: 'Get work orders by client',
     description:
@@ -497,6 +514,7 @@ export class WorkOrderGatewayController {
   }
 
   @Get('find-work-orders-full-details-by-order-code')
+  @Permissions(66)
   @ApiOperation({
     summary: 'Find work order full details',
     description:
@@ -535,6 +553,7 @@ export class WorkOrderGatewayController {
   }
 
   @Get('get-work-order-priority-statistics')
+  @Permissions(88)
   @ApiOperation({
     summary: 'Get work order priority statistics',
     description: 'Retrieve statistical data related to work order priorities.',
@@ -566,6 +585,7 @@ export class WorkOrderGatewayController {
   }
 
   @Get('get-work-order-status-statistics')
+  @Permissions(88)
   @ApiOperation({
     summary: 'Get work order status statistics',
     description: 'Retrieve statistical data related to work order statuses.',
@@ -597,6 +617,7 @@ export class WorkOrderGatewayController {
   }
 
   @Get('get-work-order-type-statistics')
+  @Permissions(88)
   @ApiOperation({
     summary: 'Get work order type statistics',
     description: 'Retrieve statistical data related to work order types.',
@@ -628,6 +649,7 @@ export class WorkOrderGatewayController {
   }
 
   @Get('get-work-orders-statistics-key')
+  @Permissions(88)
   @ApiOperation({
     summary: 'Get work orders statistics key',
     description: 'Retrieve key statistical data related to work orders.',

@@ -17,12 +17,17 @@ import { environments } from '../../../../../../settings/environments/environmen
 import { CreateDetailWorkOrderMaterialRequest } from '../../domain/schemas/dto/request/create-detail-work-order-material.request';
 import { ApiResponse } from '../../../../../../shared/errors/responses/ApiResponse';
 import { sendKafkaRequest } from '../../../../../../shared/utils/kafka/send.kafka.request';
-import { AuthGuard } from '../../../../../../auth/guard/auth.guard';
+import {
+  AuthGuard,
+  PermissionsGuard,
+  RolesGuard,
+  Permissions,
+} from '../../../../../../auth';
 
 @Controller('detail-work-order-materials')
 @ApiTags('Detail Work Order Material Gateway')
 @ApiBearerAuth()
-@UseGuards(AuthGuard)
+@UseGuards(AuthGuard, PermissionsGuard, RolesGuard)
 export class DetailWorkOrderMaterialGatewayController {
   private readonly logger = new Logger(
     DetailWorkOrderMaterialGatewayController.name,
@@ -34,6 +39,7 @@ export class DetailWorkOrderMaterialGatewayController {
   ) {}
 
   @Get('get-detail-work-order-materials/:workOrderId')
+  @Permissions(79, 66)
   @ApiOperation({
     summary: 'Get detail work order materials by work order ID',
     description:
@@ -65,6 +71,7 @@ export class DetailWorkOrderMaterialGatewayController {
   }
 
   @Delete('delete-detail-work-order-materials/:workOrderId')
+  @Permissions(79)
   @ApiOperation({
     summary: 'Delete detail work order materials by work order ID',
     description:

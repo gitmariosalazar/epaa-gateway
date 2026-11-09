@@ -19,15 +19,21 @@ import { Request } from 'express';
 import { environments } from '../../../../../../settings/environments/environments';
 import { ApiResponse } from '../../../../../../shared/errors/responses/ApiResponse';
 import { sendKafkaRequest } from '../../../../../../shared/utils/kafka/send.kafka.request';
-import { AuthGuard } from '../../../../../../auth/guard/auth.guard';
+import {
+  AuthGuard,
+  PermissionsGuard,
+  RolesGuard,
+  Permissions,
+} from '../../../../../../auth';
 import { KafkaProxyService } from '../../../../../../shared/kafka/kafka-proxy.service';
+import { AccessTokenPayload } from '../../../../../../shared/utils/interfaces/user.payload';
 
 const DASHBOARD_PATTERN_PREFIX = 'work-orders.dashboard';
 
 @Controller('work-orders-dashboard')
 @ApiTags('Work Orders Dashboard')
 @ApiBearerAuth()
-@UseGuards(AuthGuard)
+@UseGuards(AuthGuard, PermissionsGuard, RolesGuard)
 export class DashboardGatewayController {
   private readonly logger = new Logger(DashboardGatewayController.name);
 
@@ -39,16 +45,68 @@ export class DashboardGatewayController {
 
   private async forward(
     action: string,
-    payload: Record<string, string | number | undefined>,
+    payload: Record<string, unknown>,
     request: Request,
     message: string,
   ): Promise<ApiResponse> {
     try {
+      const reqWithUser = request as unknown as { user?: AccessTokenPayload };
+      const authUser = reqWithUser.user;
+
+      const rawRoles: unknown = authUser?.roles;
+      const normalizedRoles: string[] = [];
+      if (Array.isArray(rawRoles)) {
+        for (const r of rawRoles) {
+          if (typeof r === 'string' && r.trim().length > 0) {
+            normalizedRoles.push(r.trim());
+          } else if (typeof r === 'object' && r !== null) {
+            const roleObj = r as Record<string, unknown>;
+            const nameVal =
+              roleObj.name ?? roleObj.nombre ?? roleObj.role ?? roleObj.rol;
+            if (typeof nameVal === 'string' && nameVal.trim().length > 0) {
+              normalizedRoles.push(nameVal.trim());
+            }
+          }
+        }
+      } else if (typeof rawRoles === 'string' && rawRoles.trim().length > 0) {
+        normalizedRoles.push(rawRoles.trim());
+      }
+
+      const rawPermissions: unknown = authUser?.permissions;
+      const normalizedPermissions: number[] = [];
+      if (Array.isArray(rawPermissions)) {
+        for (const p of rawPermissions) {
+          const num = Number(p);
+          if (!isNaN(num)) {
+            normalizedPermissions.push(num);
+          }
+        }
+      }
+
+      const sub = authUser?.sub;
+      const userParams = sub
+        ? {
+            id: String(sub),
+            sub: String(sub),
+            roles: normalizedRoles,
+            role: normalizedRoles[0],
+            permissions: normalizedPermissions,
+            user_type: authUser?.user_type,
+            username: authUser?.username,
+            email: authUser?.email,
+          }
+        : undefined;
+
+      const fullPayload: Record<string, unknown> = {
+        ...payload,
+        user: userParams,
+      };
+
       const response: unknown = await sendKafkaRequest(
         this.kafkaProxy.send(
           this.workOrderKafkaClient,
           `${DASHBOARD_PATTERN_PREFIX}.${action}`,
-          payload,
+          fullPayload,
         ),
       );
       return new ApiResponse(message, response, request.url);
@@ -63,6 +121,7 @@ export class DashboardGatewayController {
   }
 
   @Get('funnel-summary')
+  @Permissions(88)
   @ApiOperation({
     summary:
       'Incidents vs work orders: conversion funnel and KPI summary (1.1)',
@@ -77,6 +136,7 @@ export class DashboardGatewayController {
   }
 
   @Get('state-matrix')
+  @Permissions(88)
   @ApiOperation({
     summary: 'Incident state vs work order state cross matrix (1.2)',
   })
@@ -90,6 +150,7 @@ export class DashboardGatewayController {
   }
 
   @Get('origin-channel')
+  @Permissions(88)
   @ApiOperation({ summary: 'Funnel efficiency by report origin channel (1.3)' })
   originChannel(@Req() request: Request): Promise<ApiResponse> {
     return this.forward(
@@ -101,6 +162,7 @@ export class DashboardGatewayController {
   }
 
   @Get('category-department')
+  @Permissions(88)
   @ApiOperation({
     summary: 'Incidents by category/type vs executing department (1.4)',
   })
@@ -114,6 +176,7 @@ export class DashboardGatewayController {
   }
 
   @Get('sync-discrepancies')
+  @Permissions(88)
   @ApiOperation({
     summary: 'Incident vs work order synchronization discrepancies (1.5)',
   })
@@ -127,6 +190,7 @@ export class DashboardGatewayController {
   }
 
   @Get('dispatch-control')
+  @Permissions(88, 75)
   @ApiOperation({
     summary: 'Dispatch control list with SLA traffic light (1.6)',
   })
@@ -144,6 +208,7 @@ export class DashboardGatewayController {
   }
 
   @Get('header-kpis')
+  @Permissions(88)
   @ApiOperation({ summary: 'Header KPI cards for work orders (2.1)' })
   headerKpis(@Req() request: Request): Promise<ApiResponse> {
     return this.forward(
@@ -155,6 +220,7 @@ export class DashboardGatewayController {
   }
 
   @Get('status-distribution')
+  @Permissions(88)
   @ApiOperation({ summary: 'Work order distribution by status (2.2)' })
   statusDistribution(@Req() request: Request): Promise<ApiResponse> {
     return this.forward(
@@ -166,6 +232,7 @@ export class DashboardGatewayController {
   }
 
   @Get('priority-distribution')
+  @Permissions(88)
   @ApiOperation({
     summary: 'Work order distribution by priority and SLA (2.3)',
   })
@@ -179,6 +246,7 @@ export class DashboardGatewayController {
   }
 
   @Get('work-type-performance')
+  @Permissions(88)
   @ApiOperation({
     summary: 'Performance and completion rate by work type (2.4)',
   })
@@ -192,6 +260,7 @@ export class DashboardGatewayController {
   }
 
   @Get('key-statistics-matrix')
+  @Permissions(88)
   @ApiOperation({
     summary: 'Department x work type x status statistics matrix (2.5)',
   })
@@ -205,6 +274,7 @@ export class DashboardGatewayController {
   }
 
   @Get('executive-overview')
+  @Permissions(88)
   @ApiOperation({ summary: 'Full executive dashboard payload (7.1)' })
   executiveOverview(@Req() request: Request): Promise<ApiResponse> {
     return this.forward(
@@ -216,6 +286,7 @@ export class DashboardGatewayController {
   }
 
   @Get('technician-performance')
+  @Permissions(88, 89)
   @ApiOperation({ summary: 'Workload and performance by technician (3.1)' })
   technicianPerformance(@Req() request: Request): Promise<ApiResponse> {
     return this.forward(
@@ -227,6 +298,7 @@ export class DashboardGatewayController {
   }
 
   @Get('technician-daily-feed')
+  @Permissions(88, 89)
   @ApiOperation({
     summary: 'Daily feed and priority task for technicians (3.2)',
   })
@@ -244,6 +316,7 @@ export class DashboardGatewayController {
   }
 
   @Get('crew-assignments')
+  @Permissions(88, 89, 83)
   @ApiOperation({
     summary: 'Crew structure and roles per active work order (3.3)',
   })
@@ -257,6 +330,7 @@ export class DashboardGatewayController {
   }
 
   @Get('sla-monitor')
+  @Permissions(88)
   @ApiOperation({ summary: 'SLA compliance traffic-light monitor (4.1)' })
   slaMonitor(@Req() request: Request): Promise<ApiResponse> {
     return this.forward(
@@ -268,6 +342,7 @@ export class DashboardGatewayController {
   }
 
   @Get('quality-indicators')
+  @Permissions(88, 78)
   @ApiOperation({ summary: 'Quality and rework indicators (4.2)' })
   qualityIndicators(@Req() request: Request): Promise<ApiResponse> {
     return this.forward(
@@ -279,6 +354,7 @@ export class DashboardGatewayController {
   }
 
   @Get('escalation-audit')
+  @Permissions(88, 81)
   @ApiOperation({ summary: 'Supervisor escalation audit (4.3)' })
   escalationAudit(@Req() request: Request): Promise<ApiResponse> {
     return this.forward(
@@ -290,6 +366,7 @@ export class DashboardGatewayController {
   }
 
   @Get('material-costs')
+  @Permissions(88, 79)
   @ApiOperation({
     summary: 'Material cost and consumption by work type and department (5.1)',
   })
@@ -303,6 +380,7 @@ export class DashboardGatewayController {
   }
 
   @Get('economic-balance')
+  @Permissions(88)
   @ApiOperation({
     summary: 'Operational cost vs recoverable amounts per month (5.2)',
   })
@@ -316,6 +394,7 @@ export class DashboardGatewayController {
   }
 
   @Get('daily-trend')
+  @Permissions(88)
   @ApiOperation({ summary: 'Daily trend for the last 30 days (6.1)' })
   dailyTrend(@Req() request: Request): Promise<ApiResponse> {
     return this.forward(
@@ -327,6 +406,7 @@ export class DashboardGatewayController {
   }
 
   @Get('territorial-concentration')
+  @Permissions(88)
   @ApiOperation({
     summary: 'Territorial concentration and geospatial analysis (6.2)',
   })
