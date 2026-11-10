@@ -14,6 +14,27 @@ export interface ExecutiveDashboardAnalyticsResponse {
   weightedAverageEffectiveTariffUsdPerM3: number;
   totalReadingsWithNovelty: number;
   operativeNoveltyPercentage: number;
+  totalTitleUsd?: number;
+  totalTrashTaxUsd?: number;
+  totalThirdPartiesUsd?: number;
+  totalInterestUsd?: number;
+  totalSurchargesUsd?: number;
+  totalBilledEpaaUsd?: number;
+  totalInterestImprovementsUsd?: number;
+  totalPaidWaterUsd?: number;
+  totalUnpaidWaterUsd?: number;
+  totalBillsGenerated?: number;
+  paidBillsCount?: number;
+  unpaidBillsCount?: number;
+  overdueBillsCount?: number;
+  upcomingBillsCount?: number;
+  canceledBillsCount?: number;
+  totalGeneralEmissionUsd?: number;
+  totalCollectedUsd?: number;
+  totalPendingDebtUsd?: number;
+  totalOverdueDebtUsd?: number;
+  totalUpcomingDebtUsd?: number;
+  totalCanceledUsd?: number;
 }
 
 export interface SectorPerformanceAnalyticsResponse {
@@ -31,6 +52,27 @@ export interface SectorPerformanceAnalyticsResponse {
   noveltyPercentage: number;
   revenueRank: number;
   volumeRank: number;
+  totalTitleUsd?: number;
+  totalTrashTaxUsd?: number;
+  totalThirdPartiesUsd?: number;
+  totalInterestUsd?: number;
+  totalSurchargesUsd?: number;
+  totalBilledEpaaUsd?: number;
+  totalInterestImprovementsUsd?: number;
+  totalPaidWaterUsd?: number;
+  totalUnpaidWaterUsd?: number;
+  totalBillsGenerated?: number;
+  paidBillsCount?: number;
+  unpaidBillsCount?: number;
+  overdueBillsCount?: number;
+  upcomingBillsCount?: number;
+  canceledBillsCount?: number;
+  totalGeneralEmissionUsd?: number;
+  totalCollectedUsd?: number;
+  totalPendingDebtUsd?: number;
+  totalOverdueDebtUsd?: number;
+  totalUpcomingDebtUsd?: number;
+  totalCanceledUsd?: number;
 }
 
 export interface MonthlyTrendAnalyticsResponse {
