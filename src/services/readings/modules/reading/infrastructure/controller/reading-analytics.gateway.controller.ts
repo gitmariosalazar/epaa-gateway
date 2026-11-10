@@ -35,6 +35,8 @@ export class ReadingAnalyticsGatewayController {
   constructor(
     @Inject(environments.READINGS_KAFKA_CLIENT)
     private readonly readingClient: ClientKafka,
+    @Inject(environments.EPAA_LEGACY_READINGS_KAFKA_CLIENT)
+    private readonly legacyClient: ClientKafka,
     private readonly kafkaProxy: KafkaProxyService,
   ) {}
 
@@ -308,6 +310,47 @@ export class ReadingAnalyticsGatewayController {
       const err = error as Error;
       this.logger.error(
         `Error retrieving interannual comparison analytics: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
+    }
+  }
+
+  @Get('monthly-connection-growth')
+  @ApiOperation({
+    summary: 'GET - Monthly Connection Growth Comparison',
+    description: 'Retrieve month-by-month connection counts and net increases between base year and target year (default 2025 vs 2026), strictly joining with Datos_ingreso.',
+  })
+  @ApiQuery({ name: 'baseYear', required: false, type: Number, example: 2025 })
+  @ApiQuery({ name: 'targetYear', required: false, type: Number, example: 2026 })
+  async getMonthlyConnectionGrowth(
+    @Req() request: Request,
+    @Query('baseYear') baseYear?: string,
+    @Query('targetYear') targetYear?: string,
+  ): Promise<ApiResponse> {
+    try {
+      const payload = {
+        baseYear: baseYear ? parseInt(baseYear, 10) : 2025,
+        targetYear: targetYear ? parseInt(targetYear, 10) : 2026,
+      };
+
+      const response = await sendKafkaRequest(
+        this.kafkaProxy.send(
+          this.legacyClient,
+          'epaa-legacy.analytics.monthly-connection-growth',
+          payload,
+        ),
+      );
+
+      return new ApiResponse(
+        'Monthly connection growth analytics retrieved successfully!',
+        response,
+        request.url,
+      );
+    } catch (error) {
+      const err = error as Error;
+      this.logger.error(
+        `Error retrieving monthly connection growth: ${err.message}`,
         err.stack,
       );
       throw new RpcException(err as string | object);
