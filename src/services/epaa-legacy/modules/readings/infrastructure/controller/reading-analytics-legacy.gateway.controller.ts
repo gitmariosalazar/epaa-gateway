@@ -358,4 +358,51 @@ export class ReadingAnalyticsLegacyGatewayController {
       throw new RpcException(err as string | object);
     }
   }
+
+  @Get('annual-trend')
+  @ApiOperation({
+    summary: 'GET - Annual Trend Multiannual Analytics (Legacy SQL Server)',
+    description: 'Retrieve multiannual trends (volume, active connections, revenue, efficiency) across multiple years (e.g. last 5 years) in Legacy SQL Server.',
+  })
+  @ApiQuery({ name: 'startYear', required: false, type: Number, example: 2022 })
+  @ApiQuery({ name: 'endYear', required: false, type: Number, example: 2026 })
+  @ApiQuery({ name: 'sector', required: false, type: Number })
+  @ApiQuery({ name: 'limitYears', required: false, type: Number, example: 5 })
+  async getAnnualTrend(
+    @Req() request: Request,
+    @Query('startYear') startYear?: string,
+    @Query('endYear') endYear?: string,
+    @Query('sector') sector?: string,
+    @Query('limitYears') limitYears?: string,
+  ): Promise<ApiResponse> {
+    try {
+      const payload = {
+        startYear: startYear ? parseInt(startYear, 10) : undefined,
+        endYear: endYear ? parseInt(endYear, 10) : 2026,
+        sector: sector ? parseInt(sector, 10) : undefined,
+        limitYears: limitYears ? parseInt(limitYears, 10) : 5,
+      };
+
+      const response = await sendKafkaRequest(
+        this.kafkaProxy.send(
+          this.legacyClient,
+          'epaa-legacy.analytics.annual-trend',
+          payload,
+        ),
+      );
+
+      return new ApiResponse(
+        'Legacy annual trend analytics retrieved successfully!',
+        response,
+        request.url,
+      );
+    } catch (error) {
+      const err = error as Error;
+      this.logger.error(
+        `Error retrieving legacy annual trend: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
+    }
+  }
 }

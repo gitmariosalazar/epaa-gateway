@@ -135,3 +135,47 @@ export interface InterannualComparisonAnalyticsResponse {
   varianceBilledPercentage: number;
   managementDiagnostic: string;
 }
+
+export interface MonthlyConnectionGrowthAnalyticsResponse {
+  monthNumber: number;
+  monthName: string;
+  connectionsBaseYear: number;
+  monthlyIncreaseBaseYear: number;
+  connectionsTargetYear: number;
+  monthlyIncreaseTargetYear: number;
+  differenceTargetVsBase: number;
+  interannualVariancePercentage: number;
+  statusTargetYear: string;
+}
+
+export interface AnnualTrendAnalyticsResponse {
+  year: number;
+  totalReadings: number;
+  totalActiveConnections: number;
+  totalVolumeM3: number;
+  averageConsumptionPerAccountM3: number;
+  deltaVolumeM3: number | null;
+  growthVolumePercentage: number | null;
+  waterBilledUsd: number;
+  sewerBilledUsd: number;
+  totalBilledUsd: number;
+  deltaRevenueUsd: number | null;
+  growthRevenuePercentage: number | null;
+  effectiveAverageTariffUsdPerM3: number;
+  totalTitleUsd?: number;
+  totalTrashTaxUsd?: number;
+  totalThirdPartiesUsd?: number;
+  totalInterestUsd?: number;
+  totalSurchargesUsd?: number;
+  totalBilledEpaaUsd?: number;
+  totalInterestImprovementsUsd?: number;
+  totalCollectedUsd?: number;
+  totalPendingDebtUsd?: number;
+  totalOverdueDebtUsd?: number;
+  totalUpcomingDebtUsd?: number;
+  totalCanceledUsd?: number;
+  paidBillsCount?: number;
+  unpaidBillsCount?: number;
+  overdueBillsCount?: number;
+  collectionEfficiencyPercentage?: number | null;
+}
