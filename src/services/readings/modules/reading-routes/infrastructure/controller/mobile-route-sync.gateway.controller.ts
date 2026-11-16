@@ -73,6 +73,25 @@ export class MobileRouteSyncGatewayController {
     return userId.trim();
   }
 
+  private extractUserCardId(request: Request): string {
+    const user = (request as unknown as { user?: AccessTokenPayload }).user;
+    const userClientId = user?.username;
+
+    if (
+      !userClientId ||
+      typeof userClientId !== 'string' ||
+      userClientId.trim() === ''
+    ) {
+      throw new RpcException({
+        statusCode: statusCode.UNAUTHORIZED,
+        message:
+          'No se pudo determinar la identidad del usuario autenticado en el token de autorización.',
+      });
+    }
+
+    return userClientId.trim();
+  }
+
   @Get('my-routes')
   @ApiOperation({
     summary: 'Consultar rutas de lectura asignadas al lecturista autenticado',
@@ -106,18 +125,19 @@ export class MobileRouteSyncGatewayController {
         `Consultando rutas asignadas para lecturista: ${usuarioId} (fecha: ${query.fecha ?? 'todas'}, periodo: ${query.periodo ?? 'actual'})`,
       );
 
-      const response: MobileAssignedRouteResponseDto[] =
-        await sendKafkaRequest<MobileAssignedRouteResponseDto[]>(
-          this.kafkaProxy.send(
-            this.readingClient,
-            'reading-routes.mobile.get-my-routes',
-            {
-              usuarioId,
-              fecha: query.fecha,
-              periodoMes: query.periodo,
-            },
-          ),
-        );
+      const response: MobileAssignedRouteResponseDto[] = await sendKafkaRequest<
+        MobileAssignedRouteResponseDto[]
+      >(
+        this.kafkaProxy.send(
+          this.readingClient,
+          'reading-routes.mobile.get-my-routes',
+          {
+            usuarioId,
+            fecha: query.fecha,
+            periodoMes: query.periodo,
+          },
+        ),
+      );
 
       return new ApiResponse(
         'Rutas asignadas obtenidas exitosamente',
@@ -138,8 +158,15 @@ export class MobileRouteSyncGatewayController {
     description:
       'Retorna la ruta completa asignada con sus acometidas en orden secuencial, lecturas anteriores e información cadastral.',
   })
-  @ApiParam({ name: 'assignmentId', type: Number, description: 'ID de la asignación' })
-  @SwaggerApiResponse({ status: 200, description: 'Paquete de trabajo descargado exitosamente' })
+  @ApiParam({
+    name: 'assignmentId',
+    type: Number,
+    description: 'ID de la asignación',
+  })
+  @SwaggerApiResponse({
+    status: 200,
+    description: 'Paquete de trabajo descargado exitosamente',
+  })
   async getPack(
     @Param('assignmentId', ParseIntPipe) assignmentId: number,
     @Req() request: Request,
@@ -159,7 +186,14 @@ export class MobileRouteSyncGatewayController {
         HttpStatus.OK,
       );
     } catch (error) {
-      this.logger.error(`Error en getPack (${assignmentId}): ${error.message}`, error.stack);
+      if (error instanceof Error) {
+        this.logger.error(
+          `Error en getPack (${assignmentId}): ${error.message}`,
+          error.stack,
+        );
+      } else {
+        this.logger.error(`Error en getPack (${assignmentId}): ${error}`);
+      }
       throw error;
     }
   }
@@ -171,13 +205,17 @@ export class MobileRouteSyncGatewayController {
     description:
       'Carga masiva de lecturas con GPS, timestamp y novedades. Actualiza el avance de la ruta y emite eventos en Kafka.',
   })
-  @SwaggerApiResponse({ status: 200, description: 'Lote de lecturas sincronizado exitosamente' })
+  @SwaggerApiResponse({
+    status: 200,
+    description: 'Lote de lecturas sincronizado exitosamente',
+  })
   async syncBatch(
     @Body() dto: SyncMobileReadingsBatchRequestDto,
     @Req() request: Request,
   ): Promise<ApiResponse> {
     try {
       const usuarioId = this.extractUserId(request);
+      const userCardId = this.extractUserCardId(request);
       const response = await sendKafkaRequest(
         this.kafkaProxy.send(
           this.readingClient,
@@ -185,6 +223,7 @@ export class MobileRouteSyncGatewayController {
           {
             dto,
             usuarioId,
+            userCardId,
           },
         ),
       );
@@ -195,7 +234,11 @@ export class MobileRouteSyncGatewayController {
         HttpStatus.OK,
       );
     } catch (error) {
-      this.logger.error(`Error en syncBatch: ${error.message}`, error.stack);
+      if (error instanceof Error) {
+        this.logger.error(`Error en syncBatch: ${error.message}`, error.stack);
+      } else {
+        this.logger.error(`Error en syncBatch: ${error}`);
+      }
       throw error;
     }
   }
@@ -206,7 +249,12 @@ export class MobileRouteSyncGatewayController {
     description:
       'Muestra el porcentaje de efectividad, predios leídos, pendientes y horas de primera/última captura.',
   })
-  @ApiQuery({ name: 'fecha', required: false, type: String, description: 'Fecha YYYY-MM-DD (default: hoy)' })
+  @ApiQuery({
+    name: 'fecha',
+    required: false,
+    type: String,
+    description: 'Fecha YYYY-MM-DD (default: hoy)',
+  })
   @SwaggerApiResponse({ status: 200, type: LecturistDailyKpiResponseDto })
   async getMyKpi(
     @Query('fecha') fecha: string,
@@ -231,7 +279,11 @@ export class MobileRouteSyncGatewayController {
         HttpStatus.OK,
       );
     } catch (error) {
-      this.logger.error(`Error en getMyKpi: ${error.message}`, error.stack);
+      if (error instanceof Error) {
+        this.logger.error(`Error en getMyKpi: ${error.message}`, error.stack);
+      } else {
+        this.logger.error(`Error en getMyKpi: ${error}`);
+      }
       throw error;
     }
   }

@@ -90,7 +90,11 @@ export class RouteDispatchGatewayController {
         HttpStatus.OK,
       );
     } catch (error) {
-      this.logger.error(`Error en bulkDispatch: ${error.message}`, error.stack);
+      if (error instanceof Error) {
+        this.logger.error(`Error en bulkDispatch: ${error.message}`, error.stack);
+      } else {
+        this.logger.error(`Error en bulkDispatch: ${error}`);
+      }
       throw error;
     }
   }
@@ -126,7 +130,11 @@ export class RouteDispatchGatewayController {
         HttpStatus.CREATED,
       );
     } catch (error) {
-      this.logger.error(`Error en assignSingle: ${error.message}`, error.stack);
+      if (error instanceof Error) {
+        this.logger.error(`Error en assignSingle: ${error.message}`, error.stack);
+      } else {
+        this.logger.error(`Error en assignSingle: ${error}`);
+      }
       throw error;
     }
   }
@@ -162,7 +170,11 @@ export class RouteDispatchGatewayController {
         HttpStatus.OK,
       );
     } catch (error) {
-      this.logger.error(`Error en reassignSegment: ${error.message}`, error.stack);
+      if (error instanceof Error) {
+        this.logger.error(`Error en reassignSegment: ${error.message}`, error.stack);
+      } else {
+        this.logger.error(`Error en reassignSegment: ${error}`);
+      }
       throw error;
     }
   }
@@ -196,7 +208,11 @@ export class RouteDispatchGatewayController {
         HttpStatus.OK,
       );
     } catch (error) {
-      this.logger.error(`Error en liveTracking: ${error.message}`, error.stack);
+      if (error instanceof Error) {
+        this.logger.error(`Error en liveTracking: ${error.message}`, error.stack);
+      } else {
+        this.logger.error(`Error en liveTracking: ${error}`);
+      }
       throw error;
     }
   }
@@ -229,7 +245,11 @@ export class RouteDispatchGatewayController {
         HttpStatus.OK,
       );
     } catch (error) {
-      this.logger.error(`Error en cancelAssignment (${id}): ${error.message}`, error.stack);
+      if (error instanceof Error) {
+        this.logger.error(`Error en cancelAssignment (${id}): ${error.message}`, error.stack);
+      } else {
+        this.logger.error(`Error en cancelAssignment (${id}): ${error}`);
+      }
       throw error;
     }
   }
@@ -263,7 +283,11 @@ export class RouteDispatchGatewayController {
         HttpStatus.OK,
       );
     } catch (error) {
-      this.logger.error(`Error en resumeAssignment (${id}): ${error.message}`, error.stack);
+      if (error instanceof Error) {
+        this.logger.error(`Error en resumeAssignment (${id}): ${error.message}`, error.stack);
+      } else {
+        this.logger.error(`Error en resumeAssignment (${id}): ${error}`);
+      }
       throw error;
     }
   }

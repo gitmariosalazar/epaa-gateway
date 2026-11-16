@@ -77,7 +77,11 @@ export class RouteResolutionGatewayController {
         HttpStatus.OK,
       );
     } catch (error) {
-      this.logger.error(`Error en resolveRoute: ${error.message}`, error.stack);
+      if (error instanceof Error) {
+        this.logger.error(`Error en resolveRoute: ${error.message}`, error.stack);
+      } else {
+        this.logger.error(`Error en resolveRoute: ${error}`);
+      }
       throw error;
     }
   }
@@ -109,7 +113,11 @@ export class RouteResolutionGatewayController {
         HttpStatus.OK,
       );
     } catch (error) {
-      this.logger.error(`Error en insertConnection: ${error.message}`, error.stack);
+      if (error instanceof Error) {
+        this.logger.error(`Error en insertConnection: ${error.message}`, error.stack);
+      } else {
+        this.logger.error(`Error en insertConnection: ${error}`);
+      }
       throw error;
     }
   }
@@ -143,7 +151,11 @@ export class RouteResolutionGatewayController {
         HttpStatus.OK,
       );
     } catch (error) {
-      this.logger.error(`Error en optimizeSequence (${id}): ${error.message}`, error.stack);
+      if (error instanceof Error) {
+        this.logger.error(`Error en optimizeSequence (${id}): ${error.message}`, error.stack);
+      } else {
+        this.logger.error(`Error en optimizeSequence (${id}): ${error}`);
+      }
       throw error;
     }
   }

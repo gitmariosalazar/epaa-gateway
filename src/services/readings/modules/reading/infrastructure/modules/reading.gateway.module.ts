@@ -20,6 +20,7 @@ import { RealtimeReadingNotifierAdapter } from '../adapters/realtime-reading-not
 
 import { RealtimeAuditNotifierAdapter } from '../adapters/realtime-audit-notifier.adapter';
 import { AUDIT_REALTIME_NOTIFIER_PORT } from '../../application/ports/audit-realtime-notifier.port';
+import { GetMovilePackConnectionsUseCase } from '../../application/use-cases/GetMovilePackConnectionsUseCase';
 
 @Module({
   imports: [
@@ -70,6 +71,7 @@ import { AUDIT_REALTIME_NOTIFIER_PORT } from '../../application/ports/audit-real
     ApplyPaymentAgreementUseCase,
     DistributeEmelnorteTrashRateUseCase,
     AssignConnectionTrashRateUseCase,
+    GetMovilePackConnectionsUseCase,
     {
       provide: READING_LEGACY_SYNC_PORT,
       useClass: KafkaReadingLegacySyncAdapter,

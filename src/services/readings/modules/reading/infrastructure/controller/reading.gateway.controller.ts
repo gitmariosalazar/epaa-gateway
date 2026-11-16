@@ -23,6 +23,7 @@ import { renameSync } from 'fs';
 import { ClientKafka, RpcException } from '@nestjs/microservices';
 import {
   ApiBearerAuth,
+  ApiBody,
   ApiConsumes,
   ApiOperation,
   ApiParam,
@@ -65,6 +66,8 @@ import { DistributeEmelnorteTrashRateRequest } from '../../domain/schemas/dto/re
 import { AssignConnectionTrashRateRequest } from '../../domain/schemas/dto/request/assign-connection-trash-rate.request';
 import { AccessTokenPayload } from '../../../../../../shared/utils/interfaces/user.payload';
 import { LecturistLocationQueryDto } from '../../domain/schemas/dto/request/LecturistLocationQueryDto';
+import { GetMovilePackConnectionsUseCase } from '../../application/use-cases/GetMovilePackConnectionsUseCase';
+import { GetMovilePackConnectionsDto } from '../../domain/schemas/dto/request/filters.request';
 
 const READINGS_IMAGES_DIR = '/home/sigepaa/sigepaa/images/readings';
 
@@ -85,6 +88,7 @@ export class ReadingGatewayController {
     private readonly applyPaymentAgreementUseCase: ApplyPaymentAgreementUseCase,
     private readonly distributeEmelnorteTrashRateUseCase: DistributeEmelnorteTrashRateUseCase,
     private readonly assignConnectionTrashRateUseCase: AssignConnectionTrashRateUseCase,
+    private readonly getMovilePackConnectionsUseCase: GetMovilePackConnectionsUseCase,
   ) {}
 
   /** Extracts the authenticated user id set by AuthGuard onto the request. */
@@ -903,6 +907,54 @@ export class ReadingGatewayController {
       const err = error as Error;
       this.logger.error(
         `Error assigning trash rate for connection ${body?.connectionId}: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err.message || err);
+    }
+  }
+
+  @Post('get-movile-pack-connections-sync-offline-batch')
+  @ApiOperation({
+    summary: 'Method POST - Get Movile Pack connections',
+    description: 'Retrieves Movile Pack connections based on provided filters.',
+  })
+  @ApiBody({
+    type: GetMovilePackConnectionsDto,
+    required: false,
+    description:
+      'Filtros opcionales. Puedes enviar {} o dejar vacío para traer todo.',
+    examples: {
+      sinFiltros: {
+        summary: 'Sin filtros (traer todo)',
+        value: {},
+      },
+      porSector: {
+        summary: 'Filtrar por sector',
+        value: { sector: 1 },
+      },
+      porClaves: {
+        summary: 'Filtrar por claves catastrales',
+        value: { cadastralKeys: ['1001001', '1001002'] },
+      },
+    },
+  })
+  async getMovilePackConnections(
+    @Body() filters: GetMovilePackConnectionsDto = {},
+    @Req() request: Request,
+  ): Promise<ApiResponse> {
+    try {
+      const response = await this.getMovilePackConnectionsUseCase.execute(
+        filters ?? {},
+      );
+      return new ApiResponse(
+        `Movile Pack connections retrieved successfully!`,
+        response,
+        request.url,
+      );
+    } catch (error) {
+      const err = error as Error;
+      this.logger.error(
+        `Error retrieving Movile Pack connections: ${err.message}`,
         err.stack,
       );
       throw new RpcException(err.message || err);

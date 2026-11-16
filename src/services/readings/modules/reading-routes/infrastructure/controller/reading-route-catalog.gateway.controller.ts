@@ -68,7 +68,11 @@ export class ReadingRouteCatalogGatewayController {
         HttpStatus.OK,
       );
     } catch (error) {
-      this.logger.error(`Error en findAll reading-routes: ${error.message}`, error.stack);
+      if (error instanceof Error) {
+        this.logger.error(`Error en findAll reading-routes: ${error.message}`, error.stack);
+      } else {
+        this.logger.error(`Error en findAll reading-routes: ${error}`);
+      }
       throw error;
     }
   }
@@ -105,7 +109,11 @@ export class ReadingRouteCatalogGatewayController {
         HttpStatus.OK,
       );
     } catch (error) {
-      this.logger.error(`Error en getGeoJson reading-routes: ${error.message}`, error.stack);
+      if (error instanceof Error) {
+        this.logger.error(`Error en getGeoJson reading-routes: ${error.message}`, error.stack);
+      } else {
+        this.logger.error(`Error en getGeoJson reading-routes: ${error}`);
+      }
       throw error;
     }
   }
@@ -137,7 +145,11 @@ export class ReadingRouteCatalogGatewayController {
         HttpStatus.OK,
       );
     } catch (error) {
-      this.logger.error(`Error en getCentroids reading-routes: ${error.message}`, error.stack);
+      if (error instanceof Error) {
+        this.logger.error(`Error en getCentroids reading-routes: ${error.message}`, error.stack);
+      } else {
+        this.logger.error(`Error en getCentroids reading-routes: ${error}`);
+      }
       throw error;
     }
   }
@@ -168,7 +180,11 @@ export class ReadingRouteCatalogGatewayController {
         HttpStatus.OK,
       );
     } catch (error) {
-      this.logger.error(`Error en getById reading-routes (${id}): ${error.message}`, error.stack);
+      if (error instanceof Error) {
+        this.logger.error(`Error en getById reading-routes (${id}): ${error.message}`, error.stack);
+      } else {
+        this.logger.error(`Error en getById reading-routes (${id}): ${error}`);
+      }
       throw error;
     }
   }
@@ -200,7 +216,11 @@ export class ReadingRouteCatalogGatewayController {
         HttpStatus.OK,
       );
     } catch (error) {
-      this.logger.error(`Error en getConnections reading-routes (${id}): ${error.message}`, error.stack);
+      if (error instanceof Error) {
+        this.logger.error(`Error en getConnections reading-routes (${id}): ${error.message}`, error.stack);
+      } else {
+        this.logger.error(`Error en getConnections reading-routes (${id}): ${error}`);
+      }
       throw error;
     }
   }
