@@ -28,7 +28,9 @@ export class ReadingLegacyMapper {
     reading.readingTime = response.readingTime!;
     reading.readingId = response.readingCode
       ? response.readingCode.toString()
-      : '';
+      : response.readingId
+        ? response.readingId.toString()
+        : '';
     reading.username = username ?? '';
 
     if (readingMonth && readingMonth.includes('-')) {
@@ -78,7 +80,11 @@ export class ReadingLegacyMapper {
     request.previousReading = response.previousReading ?? 0;
     request.novelty = response.novelty ?? 'SIN NOVEDAD';
     request.cadastralKey = response.cadastralKey ?? '';
-    request.readingId = response.readingId?.toString() ?? '';
+    request.readingId = response.readingCode
+      ? response.readingCode.toString()
+      : response.readingId
+        ? response.readingId.toString()
+        : '';
     request.username = username ?? '';
     request.meterStatus = meterStatus;
 
@@ -87,7 +93,11 @@ export class ReadingLegacyMapper {
     params.account = request.account!;
     params.year = request.year!;
     params.month = request.month!;
-    params.readingId = response.readingCode!.toString();
+    params.readingId = response.readingCode
+      ? response.readingCode.toString()
+      : response.readingId
+        ? response.readingId.toString()
+        : '';
 
     return { request, params };
   }
