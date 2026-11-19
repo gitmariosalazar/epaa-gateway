@@ -14,6 +14,7 @@ import { CadastralGatewayModule } from '../cadastral/infrastructure/modules/cada
 import { InspectionOrderGatewayModule } from '../inspection-order/infrastructure/modules/inspection-order.gateway.module';
 import { InstallationOrderGatewayModule } from '../installation-order/infrastructure/modules/installation-order.gateway.module';
 import { InstallationReportGatewayModule } from '../installation-report/infrastructure/modules/installation-report.gateway.module';
+import { StateHistoryGatewayModule } from '../state-history/infrastructure/modules/state-history.gateway.module';
 
 @Module({
   imports: [
@@ -35,6 +36,8 @@ import { InstallationReportGatewayModule } from '../installation-report/infrastr
     InspectionOrderGatewayModule,
     InstallationOrderGatewayModule,
     InstallationReportGatewayModule,
+    // State management module for connection state history & catalog
+    StateHistoryGatewayModule,
   ],
   controllers: [],
   providers: [],

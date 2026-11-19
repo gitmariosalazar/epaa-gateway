@@ -26,6 +26,7 @@ import {
   ReadingResponse,
 } from '../../domain/schemas/dto/response/readings.response';
 import { CalculateReadingValueParams } from '../../domain/schemas/dto/request/calculate-reading-value-params';
+import { DisabledConnectionRequest } from '../../domain/schemas/dto/request/disabled-connection';
 
 @Controller('readings')
 @ApiTags('Readings - Legacy')
@@ -277,6 +278,82 @@ export class ReadingLegacyGatewayController {
       const err = error as Error;
       this.logger.error(
         `Error in getDashboardKpisByYearAndSector: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
+    }
+  }
+
+  @Get('find-latest-meter-reading')
+  @ApiOperation({
+    summary: 'Method GET - Find Latest Meter Reading (Legacy)',
+    description:
+      'The endpoint allows you to find the latest meter reading by cadastral key (Legacy)',
+  })
+  async findLatestMeterReading(
+    @Req() request: Request,
+    @Query('cadastralKey') cadastralKey: string,
+  ): Promise<ApiResponse> {
+    try {
+      this.logger.log(
+        `Sending findLatestMeterReading request: cadastralKey=${cadastralKey}`,
+      );
+
+      const response: ReadingResponse = await sendKafkaRequest(
+        this.kafkaProxy.send(
+          this.readingClient,
+          'epaa-legacy.reading.find-latest-meter-reading',
+          { cadastralKey },
+        ),
+      );
+
+      return new ApiResponse(
+        `Latest meter reading retrieved successfully!`,
+        response,
+        request.url,
+      );
+    } catch (error) {
+      const err = error as Error;
+      this.logger.error(
+        `Error in findLatestMeterReading: ${err.message}`,
+        err.stack,
+      );
+      throw new RpcException(err as string | object);
+    }
+  }
+
+  @Put('disable-connection')
+  @ApiOperation({
+    summary: 'Method PUT - Disable Connection (Legacy)',
+    description:
+      'The endpoint allows you to disable a connection by providing the necessary details (Legacy)',
+  })
+  async disableConnection(
+    @Req() request: Request,
+    @Body() body: DisabledConnectionRequest,
+  ): Promise<ApiResponse> {
+    try {
+      this.logger.log(
+        `Sending disableConnection request: incomeCode=${body.incomeCode}, sector=${body.sector}, account=${body.account}, year=${body.year}, month=${body.month}, description=${body.description}`,
+      );
+
+      const response: any = await sendKafkaRequest(
+        this.kafkaProxy.send(
+          this.readingClient,
+          'epaa-legacy.reading.disable-connection',
+          body,
+        ),
+      );
+
+      return new ApiResponse(
+        `Connection disabled successfully!`,
+        response,
+        request.url,
+      );
+    } catch (error) {
+      const err = error as Error;
+      this.logger.error(
+        `Error in disableConnection: ${err.message}`,
         err.stack,
       );
       throw new RpcException(err as string | object);

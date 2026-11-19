@@ -102,7 +102,7 @@ import { NetworkOperationsGatewayModule } from './services/network-operations/gi
     JwtModule.register({
       global: true,
       secret: process.env.JWT_SECRET,
-      signOptions: { expiresIn: '15m', algorithm: 'HS256' },
+      signOptions: { expiresIn: '1d', algorithm: 'HS256' },
     }),
   ],
   controllers: [],
