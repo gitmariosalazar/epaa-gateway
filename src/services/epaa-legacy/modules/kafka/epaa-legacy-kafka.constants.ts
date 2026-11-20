@@ -6,8 +6,8 @@ export const KAFKA_RETRY_OPTIONS = {
 };
 
 export const KAFKA_LEGACY_CONSUMER_OPTIONS = {
-  sessionTimeout: 30000,
-  heartbeatInterval: 10000,
-  rebalanceTimeout: 60000,
+  sessionTimeout: 120000,
+  heartbeatInterval: 5000,
+  rebalanceTimeout: 180000,
   subscribe: { fromBeginning: true },
 };
