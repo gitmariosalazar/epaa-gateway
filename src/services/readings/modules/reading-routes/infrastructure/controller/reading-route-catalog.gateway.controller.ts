@@ -81,14 +81,18 @@ export class ReadingRouteCatalogGatewayController {
   @ApiOperation({
     summary: 'Obtener capa GeoJSON de polígonos de rutas',
     description:
-      'Retorna una FeatureCollection de polígonos GeoJSON de las rutas para visualización en visores cartográficos web.',
+      'Retorna una FeatureCollection de polígonos GeoJSON de las rutas para visualización en visores cartográficos web con colores según estado operativo.',
   })
   @ApiQuery({ name: 'sectorId', required: false, type: Number, description: 'Filtrar por sector comercial' })
   @ApiQuery({ name: 'activa', required: false, type: Boolean, description: 'Filtrar por rutas activas (default: true)' })
+  @ApiQuery({ name: 'estado', required: false, type: String, description: 'Filtrar por estado operativo (ASIGNADA, EN_PROCESO, COMPLETADA, NO_ASIGNADA)' })
+  @ApiQuery({ name: 'periodo', required: false, type: String, description: 'Filtrar por período mensual (YYYY-MM)' })
   @SwaggerApiResponse({ status: 200, description: 'GeoJSON de rutas obtenido exitosamente' })
   async getGeoJson(
     @Query('sectorId') sectorId: number,
     @Query('activa') activa: boolean,
+    @Query('estado') estado: string,
+    @Query('periodo') periodo: string,
     @Req() request: Request,
   ): Promise<ApiResponse> {
     try {
@@ -99,6 +103,8 @@ export class ReadingRouteCatalogGatewayController {
           {
             sectorId: sectorId ? Number(sectorId) : undefined,
             activa: activa !== undefined ? String(activa) === 'true' : undefined,
+            estado: estado || undefined,
+            periodo: periodo || undefined,
           },
         ),
       );
@@ -122,20 +128,42 @@ export class ReadingRouteCatalogGatewayController {
   @ApiOperation({
     summary: 'Obtener GeoJSON de centroides de las rutas',
     description:
-      'Retorna una FeatureCollection ligera de los 79 centroides calculados para pines o marcadores analíticos.',
+      'Retorna una FeatureCollection ligera de los centroides calculados para pines o marcadores analíticos enriquecidos con su estado de asignación.',
   })
   @ApiQuery({ name: 'activaOnly', required: false, type: Boolean, description: 'Filtrar solo rutas activas' })
+  @ApiQuery({ name: 'activa', required: false, type: Boolean, description: 'Filtrar solo rutas activas (alias)' })
+  @ApiQuery({ name: 'sectorId', required: false, type: Number, description: 'Filtrar por sector' })
+  @ApiQuery({ name: 'estado', required: false, type: String, description: 'Filtrar por estado de asignación' })
+  @ApiQuery({ name: 'periodo', required: false, type: String, description: 'Filtrar por periodo (YYYY-MM)' })
   @SwaggerApiResponse({ status: 200, description: 'GeoJSON de centroides obtenido exitosamente' })
   async getCentroids(
     @Query('activaOnly') activaOnly: boolean,
+    @Query('activa') activa: boolean,
+    @Query('sectorId') sectorId: number,
+    @Query('estado') estado: string,
+    @Query('periodo') periodo: string,
     @Req() request: Request,
   ): Promise<ApiResponse> {
     try {
+      const isActivaDefined = activaOnly !== undefined ? activaOnly : activa;
+      const parsedActiva =
+        isActivaDefined !== undefined ? String(isActivaDefined) === 'true' : true;
+      const parsedSectorId =
+        sectorId !== undefined && !isNaN(Number(sectorId))
+          ? Number(sectorId)
+          : undefined;
+
       const response = await sendKafkaRequest(
         this.kafkaProxy.send(
           this.readingClient,
           'reading-routes.get-centroids',
-          { activaOnly: activaOnly !== undefined ? String(activaOnly) === 'true' : true },
+          {
+            activaOnly: parsedActiva,
+            activa: parsedActiva,
+            sectorId: parsedSectorId,
+            estado: estado?.trim() || undefined,
+            periodo: periodo?.trim() || undefined,
+          },
         ),
       );
       return new ApiResponse(

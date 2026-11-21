@@ -19,41 +19,87 @@ import {
   ValidateNested,
 } from 'class-validator';
 
+export class ExplicitRouteAssignmentItemDto {
+  @ApiProperty({
+    description: 'ID de la ruta a despachar',
+    example: 45,
+  })
+  @IsInt()
+  @IsPositive()
+  @IsNotEmpty()
+  rutaId!: number;
+
+  @ApiProperty({
+    description: 'UUID del lecturista asignado',
+    example: 'c3a2f8b0-8c29-4d69-a1d2-092931481234',
+  })
+  @IsUUID('4')
+  @IsNotEmpty()
+  lecturistaId!: string;
+}
+
 export class BatchMorningDispatchRequestDto {
-  @ApiPropertyOptional({ description: 'ID de la zona comercial/hidráulica', example: 1 })
+  @ApiPropertyOptional({
+    description: 'ID de la zona comercial/hidráulica',
+    example: 1,
+  })
   @IsOptional()
   @IsInt()
   zonaId?: number;
 
-  @ApiPropertyOptional({ description: 'ID del sector comercial/hidráulico', example: 1 })
+  @ApiPropertyOptional({
+    description: 'ID del sector comercial/hidráulico',
+    example: 1,
+  })
   @IsOptional()
   @IsInt()
   sectorId?: number;
 
-  @ApiProperty({ description: 'Periodo de lectura en formato YYYY-MM', example: '2026-11' })
+  @ApiProperty({
+    description: 'Periodo de lectura en formato YYYY-MM',
+    example: '2026-11',
+  })
   @IsString()
   @Matches(/^\d{4}-(0[1-9]|1[0-2])$/, {
     message: 'El periodo debe tener el formato YYYY-MM (ej. 2026-11)',
   })
-  periodo: string;
-
-  @ApiProperty({ description: 'Fecha programada de ejecución en campo (YYYY-MM-DD)', example: '2026-11-03' })
-  @IsDateString()
-  @IsNotEmpty()
-  fechaProgramada: string;
+  periodo!: string;
 
   @ApiProperty({
-    description: 'Lista de UUIDs de lecturistas operativos disponibles para la jornada',
+    description: 'Fecha programada de ejecución en campo (YYYY-MM-DD)',
+    example: '2026-11-03',
+  })
+  @IsDateString()
+  @IsNotEmpty()
+  fechaProgramada!: string;
+
+  @ApiPropertyOptional({
+    description:
+      'Lista de UUIDs de lecturistas operativos disponibles para la jornada (requerido para despacho automático)',
     example: [
       'c3a2f8b0-8c29-4d69-a1d2-092931481234',
       'b2e1f4a9-7b18-3c58-9a01-182736495821',
     ],
   })
+  @IsOptional()
   @IsArray()
   @IsUUID('4', { each: true })
-  lecturistaIds: string[];
+  lecturistaIds?: string[];
 
-  @ApiPropertyOptional({ description: 'Observaciones generales del despacho matutino' })
+  @ApiPropertyOptional({
+    description:
+      'Lista de asignaciones explícitas de rutas a lecturistas seleccionadas en la interfaz',
+    type: [ExplicitRouteAssignmentItemDto],
+  })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ExplicitRouteAssignmentItemDto)
+  asignaciones?: ExplicitRouteAssignmentItemDto[];
+
+  @ApiPropertyOptional({
+    description: 'Observaciones generales del despacho matutino',
+  })
   @IsOptional()
   @IsString()
   observaciones?: string;
@@ -64,31 +110,43 @@ export class AssignSingleRouteRequestDto {
   @IsInt()
   @IsPositive()
   @IsNotEmpty()
-  rutaId: number;
+  rutaId!: number;
 
-  @ApiProperty({ description: 'UUID del usuario lecturista asignado', example: 'c3a2f8b0-8c29-4d69-a1d2-092931481234' })
+  @ApiProperty({
+    description: 'UUID del usuario lecturista asignado',
+    example: 'c3a2f8b0-8c29-4d69-a1d2-092931481234',
+  })
   @IsUUID('4')
   @IsNotEmpty()
-  usuarioId: string;
+  usuarioId!: string;
 
-  @ApiProperty({ description: 'Periodo de lectura en formato YYYY-MM', example: '2026-11' })
+  @ApiProperty({
+    description: 'Periodo de lectura en formato YYYY-MM',
+    example: '2026-11',
+  })
   @IsString()
   @Matches(/^\d{4}-(0[1-9]|1[0-2])$/, {
     message: 'El periodo debe tener el formato YYYY-MM',
   })
-  periodo: string;
+  periodo!: string;
 
-  @ApiProperty({ description: 'Fecha programada de ejecución (YYYY-MM-DD)', example: '2026-11-03' })
+  @ApiProperty({
+    description: 'Fecha programada de ejecución (YYYY-MM-DD)',
+    example: '2026-11-03',
+  })
   @IsDateString()
   @IsNotEmpty()
-  fechaProgramada: string;
+  fechaProgramada!: string;
 }
 
 export class ReassignRouteSegmentRequestDto {
-  @ApiProperty({ description: 'ID de la asignación original que tiene predios pendientes', example: 45 })
+  @ApiProperty({
+    description: 'ID de la asignación original que tiene predios pendientes',
+    example: 45,
+  })
   @IsInt()
   @IsNotEmpty()
-  asignacionId: number;
+  asignacionId!: number;
 
   @ApiProperty({
     description: 'UUID del nuevo lecturista que asumirá los predios pendientes',
@@ -96,32 +154,42 @@ export class ReassignRouteSegmentRequestDto {
   })
   @IsUUID('4')
   @IsNotEmpty()
-  nuevoUsuarioId: string;
+  nuevoUsuarioId!: string;
 
   @ApiProperty({
     description: 'Justificación operativa de la transferencia en campo',
-    example: 'Avería mecánica en motocicleta de operador titular. Refuerzo de cuadrilla.',
+    example:
+      'Avería mecánica en motocicleta de operador titular. Refuerzo de cuadrilla.',
   })
   @IsString()
   @MinLength(5)
-  motivo: string;
+  motivo!: string;
 }
 
 export class ResolveRouteRequestDto {
   @ApiProperty({ description: 'Latitud WGS84 del medidor', example: 0.331589 })
   @IsLatitude()
-  latitud: number;
+  latitud!: number;
 
-  @ApiProperty({ description: 'Longitud WGS84 del medidor', example: -78.221085 })
+  @ApiProperty({
+    description: 'Longitud WGS84 del medidor',
+    example: -78.221085,
+  })
   @IsLongitude()
-  longitud: number;
+  longitud!: number;
 
-  @ApiPropertyOptional({ description: 'Sector comercial si ya se conoce (ej: 1)', example: 1 })
+  @ApiPropertyOptional({
+    description: 'Sector comercial si ya se conoce (ej: 1)',
+    example: 1,
+  })
   @IsOptional()
   @IsInt()
   sector?: number;
 
-  @ApiPropertyOptional({ description: 'ID de acometida si ya existe en catastro', example: '1-63' })
+  @ApiPropertyOptional({
+    description: 'ID de acometida si ya existe en catastro',
+    example: '1-63',
+  })
   @IsOptional()
   @IsString()
   acometidaId?: string;
@@ -132,15 +200,19 @@ export class InsertConnectionIntoRouteRequestDto {
   @IsInt()
   @IsPositive()
   @IsNotEmpty()
-  idRuta: number;
+  idRuta!: number;
 
-  @ApiProperty({ description: 'Identificador único de la acometida', example: '1-315' })
+  @ApiProperty({
+    description: 'Identificador único de la acometida',
+    example: '1-315',
+  })
   @IsString()
   @IsNotEmpty()
-  acometidaId: string;
+  acometidaId!: string;
 
   @ApiPropertyOptional({
-    description: 'Posición ordinal sugerida en el recorrido (si es omitida se añade al final)',
+    description:
+      'Posición ordinal sugerida en el recorrido (si es omitida se añade al final)',
     example: 45,
   })
   @IsOptional()
@@ -180,39 +252,54 @@ export class SingleMobileReadingItemDto {
   @ApiProperty({ example: 1045, description: 'ID del detalle de avance' })
   @IsInt()
   @IsNotEmpty()
-  idDetalleAvance: number;
+  idDetalleAvance!: number;
 
   @ApiProperty({ example: '1-63', description: 'Código de acometida' })
   @IsString()
   @IsNotEmpty()
-  acometidaId: string;
+  acometidaId!: string;
 
   @ApiProperty({ example: 452.8, description: 'Valor numérico de la lectura' })
   @IsNumber()
   @IsNotEmpty()
-  lecturaActual: number;
+  lecturaActual!: number;
 
-  @ApiProperty({ example: '2026-11-03T09:42:15.000Z', description: 'Timestamp ISO de la captura' })
+  @ApiProperty({
+    example: '2026-11-03T09:42:15.000Z',
+    description: 'Timestamp ISO de la captura',
+  })
   @IsDateString()
   @IsNotEmpty()
-  fechaHoraCaptura: string;
+  fechaHoraCaptura!: string;
 
-  @ApiPropertyOptional({ example: 0.331589, description: 'Latitud GPS del lecturista' })
+  @ApiPropertyOptional({
+    example: 0.331589,
+    description: 'Latitud GPS del lecturista',
+  })
   @IsOptional()
   @IsNumber()
   latitudGps?: number;
 
-  @ApiPropertyOptional({ example: -78.221085, description: 'Longitud GPS del lecturista' })
+  @ApiPropertyOptional({
+    example: -78.221085,
+    description: 'Longitud GPS del lecturista',
+  })
   @IsOptional()
   @IsNumber()
   longitudGps?: number;
 
-  @ApiPropertyOptional({ example: 'MEDIDOR_EMPAÑADO', description: 'Código o texto de la novedad detectada' })
+  @ApiPropertyOptional({
+    example: 'MEDIDOR_EMPAÑADO',
+    description: 'Código o texto de la novedad detectada',
+  })
   @IsOptional()
   @IsString()
   novedadId?: string;
 
-  @ApiPropertyOptional({ example: 'https://storage.sigepaa.epaa.gob.ec/fotos-lecturas/2026-11/1-63.webp' })
+  @ApiPropertyOptional({
+    example:
+      'https://storage.sigepaa.epaa.gob.ec/fotos-lecturas/2026-11/1-63.webp',
+  })
   @IsOptional()
   @IsString()
   fotoEvidenciaUrl?: string;
@@ -227,40 +314,76 @@ export class SyncMobileReadingsBatchRequestDto {
   @ApiProperty({ example: 12, description: 'ID de la asignación' })
   @IsInt()
   @IsNotEmpty()
-  asignacionId: number;
+  asignacionId!: number;
 
-  @ApiProperty({ type: [SingleMobileReadingItemDto], description: 'Colección de lecturas capturadas offline' })
+  @ApiProperty({
+    type: [SingleMobileReadingItemDto],
+    description: 'Colección de lecturas capturadas offline',
+  })
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => SingleMobileReadingItemDto)
-  lecturas: SingleMobileReadingItemDto[];
+  lecturas!: SingleMobileReadingItemDto[];
 }
 
 export class FindReadingRoutesQueryDto {
-  @ApiPropertyOptional({ description: 'Filtrar por sector comercial/hidráulico (1-79)', example: 1 })
+  @ApiPropertyOptional({
+    description: 'Filtrar por sector comercial/hidráulico (1-79)',
+    example: 1,
+  })
   @IsOptional()
   @Type(() => Number)
   @IsInt()
   sectorId?: number;
 
-  @ApiPropertyOptional({ description: 'Filtrar por estado activo/inactivo', example: true })
+  @ApiPropertyOptional({
+    description: 'Filtrar por estado activo/inactivo',
+    example: true,
+  })
   @IsOptional()
   @Type(() => Boolean)
   @IsBoolean()
   activa?: boolean;
 
-  @ApiPropertyOptional({ description: 'Búsqueda de texto por código o nombre de ruta', example: 'SEC01' })
+  @ApiPropertyOptional({
+    description: 'Filtrar por estado de la ruta',
+    example: 'ACTIVO',
+  })
+  @IsOptional()
+  @IsString()
+  estado?: string;
+
+  @ApiPropertyOptional({
+    description: 'Filtrar por periodo de lectura en formato YYYY-MM',
+    example: '2026-11',
+  })
+  @IsOptional()
+  @Matches(/^\d{4}-(0[1-9]|1[0-2])$/, {
+    message: 'El periodo debe tener el formato YYYY-MM (ej. 2026-11)',
+  })
+  periodo?: string;
+
+  @ApiPropertyOptional({
+    description: 'Búsqueda de texto por código o nombre de ruta',
+    example: 'SEC01',
+  })
   @IsOptional()
   @IsString()
   search?: string;
 
-  @ApiPropertyOptional({ description: 'Número de página para paginación', example: 1 })
+  @ApiPropertyOptional({
+    description: 'Número de página para paginación',
+    example: 1,
+  })
   @IsOptional()
   @Type(() => Number)
   @IsInt()
   page?: number;
 
-  @ApiPropertyOptional({ description: 'Cantidad de elementos por página', example: 50 })
+  @ApiPropertyOptional({
+    description: 'Cantidad de elementos por página',
+    example: 50,
+  })
   @IsOptional()
   @Type(() => Number)
   @IsInt()
@@ -286,4 +409,3 @@ export class GetMyAssignedRoutesQueryDto {
   })
   periodo?: string;
 }
-
